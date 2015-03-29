@@ -260,13 +260,17 @@ function mouseDown(event) {
 			
 					if (hitResult.type == 'handle-in') {
 						handle = hitResult.segment.handleIn;
+						handle.point=point;
 					} else
 					if (hitResult.type == 'handle-out') {
 						handle = hitResult.segment.handleOut;
+						handle.point=point;
 					} else
 					if (hitResult.type=='segment') {
-						if(selectedTool=="select")
+						if(selectedTool=="select") {
 							handle=hitResult.segment.point;
+							handle.point=point;
+						}
 						if(selectedTool=="delpoint")
 							hitResult.segment.remove();
 					} else
@@ -334,15 +338,16 @@ function mouseDown(event) {
 function mouseDrag(event) {
 	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
 	var z=magicV/viewer.source.width/zoom;
-	var point=new paper.Point((event.layerX)*z,(event.layerY)*z);
+	var point=new paper.Point(event.layerX*z,event.layerY*z);
 	if (handle) {
-		handle.x += event.delta.x*z;
-		handle.y += event.delta.y*z;
+		handle.x+=point.x-handle.point.x;
+		handle.y+=point.y-handle.point.y;
+		handle.point=point;
 	} else
 	if(selectedTool=="draw") {
 		region.path.add(point);
-		paper.view.draw();
 	}
+	paper.view.draw();
 }
 function mouseUp(event) {
 	if(newRegionFlag==true){
@@ -480,15 +485,11 @@ viewer.addHandler('open',function() {
 
 viewer.addViewerInputHook({hooks: [
 	{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
-	{tracker: 'viewer', handler: 'dblClickHandler', hookHandler: dblClickHandler},
 	{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
 	{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
 	{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 ]});
 function clickHandler(event){
-	event.stopHandlers=!navEnabled;
-}
-function dblClickHandler(event){
 	event.stopHandlers=!navEnabled;
 }
 function pressHandler(event){
