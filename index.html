@@ -138,20 +138,33 @@ var	viewerInputHook;
 
 var navEnabled=true;
 
-//var magicV=1524;
-//var magicV=1500;
 var magicV=1000;
 
 var counter=1;
-var temp;
+function newUniqueID() {
+	var i;
+	var	found=false;
+	while(found==false) {
+		found=true;
+		for(i=0;i<Regions.length;i++) {
+			if(Regions[i].uid==counter) {
+				counter++;
+				found=false;
+				break;
+			}
+		}
+	}
+	return counter;
+}
+		
 function newRegion(arg) {
 	var reg={};
 	
+	reg.uid=newUniqueID();
 	if(arg.name)
 		reg.name=arg.name;
 	else {
-		reg.name="Untitled "+counter;
-		counter+=1;
+		reg.name="Untitled "+reg.uid;
 	}
 	var color=hashColor(reg.name);
 	
@@ -164,24 +177,18 @@ function newRegion(arg) {
 	}
 	
 	// display region information
-	var el=$(regionTag(reg.name));
+	var el=$(regionTag(reg.name,reg.uid));
 	$("#regionList").append(el);
 	el.click(function(event){
 		event.stopPropagation();
 		
-		var name=$.trim($(this).text());
-		temp=this;
-		var reg=findRegionByName(name);
-		selectRegion(reg,{add:false});
-		
+		var uid=$(this).attr('id');
+		var reg=findRegionByUID(uid);
+		selectRegion(reg);
+	}).dblclick(function(event){
+		event.stopPropagation();
 		regionPicker(this);
-		
-		$("#regionList > .region-tag").each(function(i){
-			$(this).css({backgroundColor:"transparent"});
-		});
-		$(this).css("background-color","rgba(255,255,255,0.5)");
-		
-	});
+	})
 
 	// push the new region to the Regions array
 	Regions.push(reg);
@@ -194,13 +201,13 @@ function removeRegion(reg) {
 	// remove from paths
 	reg.path.remove();
 	// remove from regionList
-	var tag=$("#regionList > .region-tag").filter(function(){
-		return $(this).find(".region-name").first().text()==reg.name;
-	});
+	var	tag=$("#regionList > .region-tag#"+reg.uid);
 	$(tag).remove();
 }
 function selectRegion(reg) {
 	var	i;
+
+	// Select path
 	for(i=0;i<Regions.length;i++) {
 		if(Regions[i]==reg) {
 			reg.path.selected=true;
@@ -213,15 +220,23 @@ function selectRegion(reg) {
 		}
 	}
 	paper.view.draw();
+	
+	// Select region name in list
+	$("#regionList > .region-tag").each(function(i){
+		$(this).css({backgroundColor:"transparent"});
+	});
+
+	var	tag=$("#regionList > .region-tag#"+reg.uid);
+	$(tag).css("background-color","rgba(255,255,255,0.5)");
 }
-function findRegionByName(name) {
+function findRegionByUID(uid) {
 	var	i;
 	for(i=0;i<Regions.length;i++) {
-		if(Regions[i].name==name) {
+		if(Regions[i].uid==uid) {
 			return Regions[i];
 		}
 	}
-	console.log("Region "+name+" not found");
+	console.log("Region with unique ID "+uid+" not found");
 	return null;
 }
 function mouseDown(event) {
@@ -242,7 +257,7 @@ function mouseDown(event) {
 				handle=null;
 				newRegionFlag=false;
 				var hitResult=re.path.hitTest(point, {
-					tolerance:5,
+					tolerance:2,
 					stroke: true,
 					segments:true,
 					fill: true,
@@ -254,9 +269,9 @@ function mouseDown(event) {
 						region.path.selected=false;
 						prevRegion=region;
 					}
-					re.path.fullySelected=true;
-					region=re;
-					$("#region-name").html(region.name);
+					selectRegion(re);
+					//re.path.fullySelected=true;
+					//region=re;
 			
 					if (hitResult.type == 'handle-in') {
 						handle = hitResult.segment.handleIn;
@@ -521,9 +536,20 @@ function hashColor(name) {
 	color.blue=(hash&0xff0000)>>16;
 	return color;
 }
-function regionTag(name) {
+function regionTag(name,uid) {
 	var color=hashColor(name);
-	var str=[	"<div class='region-tag' style='padding:2px'>",
+	var	str;
+	if(uid)
+		str=[	"<div class='region-tag' id='"+uid+"' style='padding:2px'>",
+				"<div class='region-color'",
+				"style='background-color:rgba(",
+				color.red,",",color.green,",",color.blue,",0.67",
+				")'></div>",
+				"<span class='region-name'>"+name+"</span>",
+				"</div>",
+				].join(" ");
+	else
+		str=[	"<div class='region-tag' style='padding:2px'>",
 				"<div class='region-color'",
 				"style='background-color:rgba(",
 				color.red,",",color.green,",",color.blue,",0.67",
@@ -549,33 +575,29 @@ function regionPicker(parent) {
 	$("div#regionPicker").show();
 }
 
-function changeRegionToRegion(oldName,newName) {
+function changeRegionName(reg,name) {
 	var i;
-	var color=hashColor(newName);
-	var reg;
-	for(i=0;i<Regions.length;i++) {
-		if(Regions[i].name==oldName) {
-			Regions[i].name=newName;
-			Regions[i].path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
-			paper.view.draw();
-			
-			reg=$("#regionList > .region-tag").filter(function(){
-				return $(this).find(".region-name").first().text()==oldName;
-			});
-			reg.find(".region-name").first().text(newName);
-			reg.find(".region-color").first().css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
-		}
-	}
+	var color=hashColor(name);
+
+	// Update path
+	reg.name=name;
+	reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+	paper.view.draw();
+	
+	// Update region tag
+	$(".region-tag#"+reg.uid+">.region-name").text(name);
+	$(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
 }
 
 appendRegionTagsFromOntology(Ontology);
 
 $(".region-tag").click(function(event){
-	$("div#regionPicker").hide();
 	var newName=$(this).find(".region-name").text();
-	var oldName=$(this).parent().parent().find(".region-name").first().text();
+	var	uid=$(this).parent().parent().attr('id');
+	var reg=findRegionByUID(uid);
+	changeRegionName(reg,newName);
+	$("div#regionPicker").appendTo($("body")).hide();
 	event.stopPropagation();
-	changeRegionToRegion(oldName,newName);
 });
 
 selectTool();
