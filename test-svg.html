@@ -1,0 +1,21 @@
+<html>
+<head>
+</head>
+<body>
+<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+<script>
+    var svg;	// test SVG circle
+	svg=makeSVG('svg',{xmlns:"http://www.w3.org/2000/svg",width:"100%",height:"100%"});
+	$("body").append(svg);
+	$("svg").load("img/ISH_image562_nissl_series121129675.svg");
+    function makeSVG(tag,attrs) {
+    	var el=document.createElementNS("http://www.w3.org/2000/svg",tag);
+    	for (var k in attrs)
+    		el.setAttribute(k,attrs[k]);
+    	return el;
+    }
+</script>
+</body>
+</html>
+
+
