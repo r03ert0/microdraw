@@ -60,6 +60,7 @@ button{
 </head>
 
 <body>
+1: better ontology window
 
 <div id="info" style="width:205px;padding:5px;border:thin solid black;background-color:rgba(200,200,200,0.5);position:absolute;top:5px;right:5px;z-index:100">
 	
@@ -181,7 +182,6 @@ function newRegion(arg) {
 	$("#regionList").append(el);
 	el.click(function(event){
 		event.stopPropagation();
-		
 		var uid=$(this).attr('id');
 		var reg=findRegionByUID(uid);
 		selectRegion(reg);
@@ -252,84 +252,89 @@ function mouseDown(event) {
 		case "addregion":
 		case "delregion":
 		case "splitregion":
-			for(i in Regions) {
-				var re=Regions[i];
-				handle=null;
-				newRegionFlag=false;
-				var hitResult=re.path.hitTest(point, {
+			var hitResult=paper.project.hitTest(point, {
 					tolerance:2,
 					stroke: true,
 					segments:true,
 					fill: true,
 					handles:true
 				});
-				if (hitResult) {
-					// select path
-					if(region && region!=re) {
-						region.path.selected=false;
-						prevRegion=region;
+			handle=null;
+			newRegionFlag=false;
+			if (hitResult) {
+				var i;
+				for(i=0;i<Regions.length;i++) {
+					if(Regions[i].path==hitResult.item) {
+						re=Regions[i];
+						break;
 					}
-					selectRegion(re);
-					//re.path.fullySelected=true;
-					//region=re;
-			
-					if (hitResult.type == 'handle-in') {
-						handle = hitResult.segment.handleIn;
+				}
+
+				// select path
+				if(region && region!=re) {
+					region.path.selected=false;
+					prevRegion=region;
+				}
+				selectRegion(re);
+				//re.path.fullySelected=true;
+				//region=re;
+		
+				if (hitResult.type == 'handle-in') {
+					handle = hitResult.segment.handleIn;
+					handle.point=point;
+				} else
+				if (hitResult.type == 'handle-out') {
+					handle = hitResult.segment.handleOut;
+					handle.point=point;
+				} else
+				if (hitResult.type=='segment') {
+					if(selectedTool=="select") {
+						handle=hitResult.segment.point;
 						handle.point=point;
-					} else
-					if (hitResult.type == 'handle-out') {
-						handle = hitResult.segment.handleOut;
-						handle.point=point;
-					} else
-					if (hitResult.type=='segment') {
-						if(selectedTool=="select") {
-							handle=hitResult.segment.point;
-							handle.point=point;
-						}
-						if(selectedTool=="delpoint")
-							hitResult.segment.remove();
-					} else
-					if (hitResult.type=='stroke' && selectedTool=="addpoint") {
-						region.path
-						.curves[hitResult.location.index]
-						.divide(hitResult.location);
-						region.path.fullySelected=true;
-						paper.view.draw();
-					} else
-					if (selectedTool=="addregion") {
-						if(prevRegion) {
-							var newPath=region.path.unite(prevRegion.path);
-							removeRegion(prevRegion);
-							region.path.remove();
-							region.path=newPath;
-						}
-					} else
-					if (selectedTool=="delregion") {
-						if(prevRegion) {
-							var newPath=prevRegion.path.subtract(region.path);
-							removeRegion(prevRegion);
-							prevRegion.path.remove();
-							newRegion({path:newPath});
-						}
-					} else
-					if (selectedTool=="splitregion") {
-						if(prevRegion) {
-							var newPath=region.path.divide(prevRegion.path);
-							removeRegion(prevRegion);
-							region.path.remove();
-							region.path=newPath;
-							for(i=0;i<newPath._children.length;i++)
-							{
-								if(i==0)
-									region.path=newPath._children[i];
-								else {
-									newRegion({path:newPath._children[i]});
-								}
+					}
+					if(selectedTool=="delpoint")
+						hitResult.segment.remove();
+				} else
+				if (hitResult.type=='stroke' && selectedTool=="addpoint") {
+					region.path
+					.curves[hitResult.location.index]
+					.divide(hitResult.location);
+					region.path.fullySelected=true;
+					paper.view.draw();
+				} else
+				if (selectedTool=="addregion") {
+					if(prevRegion) {
+						var newPath=region.path.unite(prevRegion.path);
+						removeRegion(prevRegion);
+						region.path.remove();
+						region.path=newPath;
+					}
+				} else
+				if (selectedTool=="delregion") {
+					if(prevRegion) {
+						var newPath=prevRegion.path.subtract(region.path);
+						removeRegion(prevRegion);
+						prevRegion.path.remove();
+						newRegion({path:newPath});
+					}
+				} else
+				if (selectedTool=="splitregion") {
+					if(prevRegion) {
+						var newPath=region.path.divide(prevRegion.path);
+						removeRegion(prevRegion);
+						region.path.remove();
+						region.path=newPath;
+						for(i=0;i<newPath._children.length;i++)
+						{
+							if(i==0)
+								region.path=newPath._children[i];
+							else {
+								newRegion({path:newPath._children[i]});
 							}
 						}
 					}
-					break;
 				}
+				break;
 			}
 			if(hitResult==null && region) {
 				// deselect paths
