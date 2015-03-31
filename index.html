@@ -5,12 +5,13 @@
 html body {
 	font-family: sans-serif;
 	font-size:1.1rem;
+	margin:0px;
 }
 .selected {
 	background-color: orange
 }
 button{
-	width:95px;
+	width:90px;
 	margin:2px 2px;
 	padding:3px 3px;
 	border:1px solid grey;
@@ -61,9 +62,9 @@ button{
 </head>
 
 <body>
-<div id="info" style="width:205px;padding:5px;border:thin solid black;background-color:rgba(200,200,200,0.5);position:absolute;top:5px;right:5px;z-index:100">
+<div id="info" style="width:200px;height:100%;background-color:rgba(200,200,200,0.5);position:absolute;top:0;right:0;z-index:100">
 	
-	<div><div id="myNavigator" style="width:200;height:150"></div></div>
+	<div style="width:200px;height:150px"><div id="myNavigator"  style="width:200px;height:150px"></div></div>
 	<br />
 	<button id="zoom">zoom</button>
 	<button id="home">home</button>
@@ -139,15 +140,16 @@ var navEnabled=true;
 var magicV=1000;
 
 var tap=false
-function handleTap(e,callback) {
+function handleTap(e,sngl,dbl) {
 	if(!tap){ //if tap is not set, set up single tap
 		tap=setTimeout(function(){
 			tap=null
 		},300);
+		sngl();
 	} else {
 		clearTimeout(tap);
 		tap=null;
-		callback();
+		dbl();
 	}
 	e.preventDefault()
 }
@@ -191,20 +193,28 @@ function newRegion(arg) {
 	// display region information
 	var el=$(regionTag(reg.name,reg.uid));
 	$("#regionList").append(el);
+	
+	// handle single click on computers
 	el.click(function(event){
 		event.stopPropagation();
 		var uid=$(this).attr('id');
 		var reg=findRegionByUID(uid);
 		selectRegion(reg);
 	});
+	
+	// handle double click on computers
 	el.dblclick(function(event){
 		event.stopPropagation();
 		regionPicker(this);
 	});
-	el.on("touchstart",function(e){handleTap(e,function(){
-		e.stopPropagation();
-		regionPicker(el);
-	})});
+	
+	// handle single and double tap on touch devices
+	el.on("touchstart",function(e){
+		handleTap(e,
+			function(){e.stopPropagation();selectRegion(findRegionByUID(el.attr('id')))},	// single tap
+			function(){e.stopPropagation();regionPicker(el);}	// double tap
+		)
+	});
 
 	// push the new region to the Regions array
 	Regions.push(reg);
