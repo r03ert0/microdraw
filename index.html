@@ -630,6 +630,16 @@ $(".region-tag").click(function(event){
 	$("div#regionPicker").appendTo($("body")).hide();
 	event.stopPropagation();
 });
+$(".region-tag").on("touchstart",function(e){
+	var newName=$(this).find(".region-name").text();
+	var	uid=$(this).parent().parent().attr('id');
+	var reg=findRegionByUID(uid);
+	handleTap(e,function() {
+		changeRegionName(reg,newName);
+		$("div#regionPicker").appendTo($("body")).hide();
+		e.stopPropagation();
+	})
+});
 
 selectTool();
 
