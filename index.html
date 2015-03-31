@@ -135,10 +135,22 @@ var newRegionFlag;
 var selectedTool="zoom";
 var viewer;
 var	viewerInputHook;
-
 var navEnabled=true;
-
 var magicV=1000;
+
+var tap=false
+function handleTap(e,callback) {
+	if(!tap){ //if tap is not set, set up single tap
+		tap=setTimeout(function(){
+			tap=null
+		},300);
+	} else {
+		clearTimeout(tap);
+		tap=null;
+		callback();
+	}
+	e.preventDefault()
+}
 
 var counter=1;
 function newUniqueID() {
@@ -184,10 +196,15 @@ function newRegion(arg) {
 		var uid=$(this).attr('id');
 		var reg=findRegionByUID(uid);
 		selectRegion(reg);
-	}).dblclick(function(event){
+	});
+	el.dblclick(function(event){
 		event.stopPropagation();
 		regionPicker(this);
-	})
+	});
+	el.on("touchstart",function(e){handleTap(e,function(){
+		e.stopPropagation();
+		regionPicker(el);
+	})});
 
 	// push the new region to the Regions array
 	Regions.push(reg);
