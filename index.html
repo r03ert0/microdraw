@@ -279,7 +279,7 @@ function mouseDown(event) {
 		case "delregion":
 		case "splitregion":
 			var hitResult=paper.project.hitTest(point, {
-					tolerance:2,
+					tolerance:4,
 					stroke: true,
 					segments:true,
 					fill: true,
