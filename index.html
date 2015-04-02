@@ -271,6 +271,8 @@ function mouseDown(event) {
 	var point=new paper.Point((event.layerX)*z,(event.layerY)*z);
 	var prevRegion=null;
 	
+	handle=null;
+
 	switch(selectedTool) {
 		case "select":
 		case "addpoint":
@@ -285,7 +287,6 @@ function mouseDown(event) {
 					fill: true,
 					handles:true
 				});
-			handle=null;
 			newRegionFlag=false;
 			if (hitResult) {
 				var i;
