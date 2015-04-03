@@ -315,6 +315,8 @@ function appendRegionTagsFromOntology(o) {
 	
 			// handle double click on computers
 			el.dblclick(doublePressOnRegion);
+
+			el.on("touchstart",handleRegionTap);
 		}
 	}
 }
