@@ -101,6 +101,9 @@ button{
 <script src="lib/jquery-1.11.0.min.js"></script>
 
 <script>
+/*
+	Example Ontology
+*/
 var Ontology=[{name:"Telencephalon",parts:[
 					{name:"Neocortex"},
 					{name:"Rhinencephalon"},
@@ -129,58 +132,28 @@ var Ontology=[{name:"Telencephalon",parts:[
 </script>
 
 <script>
-var Regions=[]; // list of regions: path, name, id, url, colour;
-var region=null;
-var handle;
-var newRegionFlag;
+var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
+var region=null;	// currently selected region (one element of Regions[])
+var handle;			// currently selected control point or handle (if any)
+var newRegionFlag;	
 var selectedTool="zoom";
-var viewer;
-var	viewerInputHook;
-var navEnabled=true;
-var magicV=1000;
+var viewer;			// open seadragon viewer
+var navEnabled=true;// flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
+var magicV=1000;	// resolution of the annotation canvas
 
-var tap=false
-function handleTap(e,sngl,dbl) {
-	if(!tap){ //if tap is not set, set up single tap
-		tap=setTimeout(function(){
-			tap=null
-		},300);
-		sngl();
-	} else {
-		clearTimeout(tap);
-		tap=null;
-		dbl();
-	}
-	e.preventDefault()
-}
-
-var counter=1;
-function newUniqueID() {
-	var i;
-	var	found=false;
-	while(found==false) {
-		found=true;
-		for(i=0;i<Regions.length;i++) {
-			if(Regions[i].uid==counter) {
-				counter++;
-				found=false;
-				break;
-			}
-		}
-	}
-	return counter;
-}
-		
+/*
+	Region handling functions
+*/
 function newRegion(arg) {
 	var reg={};
 	
-	reg.uid=newUniqueID();
+	reg.uid=regionUniqueID();
 	if(arg.name)
 		reg.name=arg.name;
 	else {
 		reg.name="Untitled "+reg.uid;
 	}
-	var color=hashColor(reg.name);
+	var color=regionHashColor(reg.name);
 	
 	if(arg.path) {
 		reg.path = arg.path;
@@ -195,26 +168,13 @@ function newRegion(arg) {
 	$("#regionList").append(el);
 	
 	// handle single click on computers
-	el.click(function(event){
-		event.stopPropagation();
-		var uid=$(this).attr('id');
-		var reg=findRegionByUID(uid);
-		selectRegion(reg);
-	});
+	el.click(singlePressOnRegion);
 	
 	// handle double click on computers
-	el.dblclick(function(event){
-		event.stopPropagation();
-		regionPicker(this);
-	});
+	el.dblclick(doublePressOnRegion);
 	
 	// handle single and double tap on touch devices
-	el.on("touchstart",function(e){
-		handleTap(e,
-			function(){e.stopPropagation();selectRegion(findRegionByUID(el.attr('id')))},	// single tap
-			function(){e.stopPropagation();regionPicker(el);}	// double tap
-		)
-	});
+	el.on("touchstart",handleRegionTap);
 
 	// push the new region to the Regions array
 	Regions.push(reg);
@@ -265,10 +225,144 @@ function findRegionByUID(uid) {
 	console.log("Region with unique ID "+uid+" not found");
 	return null;
 }
-function mouseDown(event) {
+var counter=1;
+function regionUniqueID() {
+	var i;
+	var	found=false;
+	while(found==false) {
+		found=true;
+		for(i=0;i<Regions.length;i++) {
+			if(Regions[i].uid==counter) {
+				counter++;
+				found=false;
+				break;
+			}
+		}
+	}
+	return counter;
+}
+function regionHashColor(name) {
+	var color={};
+	var hash=name.split("").reduce(function(a,b){
+		a=((a<<5)-a)+b.charCodeAt(0);return a&a
+	},0);
+	color.red=hash&0xff;
+	color.green=(hash&0xff00)>>8;
+	color.blue=(hash&0xff0000)>>16;
+	return color;
+}
+function regionTag(name,uid) {
+	var color=regionHashColor(name);
+	var	str;
+	if(uid)
+		str=[	"<div class='region-tag' id='"+uid+"' style='padding:2px'>",
+				"<div class='region-color'",
+				"style='background-color:rgba(",
+				color.red,",",color.green,",",color.blue,",0.67",
+				")'></div>",
+				"<span class='region-name'>"+name+"</span>",
+				"</div>",
+				].join(" ");
+	else
+		str=[	"<div class='region-tag' style='padding:2px'>",
+				"<div class='region-color'",
+				"style='background-color:rgba(",
+				color.red,",",color.green,",",color.blue,",0.67",
+				")'></div>",
+				"<span class='region-name'>"+name+"</span>",
+				"</div>",
+				].join(" ");
+	return str;
+}
+function appendRegionTagsFromOntology(o) {
+	for(var i=0;i<o.length;i++) {
+		if(o[i].parts) {
+			$("#regionPicker").append("<div>"+o[i].name+"</div>");
+			appendRegionTagsFromOntology(o[i].parts);
+		}
+		else {
+			$("#regionPicker").append(regionTag(o[i].name));
+		}
+	}
+}
+function regionPicker(parent) {
+	$("div#regionPicker").appendTo($(parent));
+	$("div#regionPicker").show();
+}
+
+function changeRegionName(reg,name) {
+	var i;
+	var color=regionHashColor(name);
+
+	// Update path
+	reg.name=name;
+	reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+	paper.view.draw();
+	
+	// Update region tag
+	$(".region-tag#"+reg.uid+">.region-name").text(name);
+	$(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
+}
+
+/*
+	Interaction: mouse and tap
+*/
+function clickHandler(event){
+	event.stopHandlers=!navEnabled;
+}
+function pressHandler(event){
+	if(!navEnabled) {
+		event.stopHandlers = true;
+		mouseDown(event.originalEvent.layerX,event.originalEvent.layerY);//event.layerX,event.layerY);
+	}
+}
+function dragHandler(event){
 	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
 	var z=magicV/viewer.source.width/zoom
-	var point=new paper.Point((event.layerX)*z,(event.layerY)*z);
+	//console.log("drag",event,event.position.x/z,event.position.y/z,event.originalEvent.layerX,event.originalEvent.layerY);
+	if(!navEnabled) {
+		event.stopHandlers = true;
+		mouseDrag(event.originalEvent.layerX,event.originalEvent.layerY);//event.layerX,event.layerY);
+	}
+}
+function dragEndHandler(event){
+	if(!navEnabled) {
+		event.stopHandlers = true;
+		mouseUp();
+	}
+}
+function singlePressOnRegion(event) {
+	event.stopPropagation();
+	var uid=$(this).attr('id');
+	var reg=findRegionByUID(uid);
+	selectRegion(reg);
+}
+function doublePressOnRegion(event) {
+	event.stopPropagation();
+	regionPicker(this);
+}
+var tap=false
+function handleRegionTap(event) {
+/*
+	Handles single and double tap in touch devices
+*/
+	//console.log("handle region tap");
+	if(!tap){ //if tap is not set, set up single tap
+		tap=setTimeout(function(){
+			tap=null
+		},300);
+		singlePressOnRegion(event);
+	} else {
+		clearTimeout(tap);
+		tap=null;
+		doublePressOnRegion(event);
+	}
+	e.preventDefault()
+}
+function mouseDown(x,y) {
+	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+	var z=magicV/viewer.source.width/zoom
+	var point=new paper.Point(x*z,y*z);
 	var prevRegion=null;
 	
 	handle=null;
@@ -382,10 +476,10 @@ function mouseDown(event) {
 	}
 	paper.view.draw();
 }
-function mouseDrag(event) {
+function mouseDrag(x,y) {
 	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
 	var z=magicV/viewer.source.width/zoom;
-	var point=new paper.Point(event.layerX*z,event.layerY*z);
+	var point=new paper.Point(x*z,y*z);
 	if (handle) {
 		handle.x+=point.x-handle.point.x;
 		handle.y+=point.y-handle.point.y;
@@ -396,7 +490,7 @@ function mouseDrag(event) {
 	}
 	paper.view.draw();
 }
-function mouseUp(event) {
+function mouseUp() {
 	if(newRegionFlag==true){
 		region.path.simplify(10);
 		region.path.closed=true;
@@ -404,11 +498,54 @@ function mouseUp(event) {
 	}
 	paper.view.draw();
 }
+
+/*
+	Tool selection
+*/
+function toolSelection(event) {
+	var prevTool=selectedTool;
+	selectedTool=$(this).attr("id");
+	selectTool();
+	
+	switch(selectedTool) {
+		case "select":
+		case "addregion":
+		case "delregion":
+		case "addpoint":
+		case "delpoint":
+		case "draw":
+			navEnabled=false;
+			break;
+		case "zoom":
+			navEnabled=true;
+			handle=null;
+			break;
+		case "delete":
+			for(i in Regions) {
+				if(Regions[i].path.selected) {
+					removeRegion(Regions[i]);
+					paper.view.draw();
+					break;
+				}
+			}
+			// go back to previous tool
+			setTimeout(function() {
+			selectedTool=prevTool;
+			selectTool()},500);
+			break;
+		case "save":
+			save();
+			break;
+	}
+}
 function selectTool() {
 	$("button").removeClass("selected");
 	$("button#"+selectedTool).addClass("selected");
 }
 
+/*
+	Annotation storage
+*/
 function save() {
 /*
 	Save SVG overlay to localStorage
@@ -450,199 +587,87 @@ function load() {
 	}
 }
 
-$("button").click(function() {
-	var prevTool=selectedTool;
-	selectedTool=$(this).attr("id");
-	selectTool();
-	
-	switch(selectedTool) {
-		case "select":
-		case "addregion":
-		case "delregion":
-		case "addpoint":
-		case "delpoint":
-		case "draw":
-			navEnabled=false;
-			break;
-		case "zoom":
-			navEnabled=true;
-			handle=null;
-			break;
-		case "delete":
-			for(i in Regions) {
-				if(Regions[i].path.selected) {
-					removeRegion(Regions[i]);
-					paper.view.draw();
-					break;
-				}
-			}
-			// go back to previous tool
-			setTimeout(function() {
-			selectedTool=prevTool;
-			selectTool()},500);
-			break;
-		case "save":
-			save();
-			break;
-	}
-});
+/*
+	Initialisation
+*/
+function initMicrodraw() {
+	$("button").click(toolSelection);
 
-viewer = OpenSeadragon({
-	id: "openseadragon1",
-	prefixUrl: "lib/openseadragon/images/",
-	//mouseNavEnabled:false,
-	tileSources: "final/final.dzi",
-	showNavigator: true,
-	navigatorId:"myNavigator",
-	zoomInButton:"zoom-in",
-	zoomOutButton:"zoom-out",
-	homeButton:"home"
-});
-viewer.scalebar({
-	type: OpenSeadragon.ScalebarType.MICROSCOPE,
-	minWidth:'150px',
-	pixelsPerMeter:500000,
-	color:'black',
-	fontColor:'black',
-	backgroundColor:"rgba(255,255,255,0.5)",
-	barThickness:4,
-	location: OpenSeadragon.ScalebarLocation.TOP_LEFT,
-	xOffset:5,
-	yOffset:5
-});
-viewer.addHandler('open',function() {
-	var zoom=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-	var aspect=viewer.source.height/viewer.source.width;
-	var width=magicV;
-	var height=magicV*aspect;
-	$("body").append("<canvas class='overlay'></canvas>");
-	$("canvas.overlay").attr("width",width);
-	$("canvas.overlay").attr("height",height);
-	console.log("setup canvas");
-	var	canvas=$("canvas.overlay")[0];
-	canvas.className="overlay";
-   	paper.setup(canvas);
-	viewer.addOverlay({
-		element:canvas,
-		location: new OpenSeadragon.Rect(0,0,1,aspect)
+	viewer = OpenSeadragon({
+		id: "openseadragon1",
+		prefixUrl: "lib/openseadragon/images/",
+		//mouseNavEnabled:false,
+		tileSources: "final/final.dzi",
+		showNavigator: true,
+		navigatorId:"myNavigator",
+		zoomInButton:"zoom-in",
+		zoomOutButton:"zoom-out",
+		homeButton:"home"
 	});
-	load(); // load SVG overlay from localStorage
+	viewer.scalebar({
+		type: OpenSeadragon.ScalebarType.MICROSCOPE,
+		minWidth:'150px',
+		pixelsPerMeter:500000,
+		color:'black',
+		fontColor:'black',
+		backgroundColor:"rgba(255,255,255,0.5)",
+		barThickness:4,
+		location: OpenSeadragon.ScalebarLocation.TOP_LEFT,
+		xOffset:5,
+		yOffset:5
+	});
+	viewer.addHandler('open',function() {
+		var zoom=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+		var aspect=viewer.source.height/viewer.source.width;
+		var width=magicV;
+		var height=magicV*aspect;
+		$("body").append("<canvas class='overlay'></canvas>");
+		$("canvas.overlay").attr("width",width);
+		$("canvas.overlay").attr("height",height);
+		console.log("setup canvas");
+		var	canvas=$("canvas.overlay")[0];
+		canvas.className="overlay";
+		paper.setup(canvas);
+		viewer.addOverlay({
+			element:canvas,
+			location: new OpenSeadragon.Rect(0,0,1,aspect)
+		});
+		load(); // load SVG overlay from localStorage
 
-});
+	});
 
-viewer.addViewerInputHook({hooks: [
-	{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
-	{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
-	{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
-	{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
-]});
-function clickHandler(event){
-	event.stopHandlers=!navEnabled;
-}
-function pressHandler(event){
-	if(!navEnabled) {
-		event.stopHandlers = true;
-		mouseDown(event.originalEvent);
-	}
-}
-function dragHandler(event){
-	if(!navEnabled) {
-		event.stopHandlers = true;
-		mouseDrag(event.originalEvent);
-	}
-}
-function dragEndHandler(event){
-	if(!navEnabled) {
-		event.stopHandlers = true;
-		mouseUp(event.originalEvent);
-	}
-}
+	viewer.addViewerInputHook({hooks: [
+		{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
+		{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
+		{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
+		{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
+	]});
 
-function hashColor(name) {
-	var color={};
-	var hash=name.split("").reduce(function(a,b){
-		a=((a<<5)-a)+b.charCodeAt(0);return a&a
-	},0);
-	color.red=hash&0xff;
-	color.green=(hash&0xff00)>>8;
-	color.blue=(hash&0xff0000)>>16;
-	return color;
-}
-function regionTag(name,uid) {
-	var color=hashColor(name);
-	var	str;
-	if(uid)
-		str=[	"<div class='region-tag' id='"+uid+"' style='padding:2px'>",
-				"<div class='region-color'",
-				"style='background-color:rgba(",
-				color.red,",",color.green,",",color.blue,",0.67",
-				")'></div>",
-				"<span class='region-name'>"+name+"</span>",
-				"</div>",
-				].join(" ");
-	else
-		str=[	"<div class='region-tag' style='padding:2px'>",
-				"<div class='region-color'",
-				"style='background-color:rgba(",
-				color.red,",",color.green,",",color.blue,",0.67",
-				")'></div>",
-				"<span class='region-name'>"+name+"</span>",
-				"</div>",
-				].join(" ");
-	return str;
-}
-function appendRegionTagsFromOntology(o) {
-	for(var i=0;i<o.length;i++) {
-		if(o[i].parts) {
-			$("#regionPicker").append("<div>"+o[i].name+"</div>");
-			appendRegionTagsFromOntology(o[i].parts);
-		}
-		else {
-			$("#regionPicker").append(regionTag(o[i].name));
-		}
-	}
-}
-function regionPicker(parent) {
-	$("div#regionPicker").appendTo($(parent));
-	$("div#regionPicker").show();
-}
+	appendRegionTagsFromOntology(Ontology);
 
-function changeRegionName(reg,name) {
-	var i;
-	var color=hashColor(name);
-
-	// Update path
-	reg.name=name;
-	reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
-	paper.view.draw();
-	
-	// Update region tag
-	$(".region-tag#"+reg.uid+">.region-name").text(name);
-	$(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
-}
-
-appendRegionTagsFromOntology(Ontology);
-
-$(".region-tag").click(function(event){
-	var newName=$(this).find(".region-name").text();
-	var	uid=$(this).parent().parent().attr('id');
-	var reg=findRegionByUID(uid);
-	changeRegionName(reg,newName);
-	$("div#regionPicker").appendTo($("body")).hide();
-	event.stopPropagation();
-});
-$(".region-tag").on("touchstart",function(e){
-	var newName=$(this).find(".region-name").text();
-	var	uid=$(this).parent().parent().attr('id');
-	var reg=findRegionByUID(uid);
-	handleTap(e,function() {
+	$(".region-tag").click(function(event){
+		var newName=$(this).find(".region-name").text();
+		var	uid=$(this).parent().parent().attr('id');
+		var reg=findRegionByUID(uid);
 		changeRegionName(reg,newName);
 		$("div#regionPicker").appendTo($("body")).hide();
-		e.stopPropagation();
-	})
-});
+		event.stopPropagation();
+	});
+	$(".region-tag").on("touchstart",function(e){
+		var newName=$(this).find(".region-name").text();
+		var	uid=$(this).parent().parent().attr('id');
+		var reg=findRegionByUID(uid);
+		handleTap(e,function() {
+			changeRegionName(reg,newName);
+			$("div#regionPicker").appendTo($("body")).hide();
+			e.stopPropagation();
+		})
+	});
 
-selectTool();
+	selectTool();
+}
+
+initMicrodraw();
 
 </script>
 </body>
