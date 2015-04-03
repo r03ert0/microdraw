@@ -182,7 +182,7 @@ function newRegion(arg) {
 		RT: it seems that a click event is also fired on touch devices,
 		making this one redundant
 	*/
-	//el.on("touchstart",handleRegionTap);
+	el.on("touchstart",handleRegionTap);
 
 	// push the new region to the Regions array
 	Regions.push(reg);
