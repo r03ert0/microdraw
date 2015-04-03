@@ -376,6 +376,7 @@ function singlePressOnRegion(event) {
 	console.log("this",this,event);
 	
 	event.stopPropagation();
+	event.preventDefault();
 
 	var	el=$(this);
 	var	uid;
@@ -399,35 +400,12 @@ function singlePressOnRegion(event) {
 			console.log("region undefined");
 	}
 }
-
-/*
-
-	$(".region-tag").click(function(event){
-		var newName=$(this).find(".region-name").text();
-		var	uid=$(this).parent().parent().attr('id');
-		var reg=findRegionByUID(uid);
-		changeRegionName(reg,newName);
-		$("div#regionPicker").appendTo($("body")).hide();
-		event.stopPropagation();
-	});
-	$(".region-tag").on("touchstart",function(e){
-		var newName=$(this).find(".region-name").text();
-		var	uid=$(this).parent().parent().attr('id');
-		var reg=findRegionByUID(uid);
-		handleTap(e,function() {
-			changeRegionName(reg,newName);
-			$("div#regionPicker").appendTo($("body")).hide();
-			e.stopPropagation();
-		})
-	});
-
-
-*/
-
 function doublePressOnRegion(event) {
 	if(debug) console.log("> doublePressOnRegion");
 	
 	event.stopPropagation();
+	event.preventDefault();
+
 	regionPicker(this);
 }
 var tap=false
