@@ -141,10 +141,14 @@ var viewer;			// open seadragon viewer
 var navEnabled=true;// flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
 var magicV=1000;	// resolution of the annotation canvas
 
+var	debug=false;
+
 /*
 	Region handling functions
 */
 function newRegion(arg) {
+	if(debug) console.log("> newRegion");
+	
 	var reg={};
 	
 	reg.uid=regionUniqueID();
@@ -163,7 +167,7 @@ function newRegion(arg) {
 		reg.path.selected=false;
 	}
 	
-	// display region information
+	// append region tag to regionList
 	var el=$(regionTag(reg.name,reg.uid));
 	$("#regionList").append(el);
 	
@@ -174,14 +178,21 @@ function newRegion(arg) {
 	el.dblclick(doublePressOnRegion);
 	
 	// handle single and double tap on touch devices
-	el.on("touchstart",handleRegionTap);
+	/*
+		RT: it seems that a click event is also fired on touch devices,
+		making this one redundant
+	*/
+	//el.on("touchstart",handleRegionTap);
 
 	// push the new region to the Regions array
 	Regions.push(reg);
 	
+	if(debug) console.log("< newRegion");
 	return reg;
 }
 function removeRegion(reg) {
+	if(debug) console.log("> removeRegion");
+	
 	// remove from Regions array
 	Regions.splice(Regions.indexOf(reg),1);
 	// remove from paths
@@ -191,6 +202,8 @@ function removeRegion(reg) {
 	$(tag).remove();
 }
 function selectRegion(reg) {
+	if(debug) console.log("> selectRegion");
+	
 	var	i;
 
 	// Select path
@@ -214,8 +227,12 @@ function selectRegion(reg) {
 
 	var	tag=$("#regionList > .region-tag#"+reg.uid);
 	$(tag).css("background-color","rgba(255,255,255,0.5)");
+	
+	if(debug) console.log("< selectRegion");
 }
 function findRegionByUID(uid) {
+	if(debug) console.log("> findRegionByUID");
+	
 	var	i;
 	for(i=0;i<Regions.length;i++) {
 		if(Regions[i].uid==uid) {
@@ -227,6 +244,8 @@ function findRegionByUID(uid) {
 }
 var counter=1;
 function regionUniqueID() {
+	if(debug) console.log("> regionUniqueID");
+	
 	var i;
 	var	found=false;
 	while(found==false) {
@@ -242,6 +261,8 @@ function regionUniqueID() {
 	return counter;
 }
 function regionHashColor(name) {
+	if(debug) console.log("> regionHashColor");
+	
 	var color={};
 	var hash=name.split("").reduce(function(a,b){
 		a=((a<<5)-a)+b.charCodeAt(0);return a&a
@@ -252,6 +273,8 @@ function regionHashColor(name) {
 	return color;
 }
 function regionTag(name,uid) {
+	if(debug) console.log("> regionTag");
+	
 	var color=regionHashColor(name);
 	var	str;
 	if(uid)
@@ -275,22 +298,36 @@ function regionTag(name,uid) {
 	return str;
 }
 function appendRegionTagsFromOntology(o) {
+	if(debug) console.log("> appendRegionTagsFromOntology");
+	
 	for(var i=0;i<o.length;i++) {
 		if(o[i].parts) {
 			$("#regionPicker").append("<div>"+o[i].name+"</div>");
 			appendRegionTagsFromOntology(o[i].parts);
 		}
 		else {
-			$("#regionPicker").append(regionTag(o[i].name));
+			var tag=regionTag(o[i].name);
+			var	el=$(tag).addClass("ontology");
+			$("#regionPicker").append(el);
+
+			// handle single click on computers
+			el.click(singlePressOnRegion);
+	
+			// handle double click on computers
+			el.dblclick(doublePressOnRegion);
 		}
 	}
 }
 function regionPicker(parent) {
+	if(debug) console.log("> regionPicker");
+	
 	$("div#regionPicker").appendTo($(parent));
 	$("div#regionPicker").show();
 }
 
 function changeRegionName(reg,name) {
+	if(debug) console.log("> changeRegionName");
+	
 	var i;
 	var color=regionHashColor(name);
 
@@ -308,36 +345,88 @@ function changeRegionName(reg,name) {
 	Interaction: mouse and tap
 */
 function clickHandler(event){
+	if(debug) console.log("> clickHandler");
 	event.stopHandlers=!navEnabled;
 }
 function pressHandler(event){
+	if(debug) console.log("> pressHandler");
 	if(!navEnabled) {
 		event.stopHandlers = true;
-		mouseDown(event.originalEvent.layerX,event.originalEvent.layerY);//event.layerX,event.layerY);
+		mouseDown(event.originalEvent.layerX,event.originalEvent.layerY);
 	}
 }
 function dragHandler(event){
+	if(debug) console.log("> dragHandler");
 	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
 	var z=magicV/viewer.source.width/zoom
-	//console.log("drag",event,event.position.x/z,event.position.y/z,event.originalEvent.layerX,event.originalEvent.layerY);
 	if(!navEnabled) {
 		event.stopHandlers = true;
-		mouseDrag(event.originalEvent.layerX,event.originalEvent.layerY);//event.layerX,event.layerY);
+		mouseDrag(event.originalEvent.layerX,event.originalEvent.layerY);
 	}
 }
 function dragEndHandler(event){
+	if(debug) console.log("> dragEndHandler");
 	if(!navEnabled) {
 		event.stopHandlers = true;
 		mouseUp();
 	}
 }
 function singlePressOnRegion(event) {
+	if(debug) console.log("> singlePressOnRegion");
+	console.log("this",this,event);
+	
 	event.stopPropagation();
-	var uid=$(this).attr('id');
-	var reg=findRegionByUID(uid);
-	selectRegion(reg);
+
+	var	el=$(this);
+	var	uid;
+	var	reg;
+	
+	if(el.hasClass("ontology")) {
+		var newName=el.find(".region-name").text();
+		uid=$(this).parent().parent().attr('id');
+		console.log("uid",uid);
+		reg=findRegionByUID(uid);
+		changeRegionName(reg,newName);
+		$("div#regionPicker").appendTo($("body")).hide();
+	}
+	else {
+		uid=$(this).attr('id');
+		console.log("uid",uid);
+		reg=findRegionByUID(uid);
+		if(reg)
+			selectRegion(reg);
+		else
+			console.log("region undefined");
+	}
 }
+
+/*
+
+	$(".region-tag").click(function(event){
+		var newName=$(this).find(".region-name").text();
+		var	uid=$(this).parent().parent().attr('id');
+		var reg=findRegionByUID(uid);
+		changeRegionName(reg,newName);
+		$("div#regionPicker").appendTo($("body")).hide();
+		event.stopPropagation();
+	});
+	$(".region-tag").on("touchstart",function(e){
+		var newName=$(this).find(".region-name").text();
+		var	uid=$(this).parent().parent().attr('id');
+		var reg=findRegionByUID(uid);
+		handleTap(e,function() {
+			changeRegionName(reg,newName);
+			$("div#regionPicker").appendTo($("body")).hide();
+			e.stopPropagation();
+		})
+	});
+
+
+*/
+
 function doublePressOnRegion(event) {
+	if(debug) console.log("> doublePressOnRegion");
+	
 	event.stopPropagation();
 	regionPicker(this);
 }
@@ -346,20 +435,30 @@ function handleRegionTap(event) {
 /*
 	Handles single and double tap in touch devices
 */
-	//console.log("handle region tap");
+	if(debug) console.log("> handleRegionTap");
+	var	caller=this;
+	console.log("this:",caller);
+	
 	if(!tap){ //if tap is not set, set up single tap
 		tap=setTimeout(function(){
 			tap=null
 		},300);
-		singlePressOnRegion(event);
+		console.log("calling singlePressOnRegion");
+		
+		// call singlePressOnRegion(event) using 'this' as context
+		singlePressOnRegion.call(this,event);
 	} else {
 		clearTimeout(tap);
 		tap=null;
-		doublePressOnRegion(event);
+		
+		// call doublePressOnRegion(event) using 'this' as context
+		doublePressOnRegion.call(this,event);
 	}
-	e.preventDefault()
+	if(debug) console.log("< handleRegionTap");
 }
 function mouseDown(x,y) {
+	if(debug) console.log("> mouseDown");
+	
 	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
 	var z=magicV/viewer.source.width/zoom
 	var point=new paper.Point(x*z,y*z);
@@ -477,6 +576,7 @@ function mouseDown(x,y) {
 	paper.view.draw();
 }
 function mouseDrag(x,y) {
+	if(debug) console.log("> mouseDrag");
 	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
 	var z=magicV/viewer.source.width/zoom;
 	var point=new paper.Point(x*z,y*z);
@@ -491,6 +591,7 @@ function mouseDrag(x,y) {
 	paper.view.draw();
 }
 function mouseUp() {
+	if(debug) console.log("> mouseUp");
 	if(newRegionFlag==true){
 		region.path.simplify(10);
 		region.path.closed=true;
@@ -503,6 +604,8 @@ function mouseUp() {
 	Tool selection
 */
 function toolSelection(event) {
+	if(debug) console.log("> toolSelection");
+	
 	var prevTool=selectedTool;
 	selectedTool=$(this).attr("id");
 	selectTool();
@@ -539,6 +642,8 @@ function toolSelection(event) {
 	}
 }
 function selectTool() {
+	if(debug) console.log("> selectTool");
+	
 	$("button").removeClass("selected");
 	$("button#"+selectedTool).addClass("selected");
 }
@@ -550,6 +655,8 @@ function save() {
 /*
 	Save SVG overlay to localStorage
 */
+	if(debug) console.log("> save");
+	
 	var i;
 	var obj;
 	var el;
@@ -570,6 +677,8 @@ function load() {
 /*
 	Load SVG overlay from localStorage
 */
+	if(debug) console.log("> load");
+	
 	var	i,obj,reg;
 	if(localStorage.Microdraw) {
 		console.log("Loading data from localStorage");
@@ -590,13 +699,38 @@ function load() {
 /*
 	Initialisation
 */
+function initAnnotationOverlay() {
+	if(debug) console.log("> initAnnotationOverlay");
+	
+	// set up vectorial annotation overlay
+	var zoom=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+	var aspect=viewer.source.height/viewer.source.width;
+	var width=magicV;
+	var height=magicV*aspect;
+	$("body").append("<canvas class='overlay'></canvas>");
+	$("canvas.overlay").attr("width",width);
+	$("canvas.overlay").attr("height",height);
+	console.log("setup canvas");
+	var	canvas=$("canvas.overlay")[0];
+	canvas.className="overlay";
+	paper.setup(canvas);
+	viewer.addOverlay({
+		element:canvas,
+		location: new OpenSeadragon.Rect(0,0,1,aspect)
+	});
+	
+	// load SVG overlay from localStorage
+	load();
+}
+
 function initMicrodraw() {
+	if(debug) console.log("> initMicrodraw");
+	
 	$("button").click(toolSelection);
 
 	viewer = OpenSeadragon({
 		id: "openseadragon1",
 		prefixUrl: "lib/openseadragon/images/",
-		//mouseNavEnabled:false,
 		tileSources: "final/final.dzi",
 		showNavigator: true,
 		navigatorId:"myNavigator",
@@ -616,25 +750,7 @@ function initMicrodraw() {
 		xOffset:5,
 		yOffset:5
 	});
-	viewer.addHandler('open',function() {
-		var zoom=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-		var aspect=viewer.source.height/viewer.source.width;
-		var width=magicV;
-		var height=magicV*aspect;
-		$("body").append("<canvas class='overlay'></canvas>");
-		$("canvas.overlay").attr("width",width);
-		$("canvas.overlay").attr("height",height);
-		console.log("setup canvas");
-		var	canvas=$("canvas.overlay")[0];
-		canvas.className="overlay";
-		paper.setup(canvas);
-		viewer.addOverlay({
-			element:canvas,
-			location: new OpenSeadragon.Rect(0,0,1,aspect)
-		});
-		load(); // load SVG overlay from localStorage
-
-	});
+	viewer.addHandler('open',initAnnotationOverlay);
 
 	viewer.addViewerInputHook({hooks: [
 		{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
@@ -644,26 +760,6 @@ function initMicrodraw() {
 	]});
 
 	appendRegionTagsFromOntology(Ontology);
-
-	$(".region-tag").click(function(event){
-		var newName=$(this).find(".region-name").text();
-		var	uid=$(this).parent().parent().attr('id');
-		var reg=findRegionByUID(uid);
-		changeRegionName(reg,newName);
-		$("div#regionPicker").appendTo($("body")).hide();
-		event.stopPropagation();
-	});
-	$(".region-tag").on("touchstart",function(e){
-		var newName=$(this).find(".region-name").text();
-		var	uid=$(this).parent().parent().attr('id');
-		var reg=findRegionByUID(uid);
-		handleTap(e,function() {
-			changeRegionName(reg,newName);
-			$("div#regionPicker").appendTo($("body")).hide();
-			e.stopPropagation();
-		})
-	});
-
 	selectTool();
 }
 
