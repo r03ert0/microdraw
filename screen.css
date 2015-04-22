@@ -158,6 +158,7 @@ button
 #regionPicker 	/*pop up ontology list pointing to your selected region in the list of untitled regions*/
 {
 	width: 200px;
+	height: 150px;
 	position: absolute;
 	top: 50%;
 	left: -230px;
@@ -165,6 +166,7 @@ button
 	border: thin solid black;
 	background-color: white;
 	padding: 5px;
+	overflow-y: scroll;
 }
 
 #decoration 
