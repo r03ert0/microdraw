@@ -639,3 +639,18 @@ function initMicrodraw() {
 
 initMicrodraw();
 
+var infoVisible = true;
+$(document).bind('keypress', function(e) {
+    switch( e.which ) {
+        case 32:
+        {
+            if (infoVisible)
+                $('#info').css('display', 'none');
+            else
+                $('#info').css('display', 'block');
+            infoVisible = !infoVisible;
+            break;
+        }
+    }
+});
+
