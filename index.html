@@ -1,55 +1,64 @@
 <html>
 <head>
+<title>Microdraw</title>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,user-scalable=no" />
 <style>
-html body {
-	font-family: sans-serif;
-	font-size:1.1rem;
+html,body {
 	margin:0px;
 }
-.selected {
-	background-color: orange
+* {
+	font-family: sans-serif;
+	font-size:1rem;
+	color:#333;
 }
-button{
-	width:90px;
-	margin:2px 2px;
-	padding:3px 3px;
-	border:1px solid grey;
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-	border-radius: 10px;
-	font-size:1.1rem;
-	background-color:white;
-}
-#regionList {
+#info {
+	position:absolute;
 	width:200px;
-	min-height:30px;
+	height:100%;
+	top:0;
+	left:0;
 	background-color:rgba(200,200,200,0.5);
-	border:thin solid lightGrey;
+	z-index:10;
+}
+#login {
+	height:1.5em;
+	background-color:rgba(250,250,250,0.5);
+}
+
+button{
+	width:95px;
+	margin:1px;
+	padding:2px;
+	border:1px solid #c2c2c2;
+	background-color:#eee;
+	-moz-border-radius:3px;
+	-webkit-border-radius:3px;
+	border-radius:3px;
+}
+.selected {
+	background-color:#FFC040;
+}
+
+#regionList {
 	position:relative;
+	min-height:30px;
+	background-color:rgba(250,250,250,0.5);
+	border:0;
 }
 #regionPicker {
+	position:absolute;
 	width:200px;
-	position:absolute;
-	top:50%;
-	left:-230px;
-	margin-top:-40px;
-	border:thin solid black;
-	background-color:white;
-	padding:5px;
-}
-#decoration {
-	position:absolute;
-	left:210px;
+	height:100%;
 	top:0;
-	margin-top:20px;
+	left:200px;
+	background-color:rgba(200,200,200,0.5);
+	padding:5px;
+	display:none;
+	overflow-y:scroll;
 }
 .region-tag {
 	position: relative;
-}
-.region-name {
-	font-family: sans-serif;
-	font-size:1.1rem;
 }
 .region-color {
 	width:1.5rem;
@@ -58,61 +67,101 @@ button{
 	display:inline-block;
 	vertical-align:middle;
 }
+.region-tag.selected {
+	background-color:rgba(255,255,255,0.75);
+}
+.region-tag.deselected {
+	background-color:transparent;
+}
+.table {
+	display:table;
+	table-layout:fixed;
+}
+.row {
+	display:table-row;
+}	
+.cell {
+	display:table-cell;
+	width:100%;
+}
+.overlay {
+	border:thin solid red;
+	position:absolute;
+	top:0;
+	left:0;
+	pointer-events:none;
+}
 </style>
 </head>
 
 <body>
-<div id="info" style="width:200px;height:100%;background-color:rgba(200,200,200,0.5);position:absolute;top:0;right:0;z-index:100">
+
+<div id="info" class="table">
+	<div class="row" style="height:10px">
+		<div class="cell" id="login"></div>
+	</div>
 	
-	<div style="width:200px;height:150px"><div id="myNavigator"  style="width:200px;height:150px"></div></div>
-	<br />
-	<button id="zoom">zoom</button>
-	<button id="home">home</button>
-	<button id="zoom-in">+</button>
-	<button id="zoom-out">-</button>
-	<button id="select">select</button>
-	<button id="draw">draw</button>
-	<button id="delete">delete</button>
-	<button id="addpoint">+point</button>
-	<button id="delpoint">-point</button>
-	<button id="addregion">add</button>
-	<button id="delregion">subtract</button>
-	<button id="splitregion">split</button>
-	<button id="save">save</button>
-	<br />
-	<br />
-	Region
-	<div id="regionList"></div>
+	<div class="row" style="height:10px">
+		<div class="cell" style="height:150px">
+			<div id="myNavigator"  style="width:200px;height:150px"></div>
+		</div>
+	</div>
+	
+	<div class="row" style="height:10px">
+		<div class="cell" style="text-align:center">
+			<button  class="svg" id="zoom" src="navigate.svg">zoom</button>
+			<button id="home" src="home.svg">home</button>
+			<button id="zoom-in" src="plus.svg">+</button>
+			<button id="zoom-out" src="minus.svg">-</button>
+			<button id="select">select</button>
+			<button id="draw">draw</button>
+			<button id="delete">delete</button>
+			<button id="addpoint">+point</button>
+			<button id="delpoint">-point</button>
+			<button id="addregion">add</button>
+			<button id="delregion">subtract</button>
+			<button id="splitregion">split</button>
+			<button id="save">save</button>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="cell">
+			<br />
+			Regions
+			<div id="regionList" style="height:auto;margin-bottom:0;overflow-y:scroll"></div>
+		</div>
+	</div>
 </div>
 
 <div id="regionPicker">
-	<svg id="decoration">
-		<polygon style="fill:white;stroke:none" points="-5,40 0,40 20,20 0,0 -5,0" />
-		<polyline style="fill:none;stroke:black" points="0,40 20,20 0,0" />
-	</svg>
 </div>
 
 <div id="openseadragon1" style="width:100%"></div>
+
+<div style="position:absolute;bottom:5px;right:5px">
+	<img src="naat.svg" style="width:3em" />
+</div>
 
 <script src="lib/paper-full.min.js"></script>
 <script src="lib/openseadragon/openseadragon.min.js"></script>
 <script src="lib/openseadragon-viewerinputhook.min.js"></script>
 <script src="lib/OpenSeadragonScalebar/openseadragon-scalebar.js"></script>
 <script src="lib/jquery-1.11.0.min.js"></script>
-
+<script src="lib/mylogin/login.js"></script>
 <script>
 /*
 	Example Ontology
 */
-var Ontology=[{name:"Telencephalon",parts:[
-					{name:"Neocortex"},
+var Ontology=[{name:"Telencephalon",url:"http://neurolex.org/wiki/Category:Telencephalon",parts:[
+					{name:"Neocortex",url:"http://neurolex.org/wiki/Category:Neocortex"},
 					{name:"Rhinencephalon"},
-					{name:"Amygdala"},
-					{name:"Hippocampus"},
-					{name:"Basal Ganglia"}
+					{name:"Amygdala",url:"http://neurolex.org/wiki/Category:Amygdala"},
+					{name:"Hippocampus",url:"http://neurolex.org/wiki/Category:Hippocampus"},
+					{name:"Basal Ganglia",url:"http://neurolex.org/wiki/Category:Basal_ganglia"}
 				 ]},
-				 {name:"Diencephalon",parts:[
-					{name:"Thalamus"},
+				 {name:"Diencephalon",url:"http://neurolex.org/wiki/Category:Diencephalon",parts:[
+					{name:"Thalamus",url:"http://neurolex.org/wiki/Category:Thalamus"},
 					{name:"Hypothalamus"},
 					{name:"Epithalamus"},
 					{name:"Subthalamus"},
@@ -132,6 +181,10 @@ var Ontology=[{name:"Telencephalon",parts:[
 </script>
 
 <script>
+var	debug=false;
+//var dbroot="http://siphonophore.org/interact/php/interact.php";
+var dbroot="http://localhost/interact/php/interact.php";
+
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
 var region=null;	// currently selected region (one element of Regions[])
 var handle;			// currently selected control point or handle (if any)
@@ -140,8 +193,9 @@ var selectedTool="zoom";
 var viewer;			// open seadragon viewer
 var navEnabled=true;// flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
 var magicV=1000;	// resolution of the annotation canvas
-
-var	debug=false;
+var myOrigin={};	// Origin identification for DB storage
+var	params;			// URL parameters
+var	myIP;			// user's IP
 
 /*
 	Region handling functions
@@ -163,6 +217,7 @@ function newRegion(arg) {
 		reg.path = arg.path;
 		reg.path.strokeWidth=1;
 		reg.path.strokeColor='black';
+		reg.path.strokeScaling=false;
 		reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
 		reg.path.selected=false;
 	}
@@ -222,11 +277,13 @@ function selectRegion(reg) {
 	
 	// Select region name in list
 	$("#regionList > .region-tag").each(function(i){
-		$(this).css({backgroundColor:"transparent"});
+		$(this).addClass("deselected");
+		$(this).removeClass("selected");
 	});
 
 	var	tag=$("#regionList > .region-tag#"+reg.uid);
-	$(tag).css("background-color","rgba(255,255,255,0.5)");
+	$(tag).removeClass("deselected");
+	$(tag).addClass("selected");
 	
 	if(debug) console.log("< selectRegion");
 }
@@ -260,6 +317,7 @@ function regionUniqueID() {
 	}
 	return counter;
 }
+
 function regionHashColor(name) {
 	if(debug) console.log("> regionHashColor");
 	
@@ -267,6 +325,11 @@ function regionHashColor(name) {
 	var hash=name.split("").reduce(function(a,b){
 		a=((a<<5)-a)+b.charCodeAt(0);return a&a
 	},0);
+
+	// add some randomness
+    hash=Math.sin(hash++)*10000;
+    hash=0xffffff*(hash-Math.floor(hash));
+	
 	color.red=hash&0xff;
 	color.green=(hash&0xff00)>>8;
 	color.blue=(hash&0xff0000)>>16;
@@ -323,7 +386,7 @@ function appendRegionTagsFromOntology(o) {
 function regionPicker(parent) {
 	if(debug) console.log("> regionPicker");
 	
-	$("div#regionPicker").appendTo($(parent));
+	$("div#regionPicker").appendTo("body");
 	$("div#regionPicker").show();
 }
 
@@ -375,7 +438,6 @@ function dragEndHandler(event){
 }
 function singlePressOnRegion(event) {
 	if(debug) console.log("> singlePressOnRegion");
-	console.log("this",this,event);
 	
 	event.stopPropagation();
 	event.preventDefault();
@@ -385,16 +447,16 @@ function singlePressOnRegion(event) {
 	var	reg;
 	
 	if(el.hasClass("ontology")) {
+		// Click on regionPicker (ontology selection list)
 		var newName=el.find(".region-name").text();
-		uid=$(this).parent().parent().attr('id');
-		console.log("uid",uid);
+		uid=$(".region-tag.selected").attr('id');
 		reg=findRegionByUID(uid);
 		changeRegionName(reg,newName);
 		$("div#regionPicker").appendTo($("body")).hide();
 	}
 	else {
+		// Click on regionList (list or annotated regions)
 		uid=$(this).attr('id');
-		console.log("uid",uid);
 		reg=findRegionByUID(uid);
 		if(reg)
 			selectRegion(reg);
@@ -417,13 +479,11 @@ function handleRegionTap(event) {
 */
 	if(debug) console.log("> handleRegionTap");
 	var	caller=this;
-	console.log("this:",caller);
 	
 	if(!tap){ //if tap is not set, set up single tap
 		tap=setTimeout(function(){
 			tap=null
 		},300);
-		console.log("calling singlePressOnRegion");
 		
 		// call singlePressOnRegion(event) using 'this' as context
 		singlePressOnRegion.call(this,event);
@@ -439,10 +499,8 @@ function handleRegionTap(event) {
 function mouseDown(x,y) {
 	if(debug) console.log("> mouseDown");
 	
-	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-	var z=magicV/viewer.source.width/zoom
-	var point=new paper.Point(x*z,y*z);
 	var prevRegion=null;
+	var point=paper.view.viewToProject(new paper.Point(x,y));
 	
 	handle=null;
 
@@ -454,7 +512,7 @@ function mouseDown(x,y) {
 		case "delregion":
 		case "splitregion":
 			var hitResult=paper.project.hitTest(point, {
-					tolerance:4,
+					tolerance:2,
 					stroke: true,
 					segments:true,
 					fill: true,
@@ -557,9 +615,7 @@ function mouseDown(x,y) {
 }
 function mouseDrag(x,y) {
 	if(debug) console.log("> mouseDrag");
-	var zoom =viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-	var z=magicV/viewer.source.width/zoom;
-	var point=new paper.Point(x*z,y*z);
+	var point=paper.view.viewToProject(new paper.Point(x,y));
 	if (handle) {
 		handle.x+=point.x-handle.point.x;
 		handle.y+=point.y-handle.point.y;
@@ -613,11 +669,16 @@ function toolSelection(event) {
 			}
 			// go back to previous tool
 			setTimeout(function() {
-			selectedTool=prevTool;
-			selectTool()},500);
+				selectedTool=prevTool;
+				selectTool()
+			},500);
 			break;
 		case "save":
-			save();
+			interactSave();
+			setTimeout(function() {
+				selectedTool=prevTool;
+				selectTool()
+			},500);
 			break;
 	}
 }
@@ -626,15 +687,106 @@ function selectTool() {
 	
 	$("button").removeClass("selected");
 	$("button#"+selectedTool).addClass("selected");
+	//$("svg").removeClass("selected");
+	//$("svg#"+selectedTool).addClass("selected");
 }
 
 /*
 	Annotation storage
 */
-function save() {
+/* Interact push/pull */
+function interactSave() {
 /*
-	Save SVG overlay to localStorage
+	Save SVG overlay to Interact DB
 */
+	if(debug) console.log("> save");
+	
+	var i;
+	var	key;
+	var value;
+	var el;
+	var origin;
+
+	// key
+	key="regionPaths";
+	
+	// configure value to be saved
+	value={};
+	value.Regions=[];
+	for(i=0;i<Regions.length;i++)
+	{
+		el={};
+		el.path=JSON.parse(Regions[i].path.exportJSON());
+		el.name=Regions[i].name;
+		value.Regions.push(el);
+	}
+	
+	$.ajax({
+		url:dbroot,
+		type:"POST",
+		data:{
+			"action":"save",
+			"origin":JSON.stringify(myOrigin),
+			"key":key,
+			"value":JSON.stringify(value)
+		},
+		success: function(data) {
+			console.log("Successfully saved regions:",Regions.length);
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log("ERROR: " + textStatus + " " + errorThrown);
+		}
+	});
+}
+function interactLoad() {
+/*
+	Load SVG overlay from Interact DB
+*/
+	if(debug) console.log("> load");
+	
+	var	key="regionPaths";
+	
+	$.get(dbroot,{
+		"action":"load_last",
+		"origin":JSON.stringify(myOrigin),
+		"key":key
+	}).success(function(data) {
+		var	i,obj,reg;
+		$("#regionList").html("");
+		obj=JSON.parse(data);
+		if(obj) {
+			obj=JSON.parse(obj.myValue);
+			for(i=0;i<obj.Regions.length;i++) {
+				var reg={};
+				var	json;
+				reg.name=obj.Regions[i].name;
+				json=obj.Regions[i].path;
+				reg.path=new paper.Path();
+				reg.path.importJSON(json);
+				newRegion({name:reg.name,path:reg.path});
+			}
+			paper.view.draw();
+		}
+	}).error(function(jqXHR, textStatus, errorThrown) {
+        console.log("ERROR: " + textStatus + " " + errorThrown);
+    });
+}
+function interactIP() {
+/*
+	Get my IP
+*/
+	$("#regionList").html("<br />Connecting to database...");
+	return $.get(dbroot,{
+		"action":"remote_address"
+	}).success(function(data) {
+		myIP=data;
+	}).error(function(jqXHR, textStatus, errorThrown) {
+		$("#regionList").html("<br />Error: Unable to connect to database.");
+        console.log("Error: " + textStatus + " " + errorThrown);
+    });
+}
+
+function save() {
 	if(debug) console.log("> save");
 	
 	var i;
@@ -654,9 +806,6 @@ function save() {
 	console.log("saved regions:",Regions.length);
 }
 function load() {
-/*
-	Load SVG overlay from localStorage
-*/
 	if(debug) console.log("> load");
 	
 	var	i,obj,reg;
@@ -679,14 +828,16 @@ function load() {
 /*
 	Initialisation
 */
+var initialZoom;
 function initAnnotationOverlay() {
 	if(debug) console.log("> initAnnotationOverlay");
 	
 	// set up vectorial annotation overlay
-	var zoom=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-	var aspect=viewer.source.height/viewer.source.width;
-	var width=magicV;
-	var height=magicV*aspect;
+	initialZoom=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+	var zoom=initialZoom;
+	//var aspect=viewer.source.height/viewer.source.width;
+	var width=$("body").width();//magicV;//
+	var height=$("body").height();//magicV*aspect;//
 	$("body").append("<canvas class='overlay'></canvas>");
 	$("canvas.overlay").attr("width",width);
 	$("canvas.overlay").attr("height",height);
@@ -694,24 +845,84 @@ function initAnnotationOverlay() {
 	var	canvas=$("canvas.overlay")[0];
 	canvas.className="overlay";
 	paper.setup(canvas);
-	viewer.addOverlay({
-		element:canvas,
-		location: new OpenSeadragon.Rect(0,0,1,aspect)
-	});
+	paper.settings.handleSize=10;
 	
-	// load SVG overlay from localStorage
-	load();
+	viewer.addHandler('animation', function(event){
+		transform()
+	});
+	transform();
 }
 
+function transform() {
+	var z=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+	var sw=viewer.source.width;
+	var bounds=viewer.viewport.getBounds(true);
+    var	x=magicV*bounds.x;
+    var	y=magicV*bounds.y;
+    var	w=magicV*bounds.width;
+    var	h=magicV*bounds.height;
+    paper.view.setCenter(x+w/2,y+h/2);
+    paper.view.zoom=(sw*z)/magicV;
+}
+function deparam() {
+	var search = location.search.substring(1);
+	return search?JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g,'":"') + '"}',
+					 function(key, value) { return key===""?value:decodeURIComponent(value) }):{}	
+}
+function loginChanged() {
+	console.log("Got login update");
+	myOrigin.user=MyLoginWidget.username;
+}
+function makeSVGInline() {
+	var def=$.Deferred();
+	$('img.svg').each(function(){
+		var $img = $(this);
+		var imgID = $img.attr('id');
+		var imgClass = $img.attr('class');
+		var imgURL = $img.attr('src');
+
+		$.get(imgURL, function(data) {
+			// Get the SVG tag, ignore the rest
+			var $svg = $(data).find('svg');
+
+			// Add replaced image's ID to the new SVG
+			if(typeof imgID !== 'undefined') {
+				$svg = $svg.attr('id', imgID);
+			}
+			// Add replaced image's classes to the new SVG
+			if(typeof imgClass !== 'undefined') {
+				$svg = $svg.attr('class', imgClass+' replaced-svg');
+			}
+
+			// Remove any invalid XML tags as per http://validator.w3.org
+			$svg = $svg.removeAttr('xmlns:a');
+
+			// Replace image with new SVG
+			$img.replaceWith($svg);
+			
+			def.resolve();
+
+		}, 'xml');
+
+	});
+	
+	return def.promise();
+}
 function initMicrodraw() {
 	if(debug) console.log("> initMicrodraw");
+	
+	// Get URL parameters, in particular, image source
+	params=deparam();
+	
+	// Subscribe to login changes
+	MyLoginWidget.subscribe(loginChanged);
 	
 	$("button").click(toolSelection);
 
 	viewer = OpenSeadragon({
 		id: "openseadragon1",
 		prefixUrl: "lib/openseadragon/images/",
-		tileSources: "final/final.dzi",
+		tileSources: params.source,
 		showNavigator: true,
 		navigatorId:"myNavigator",
 		zoomInButton:"zoom-in",
@@ -721,12 +932,12 @@ function initMicrodraw() {
 	viewer.scalebar({
 		type: OpenSeadragon.ScalebarType.MICROSCOPE,
 		minWidth:'150px',
-		pixelsPerMeter:500000,
+		pixelsPerMeter:1000000,
 		color:'black',
 		fontColor:'black',
 		backgroundColor:"rgba(255,255,255,0.5)",
 		barThickness:4,
-		location: OpenSeadragon.ScalebarLocation.TOP_LEFT,
+		location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
 		xOffset:5,
 		yOffset:5
 	});
@@ -738,11 +949,36 @@ function initMicrodraw() {
 		{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
 		{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 	]});
+	
+	$("#regionList").height($(window).height()-$("#regionList").offset().top);
+	$(window).resize(function() {
+		$("#regionList").height($(window).height()-$("#regionList").offset().top);
+	});
 
 	appendRegionTagsFromOntology(Ontology);
-	selectTool();
+	
+	makeSVGInline().then(selectTool());
 }
 
+$.when(
+	interactIP(),
+	MyLoginWidget.init()
+).then(function(){
+	myOrigin.appName="microdraw";
+	myOrigin.source=params.source;
+	myOrigin.IP=myIP;
+	myOrigin.user=MyLoginWidget.username;
+	myOrigin.hash=navigator.userAgent.split("").reduce(function(a,b){
+		a=((a<<5)-a)+b.charCodeAt(0);return a&a
+	},0).toString(16);
+
+	// Log microdraw
+	//interactSave(JSON.stringify(myOrigin),"entered",null);
+
+	// load SVG overlay from localStorage
+	interactLoad();
+	//load();
+});
 initMicrodraw();
 
 </script>
