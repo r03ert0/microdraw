@@ -4,12 +4,13 @@
 	<title>MicroDraw</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="stylesheet" href="microdraw.css" type="text/css" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" />
+	<script src="base.js"></script>
 </head>
 <body>
 	<header class="header-container">
 		<div class="header">
-			<img src="microdraw.svg" style="width:6em" />
+			<img src="img/microdraw.svg" style="width:6em" />
 			<h1>MicroDraw</h1>
 		</div>
 	</header>
@@ -33,9 +34,8 @@
 				<p>MicroDraw can be used to annotate any DeepZoom image or image stack available on internet. We are currently hosting DeepZoom versions of several macaque brains from the Allen Institute for Brain Research, and a 1 micron resolution slice of a human brain from the BigBrain project.</p>
 				<p>MicroDraw uses the <a href="http://neurolex.org">Neurolex</a> ontology for cross-species annotation of brain regions and a simple dictionary for annotating histology artefacts.</p>
  				<ul class="links">
-					<li class="download"><a href="http://siphonophore.org/microdraw/microdraw.html?source=bigbrain/bigbrain.dzi">BigBrain human brain slice</a></li>
-					<li class="download"><a href="http://siphonophore.org/microdraw/microdraw.html?source=macaque-e40/macaque-e40.dzi">Allen Institute E40 macaque</a></li>
-					<li class="download"><a href="http://siphonophore.org/microdraw/microdraw.html?source=macaque-e120/macaque-e120.dzi">Allen Institute E120 macaque</a></li>
+					<li class="download"><a href="http://{{localhost}}/microdraw/microdraw.html?source=bigbrain/bigbrain.json">BigBrain human brain slice</a></li>
+					<li class="download"><a href="http://{{localhost}}/microdraw/microdraw.html?source=macaque/macaque.json">Allen Institute macaque slices</a></li>
 				</ul>
 			</section>
 			<section class="column last">
@@ -53,10 +53,20 @@
 		</section>
 
 		<section class="padding-top-30" style="text-align:center">
-			<p>MicroDraw by <img src="naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
+			<p>MicroDraw by <img src="img/naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
 		</section>
 
 	</main>
+	
+	<script src="lib/jquery-1.11.0.min.js"></script>
+	<script>
+	$("a").each(function(x){
+		var href0=$(this).attr('href');
+		href1=href0.replace("{{localhost}}",localhost);
+		$(this).attr('href',href1);
+		console.log(href0+" : "+href1);
+	});
+	</script>
 
 </body>
 </html>

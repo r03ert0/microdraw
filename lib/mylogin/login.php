@@ -11,7 +11,7 @@
 $rootdir = "/microdraw";
 
 include $_SERVER['DOCUMENT_ROOT'].$rootdir."/php/base.php";
-$connection=mysqli_connect($dbhost,$dbuser,$dbpass,"MyUsers") or die("MySQL Error 2: " . mysql_error());
+$connection=mysqli_connect($dbhost,$dbuser,$dbpass,$dblogin) or die("ERROR: Can't connect to MySQL DB: " . mysql_error());
 
 if(isset($_GET["action"]))
 {
@@ -39,7 +39,7 @@ function user_check()
     if($_SESSION['LoggedIn']==1)
         echo '{"response":"Yes", "username":"'.$_SESSION['Username'].'"}';
     else
-	    echo "{response:No}";
+	    echo '{"response":"No"}';
 }
 function user_login()
 {
@@ -47,7 +47,7 @@ function user_login()
     $username = mysqli_real_escape_string($connection,$_GET['username']);
     $password = md5(mysqli_real_escape_string($connection,$_GET['password']));
     
-    $query="SELECT * FROM MyUsers.Users WHERE Username = '".$username."' AND Password = '".$password."'";
+    $query="SELECT * FROM ".$dblogin.".Users WHERE Username = '".$username."' AND Password = '".$password."'";
     $checklogin = mysqli_query($connection,$query);
     if(mysqli_num_rows($checklogin) == 1)
     {
@@ -68,15 +68,15 @@ function user_register()
 	$password = md5(mysqli_real_escape_string($connection,$_GET['password']));
 	$email = mysqli_real_escape_string($connection,$_GET['email']);
 
-	 $checkusername = mysqli_query($connection,"SELECT * FROM MyUsers.Users WHERE Username = '".$username."'");
+	 $checkusername = mysqli_query($connection,"SELECT * FROM ".$dblogin.".Users WHERE Username = '".$username."'");
 	 if(mysqli_num_rows($checkusername) == 1)
 		echo "Exists";
 	 else
 	 {
-		$registerquery = mysqli_query($connection,"INSERT INTO MyUsers.Users (Username, Password, EmailAddress) VALUES('".$username."', '".$password."', '".$email."')");
+		$registerquery = mysqli_query($connection,"INSERT INTO ".$dblogin.".Users (Username, Password, EmailAddress) VALUES('".$username."', '".$password."', '".$email."')");
 		if($registerquery)
 		{
-			$checklogin = mysqli_query($connection,"SELECT * FROM MyUsers.Users WHERE Username = '".$username."' AND Password = '".$password."'");
+			$checklogin = mysqli_query($connection,"SELECT * FROM ".$dblogin.".Users WHERE Username = '".$username."' AND Password = '".$password."'");
 			if(mysqli_num_rows($checklogin) == 1)
 			{
 				$row = mysqli_fetch_array($checklogin);
@@ -97,11 +97,11 @@ function user_remind()
 	$flagFound=0;
 	
 	$email = mysqli_real_escape_string($connection,$_GET['email+name']);
-	$checklogin = mysqli_query($connection,"SELECT * FROM MyUsers.Users WHERE EmailAddress = '".$email."'");
+	$checklogin = mysqli_query($connection,"SELECT * FROM ".$dblogin.".Users WHERE EmailAddress = '".$email."'");
 	if(mysqli_num_rows($checklogin)==0)
 	{
 		$username = mysqli_real_escape_string($connection,$_GET['email+name']);
-		$checklogin = mysqli_query($connection,"SELECT * FROM MyUsers.Users WHERE Username = '".$username."'");
+		$checklogin = mysqli_query($connection,"SELECT * FROM ".$dblogin.".Users WHERE Username = '".$username."'");
 	}
 
 	if(mysqli_num_rows($checklogin)>0)
@@ -126,7 +126,7 @@ function user_remind()
 		$username = mysqli_real_escape_string($connection,$username);
 		$password = md5(mysqli_real_escape_string($connection,$password));
 		$email = mysqli_real_escape_string($connection,$email);
-		$registerquery=mysqli_query($connection,"UPDATE MyUsers.Users SET Password = '".$password."' WHERE Username = '".$username."' AND EmailAddress = '".$email."'");
+		$registerquery=mysqli_query($connection,"UPDATE ".$dblogin.".Users SET Password = '".$password."' WHERE Username = '".$username."' AND EmailAddress = '".$email."'");
 		if($registerquery)
 			echo "Yes";
 		else

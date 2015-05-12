@@ -4,16 +4,15 @@
 	<title>MicroDraw</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="stylesheet" href="microdraw.css" type="text/css" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" />
 	<script src="lib/jquery-1.11.0.min.js"></script>
-	<style>
-	input[placeholder]{text-align:center}
-    </style>
+	<script src="base.js"></script>
+	<style>input[placeholder]{text-align:center}</style>
 </head>
 <body>
 	<header class="header-container">
 		<div class="header">
-			<img src="microdraw.svg" style="width:6em" />
+			<img src="img/microdraw.svg" style="width:6em" />
 			<h1>MicroDraw</h1>
 		</div>
 	</header>
@@ -44,18 +43,18 @@
 
 		<!--
 		<section class="padding-top-30" style="text-align:center">
-			<p>MicroDraw by <img src="naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
+			<p>MicroDraw by <img src="img/naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
 		</section>
 		-->
 	</main>
 	
 	<script>
 	$("#go").click(function(){
-		window.location="http://localhost/microdraw/microdraw.html?source="+$("input").val();
+		window.location=localhost+"/microdraw.html?source="+$("input").val();
 	});
 	$("input").keydown(function (e) {
 		if (e.keyCode == 13) {
-			window.location="http://localhost/microdraw/microdraw.html?source="+$("input").val();
+			window.location=localhost+"/microdraw.html?source="+$("input").val();
 		}
 	});
 	</script>
