@@ -783,6 +783,7 @@ function initMicrodraw() {
 
 	// load tile sources
 	$.get(params.source,function(obj) {
+		params.tileSources=obj.tileSources;
 		viewer = OpenSeadragon({
 			id: "openseadragon1",
 			prefixUrl: "lib/openseadragon/images/",
@@ -808,7 +809,9 @@ function initMicrodraw() {
 			yOffset:5
 		});
 		viewer.addHandler('open',initAnnotationOverlay);
-
+		viewer.addHandler("page", function (data) {
+			console.log(params.tileSources[data.page]);
+		});
 		viewer.addViewerInputHook({hooks: [
 			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
 			{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
