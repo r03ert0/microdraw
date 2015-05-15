@@ -1,53 +1,88 @@
-<html>
-<head>
-<meta name="viewport" content="width=device-width,user-scalable=no" />
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://www.w3.org/2005/10/profile">
+	<title>MicroDraw</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" />
 
-<link rel="stylesheet" type="text/css" href="screen.css">
+	<!-- icons changing size according's to device screen resolution; meta given as above; href="http://siphonophore.org/microdraw/favicons/apple-touch-icon-57x57.png"--> 
+	
+	<link rel="apple-touch-icon" sizes="57x57" href="/favicons/apple-touch-icon-57x57.png" />
+	<link rel="apple-touch-icon" sizes="60x60" href="/favicons/apple-touch-icon-60x60.png" />
+	<link rel="apple-touch-icon" sizes="72x72" href="/favicons/apple-touch-icon-72x72.png" />
+	<link rel="apple-touch-icon" sizes="76x76" href="/favicons/apple-touch-icon-76x76.png" />
+	<link rel="apple-touch-icon" sizes="114x114" href="/favicons/apple-touch-icon-114x114.png" />
+	<link rel="apple-touch-icon" sizes="120x120" href="/favicons/apple-touch-icon-120x120.png" />
+	<link rel="apple-touch-icon" sizes="144x144" href="/favicons/apple-touch-icon-144x144.png" />
+	<link rel="apple-touch-icon" sizes="152x152" href="/favicons/apple-touch-icon-152x152.png" />
+	<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon-180x180.png" />
+	<link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="/favicons/favicon-194x194.png" sizes="194x194" />
+	<link rel="icon" type="image/png" href="/favicons/favicon-96x96.png" sizes="96x96" />
+	<link rel="icon" type="image/png" href="/favicons/android-chrome-192x192.png" sizes="192x192" />
+	<link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16" />
 
+	<link rel="shortcut icon" type="image/x-icon" href="/favicons/favicon.ico" />
+	
+	<link rel="manifest" href="/manifest.json" />
+	<meta name="msapplication-TileColor" content="#ffc40d" />
+	<meta name="msapplication-TileImage" content="/mstile-144x144.png" />
+	<meta name="theme-color" content="#ffffff" />
+
+	<script src="lib/jquery-1.11.0.min.js"></script>
+	<script src="base.js"></script>
+	<style>input[placeholder]{text-align:center}</style>
 </head>
 
 <body>
+	<header class="header-container">
+		<div class="header">
+			<img src="img/microdraw.svg" style="width:6em" />
+			<h1>MicroDraw</h1>
+		</div>
+	</header>
 
-<div id="info">
+	<nav class="layout-tabs">
+		<section class="tab-wrapper">
+			<span class="divider"></span>
+			<ul class="grid3col tabs">
+				<li class="column one active"><a href="">Home</a></li>
+				<li class="column one"><a href="overview.html">Overview</a></li>
+				<li class="column two"><a href="blog.html">Blog</a></li>
+			</ul>
+		</section>
+	</nav>
+
+	<main id="content" class="content">
+
+		<section class="title-intro title-intro padding-top-80 padding-bottom-40">
+			<input type="text" style="font-size:1.2rem" size="60" placeholder="Enter a DeepZoom image URL"/>
+			<button style="font-size:1.2rem" id="go">Go</button>
+		</section>
+
+		<section class="title-intro padding-top-40 padding-bottom-40">
+			<h1>Collaborative Annotation</h1>
+			<p class="intro">MicroDraw is a web application by <a href="http://neuroanatomy.github.io">NAAT</a> to visualise and annotate collaboratively high resolution histology data. Annotations are vectorial, resolution independent, and allow for boolean operations to combine, subtract and split regions. Different ontologies are available to produce collaborative, community curated atlases, and to annotate staining artefacts to simplify the automatic processing and image analyses of the data. All modifications are saved into a common repository based on git, allowing for forking and branching. MicroDraw's RESTful API allows users to access annotation data for offline processing.</p>
+		</section>
+
+
+		<!--
+		<section class="padding-top-30" style="text-align:center">
+			<p>MicroDraw by <img src="img/naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
+		</section>
+		-->
+	</main>
 	
-	<div style="width: 200px; height: 150px"><div id="myNavigator"></div></div>
-	<br />
-	<button id="zoom"></button>
-	<button id="home"></button>
-	<button id="zoom-in"></button>
-	<button id="zoom-out"></button>
-	<button id="select"></button>
-	<button id="draw"></button>
-	<button id="delete"></button> 
-	<button id="addpoint"></button>
-	<button id="delpoint"></button>
-	<button id="addregion"></button>
-	<button id="delregion"></button>
-	<button id="splitregion"></button>
-	<button id="save"></button>
-	<br />
-	<br />
-	Region
-	<div id="regionList"></div>
-</div>
-
-<div id="regionPicker">
-	<svg id="decoration">
-		<polygon style="fill: white; stroke: none" points="-5,40 0,40 20,20 0,0 -5,0" />
-		<polyline style="fill: none; stroke: black" points="0,40 20,20 0,0" />
-	</svg>
-</div>
-
-<div id="openseadragon1" style="width: 100%"></div>
-<!--//load-->
-<script src="lib/paper-full.min.js"></script>
-<script src="lib/openseadragon/openseadragon.min.js"></script>
-<script src="lib/openseadragon-viewerinputhook.min.js"></script>
-<script src="lib/OpenSeadragonScalebar/openseadragon-scalebar.js"></script>
-<script src="lib/jquery-1.11.0.min.js"></script>
-<script src="./main.js"></script>
-
+	<script>
+	$("#go").click(function(){
+		window.location=localhost+"/microdraw.html?source="+$("input").val();
+	});
+	$("input").keydown(function (e) {
+		if (e.keyCode == 13) {
+			window.location=localhost+"/microdraw.html?source="+$("input").val();
+		}
+	});
+	</script>
 </body>
 </html>
-
-

@@ -1,0 +1,78 @@
+<html>
+
+<head>
+	<title>MicroDraw</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,user-scalable=no" />
+	<link rel="stylesheet" href="css/microdraw.css" type="text/css" />
+</head>
+
+<body>
+
+<!-- Toolbar -->
+<div id="info" class="table">
+	<div class="row" style="height:10px">
+		<div class="cell" id="login"></div>
+	</div>
+	
+	<div class="row" style="height:10px">
+		<div class="cell" style="height:150px">
+			<div id="myNavigator"  style="width:200px;height:150px"></div>
+		</div>
+	</div>
+	
+	<div class="row" style="height:10px">
+		<div class="cell" style="text-align:center">
+			<button  class="svg" id="zoom" src="img/navigate.svg">zoom</button>
+			<button id="home" src="img/home.svg">home</button>
+			<button id="zoom-in" src="img/plus.svg">+</button>
+			<button id="zoom-out" src="img/minus.svg">-</button>
+			<button id="select">select</button>
+			<button id="draw">draw</button>
+			<button id="delete">delete</button>
+			<button id="addpoint">+point</button>
+			<button id="delpoint">-point</button>
+			<button id="addregion">add</button>
+			<button id="delregion">subtract</button>
+			<button id="splitregion">split</button>
+			<button id="save">save</button>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="cell">
+			<br />
+			Regions
+			<div id="regionList" style="height:auto;margin-bottom:0;overflow-y:scroll"></div>
+		</div>
+	</div>
+</div>
+
+<!-- Region Picker -->
+<div id="regionPicker">
+</div>
+
+<!-- OpenSeadragon viewer -->
+<div id="openseadragon1" style="width:100%">
+</div>
+
+<!-- naat logo -->
+<div style="position:absolute;bottom:5px;right:5px">
+	<img src="img/naat.svg" style="width:3em" />
+</div>
+
+<!-- Load javascript -->
+<script src="lib/paper-full.min.js"></script>
+<script src="lib/openseadragon/openseadragon.min.js"></script>
+<script src="lib/openseadragon-viewerinputhook.min.js"></script>
+<script src="lib/OpenSeadragonScalebar/openseadragon-scalebar.js"></script>
+<script src="lib/jquery-1.11.0.min.js"></script>
+<script src="lib/mylogin/login.js"></script>
+<script src="base.js"></script>
+<script src="neurolex-ontology.js"></script>
+<script src="microdraw.js"></script>
+
+</body>
+</html>
+
+
