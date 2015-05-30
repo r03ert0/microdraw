@@ -20,18 +20,14 @@ html,body {
 	background-color:rgba(250,250,250,0.5);
 }
 
-button{
-	width:95px;
-	margin:1px;
-	padding:2px;
-	border:1px solid #c2c2c2;
-	background-color:#eee;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
-	border-radius:3px;
+.buttonGroup {
+	background-color:rgba(127,127,127,0.25);
+	margin:1px 1rem;
+	padding:1px;
 }
 .selected {
-	background-color:#FFC040;
+	background-color:#57d1df;
+	border-radius:100px;
 }
 
 #regionList {
@@ -83,4 +79,12 @@ button{
 	top:0;
 	left:0;
 	pointer-events:none;
+}
+#logo {
+	position:absolute;
+	bottom:5px;
+	right:5px;
+    -webkit-filter: drop-shadow( 2px 2px 2px #777 );
+    -moz-filter: drop-shadow( 2px 2px 2px #777 );
+    filter: drop-shadow( 2px 2px 2px #777 );
 }

@@ -56,7 +56,7 @@ var blog=$.get("http://siphonophore.org/blog.php", function(){
 		decoded=$.parseHTML(blog.responseJSON[i].content);
 		$("#content").append(
 			$("<div>",{style:"width:600px;margin-left:auto;margin-right:auto;margin-top:2rem"})
-				.append("<large><strong>"+blog.responseJSON[i].date_gmt+"</strong></large>")
+				.append("<large><strong>"+new Date(blog.responseJSON[i].date_gmt)+"</strong></large>")
 				.append("<h2 class='blog'><a href='"+blog.responseJSON[i].link+"' rel='bookmark' title='Permanent Link to "+blog.responseJSON[i].date_gmt+"'>"+blog.responseJSON[i].title+"</a></h2>")
 				.append($("<div>",{style:"background-color:#f8f8f8;padding:1rem"}).append(decoded))
 		);
