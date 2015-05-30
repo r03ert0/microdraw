@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg7024" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="37.312" width="37.312" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <defs id="defs7026">
+  <linearGradient id="linearGradient25259" y2="112.47" gradientUnits="userSpaceOnUse" x2="-312.37" gradientTransform="translate(153.1501,54.241885)" y1="184.71" x1="-313.02">
+   <stop id="stop22496-54-6" stop-color="#FFF" offset="0"/>
+   <stop id="stop22498-4-8" stop-color="#FFF" stop-opacity="0" offset="1"/>
+  </linearGradient>
+ </defs>
+ <metadata id="metadata7029">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(-356.344,-513.70618)">
+  <g id="g25250" transform="translate(534.54097,308.50306)">
+   <path id="path24366-1" d="M-159.54,205.2c-10.31,0-18.66,8.36-18.66,18.66s8.36,18.66,18.66,18.66,18.66-8.36,18.66-18.66-8.36-18.66-18.66-18.66" stroke-miterlimit="10" fill="url(#linearGradient25259)"/>
+   <path id="path24498-4" d="M-154.32,221.83c-2.06-2.1-9.25-2.22-11.22-1.86-2.93,0.42-6.06,1.44-7.84,3.97-1.35,1.64-1.29,4.21,0.03,5.84,2.63,2.7,6.26,4.06,9.91,4.82" stroke="#000" stroke-dasharray="none" stroke-miterlimit="10" stroke-width="1.5" fill="#e1a39b"/>
+   <g id="g24749" transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,139.32104,175.5309)">
+    <path id="path24741" fill="#FFF" d="M-176.44,232.23-176.44,233.53c0,1.67,0.12,10.97,0.03,15.8,0.36,1.72,2.43,4.79,3.31,4.79s2.86-3.09,3.26-4.79c0-4.44,0.03-13.66,0.03-15.8v-1.3z"/>
+    <path id="path24743" d="M-176.44,235.63-176.44,249.42c0.7,0,1.17-0.46,3.38-0.46,2.2,0,2.64,0.46,3.29,0.46v-13.79z"/>
+    <path id="path24745" d="M-175.17,230.64c-0.97,0-1.29,0.76-1.3,1.87v0.07,2.07h6.68v-2.07-0.07c-0.02-1.11-0.41-1.87-1.38-1.87z"/>
+    <path id="path24747" d="M-173.09,251.69c-0.63,0-2.16,0.07-1.76,1.06,0.28,0.7,0.74,1.23,1.24,1.66,0.17,0.15,0.4,0.18,0.52,0.18s0.35-0.03,0.52-0.18c0.5-0.43,0.97-0.96,1.25-1.66,0.39-0.99-1.14-1.06-1.77-1.06z"/>
+   </g>
+  </g>
+ </g>
+</svg>

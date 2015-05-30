@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg7537" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="37.312" width="37.312" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <defs id="defs7539">
+  <linearGradient id="linearGradient6814" y2="112.47" gradientUnits="userSpaceOnUse" x2="-312.37" gradientTransform="translate(125.17289,99.311043)" y1="184.71" x1="-313.02">
+   <stop id="stop22496-54-8" stop-color="#FFF" offset="0"/>
+   <stop id="stop22498-4-61" stop-color="#FFF" stop-opacity="0" offset="1"/>
+  </linearGradient>
+ </defs>
+ <metadata id="metadata7542">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(-356.344,-513.70618)">
+  <g id="g7510" transform="translate(562.51818,263.43391)">
+   <path id="path6764" fill="url(#linearGradient6814)" stroke-miterlimit="10" d="M-187.52,250.27c-10.3,0-18.65,8.36-18.65,18.66s8.35,18.65,18.65,18.65,18.66-8.35,18.66-18.65-8.36-18.66-18.66-18.66"/>
+   <g id="g6691" transform="translate(145.35131,-85.963009)">
+    <path id="path6681" opacity="0.4" d="M-324.53,348.12c0.01,0.16,0.03,0.32,0.03,0.47,0.03,1.04-0.46,2.04-1.31,2.63-1.72,1.38-4.05,1.26-6.13,1.22-3.93-0.17-7.97-1.05-11.25-3.32-0.18-0.13-0.35-0.28-0.53-0.43-0.87,0.99-1.45,2.21-1.5,3.56,0.13,1.6,1.19,2.94,2.38,3.94,3.09,2.45,7,3.64,10.87,4.15,2.41,0.26,4.87,0.46,7.28,0.1,1.98-0.33,4.15-1.61,4.5-3.75,0.33-3.12-1.44-6.1-3.72-8.1-0.2-0.16-0.41-0.31-0.62-0.47zm-20.69,4.13c0-0.05-0.03-0.1-0.03-0.16v0.38c0-0.08,0.03-0.15,0.03-0.22z" fill="#ea503c"/>
+    <path id="path6689" d="M-324.53,348.12c0.01,0.16,0.03,0.32,0.03,0.47,0.03,1.04-0.46,2.04-1.31,2.63-1.72,1.38-4.05,1.26-6.13,1.22-3.93-0.17-7.97-1.05-11.25-3.32-0.18-0.13-0.35-0.28-0.53-0.43-0.87,0.99-1.45,2.21-1.5,3.56,0.13,1.6,1.19,2.94,2.38,3.94,3.09,2.45,7,3.64,10.87,4.15,2.41,0.26,4.87,0.46,7.28,0.1,1.98-0.33,4.15-1.61,4.5-3.75,0.33-3.12-1.44-6.1-3.72-8.1-0.2-0.16-0.41-0.31-0.62-0.47zm-20.69,4.13c0-0.05-0.03-0.1-0.03-0.16v0.38c0-0.08,0.03-0.15,0.03-0.22z" fill="none" stroke="#000"/>
+   </g>
+   <path id="path6766" style="baseline-shift:baseline;block-progression:tb;color:#000000;direction:ltr;text-indent:0;text-align:start;enable-background:accumulate;text-transform:none;" d="M-200.28,277.97-200.28,279.97-191.09,279.97-191.09,277.97z" fill="#000"/>
+  </g>
+ </g>
+</svg>
