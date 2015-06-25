@@ -5,7 +5,7 @@ var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID 
 var region=null;	// currently selected region (one element of Regions[])
 var handle;			// currently selected control point or handle (if any)
 var newRegionFlag;	
-var selectedTool="zoom";
+var selectedTool;	// currently selected tool
 var viewer;			// open seadragon viewer
 var navEnabled=true;// flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
 var magicV=1000;	// resolution of the annotation canvas
@@ -459,6 +459,12 @@ function mouseUp() {
 /*
 	Tool selection
 */
+function backToPreviousTool(prevTool) {
+	setTimeout(function() {
+		selectedTool=prevTool;
+		selectTool()
+	},500);
+}
 function toolSelection(event) {
 	if(debug) console.log("> toolSelection");
 	
@@ -487,26 +493,24 @@ function toolSelection(event) {
 					break;
 				}
 			}
-			// go back to previous tool
-			setTimeout(function() {
-				selectedTool=prevTool;
-				selectTool()
-			},500);
+			backToPreviousTool(prevTool);
 			break;
 		case "save":
 			interactSave();
-			setTimeout(function() {
-				selectedTool=prevTool;
-				selectTool()
-			},500);
+			backToPreviousTool(prevTool);
+			break;
+		case "zoom-in":
+		case "zoom-out":
+		case "home":
+			backToPreviousTool(prevTool);
 			break;
 	}
 }
 function selectTool() {
 	if(debug) console.log("> selectTool");
 	
-	$("button").removeClass("selected");
-	$("button#"+selectedTool).addClass("selected");
+	$("img.button").removeClass("selected");
+	$("img.button#"+selectedTool).addClass("selected");
 	//$("svg").removeClass("selected");
 	//$("svg#"+selectedTool).addClass("selected");
 }
@@ -738,7 +742,7 @@ function makeSVGInline() {
 	if(debug) console.log("> makeSVGInline promise");
 
 	var def=$.Deferred();
-	$('img.svg').each(function(){
+	$('img.button').each(function(){
 		var $img = $(this);
 		var imgID = $img.attr('id');
 		var imgClass = $img.attr('class');
@@ -779,7 +783,11 @@ function initMicrodraw() {
 	MyLoginWidget.subscribe(loginChanged);
 	
 	// Enable click on toolbar buttons
-	$("button").click(toolSelection);
+	$("img.button").click(toolSelection);
+	
+	// Configure currently selected tool
+	selectedTool="zoom";
+	selectTool();
 
 	// load tile sources
 	$.get(params.source,function(obj) {
@@ -830,7 +838,7 @@ function initMicrodraw() {
 
 	appendRegionTagsFromOntology(Ontology);
 	
-	makeSVGInline().then(selectTool());
+	//makeSVGInline().then(selectTool());
 	
 	return def.promise();
 }

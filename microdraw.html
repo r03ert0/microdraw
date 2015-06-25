@@ -23,19 +23,25 @@
 	
 	<div class="row" style="height:10px">
 		<div class="cell" style="text-align:center">
-			<button  class="svg" id="zoom" src="img/navigate.svg">zoom</button>
-			<button id="home" src="img/home.svg">home</button>
-			<button id="zoom-in" src="img/plus.svg">+</button>
-			<button id="zoom-out" src="img/minus.svg">-</button>
-			<button id="select">select</button>
-			<button id="draw">draw</button>
-			<button id="delete">delete</button>
-			<button id="addpoint">+point</button>
-			<button id="delpoint">-point</button>
-			<button id="addregion">add</button>
-			<button id="delregion">subtract</button>
-			<button id="splitregion">split</button>
-			<button id="save">save</button>
+			<div class="buttonGroup">
+				<img class="button" id="home"        src="img/home.svg" />
+				<img class="button" id="zoom-in"     src="img/plus.svg" />
+				<img class="button" id="zoom-out"    src="img/minus.svg" />
+			</div>
+			<div class="buttonGroup">
+				<img class="button" id="zoom"        title="Navigator"              src="img/navigate.svg" />
+				<img class="button" id="select"      title="Select"                 src="img/select.svg" />
+				<img class="button" id="draw"        title="Draw"                   src="img/draw.svg" />
+				<img class="button" id="addpoint"    title="Add a point"            src="img/addPoint.svg" />
+				<img class="button" id="delpoint"    title="Delete a point"         src="img/deletePoint.svg" />
+				<img class="button" id="addregion"   title="Union of regions"       src="img/union.svg" />
+				<img class="button" id="delregion"   title="Subtraction of regions" src="img/subtract.svg" />
+				<img class="button" id="splitregion" title="Split a region"         src="img/split.svg" />
+			</div>
+			<div class="buttonGroup">
+				<img class="button" id="delete" title="Delete region"    src="img/delete.svg" />
+				<img class="button" id="save"   title="Save annotations" src="img/save.svg" />
+			</div>
 		</div>
 	</div>
 
@@ -57,9 +63,9 @@
 </div>
 
 <!-- naat logo -->
-<div style="position:absolute;bottom:5px;right:5px">
-	<img src="img/naat.svg" style="width:3em" />
-</div>
+<a id="logo" href="http://neuroanatomy.github.io">
+	<img src="img/naat.svg" style="width:2.5em" />
+</a>
 
 <!-- Load javascript -->
 <script src="lib/paper-full.min.js"></script>
