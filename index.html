@@ -70,6 +70,7 @@
 	</main>
 	
 	<script>
+	$(".download>a").attr('href',$(".download>a").attr('href').replace("{{localhost}}",localhost));
 	$("#go").click(function(){
 		window.location=localhost+"/microdraw.html?source="+$("input").val();
 	});
