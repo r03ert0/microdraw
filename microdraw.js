@@ -1,14 +1,15 @@
 var	debug=false;
 
-var dbroot="http://"+localhost+"/interact/php/interact.php";
+var dbroot="./php/interact.php";
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
 var region=null;	// currently selected region (one element of Regions[])
 var handle;			// currently selected control point or handle (if any)
 var newRegionFlag;	
 var selectedTool;	// currently selected tool
 var viewer;			// open seadragon viewer
+var imageSize;          // real size of the opened image openseadragon (openSeadragon.Point)
 var navEnabled=true;// flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
-var magicV=1000;	// resolution of the annotation canvas
+var magicV=10000;	// resolution of the annotation canvas
 var myOrigin={};	// Origin identification for DB storage
 var	params;			// URL parameters
 var	myIP;			// user's IP
@@ -319,7 +320,6 @@ function mouseDown(x,y) {
 	
 	var prevRegion=null;
 	var point=paper.view.viewToProject(new paper.Point(x,y));
-	
 	handle=null;
 
 	switch(selectedTool) {
@@ -499,6 +499,10 @@ function toolSelection(event) {
 			interactSave();
 			backToPreviousTool(prevTool);
 			break;
+                case "save-svg":
+                        interactSaveSVG();
+                        backToPreviousTool(prevTool);
+                        break;
 		case "zoom-in":
 		case "zoom-out":
 		case "home":
@@ -518,13 +522,31 @@ function selectTool() {
 /*
 	Annotation storage
 */
+/* Save Overlay to SVG Image */
+function interactSaveSVG() {
+       
+        //set SVG size, scale and transform parameters such that they fit to the original image resolution
+        //paper.view.draw();
+        var svg = paper.project.exportSVG({asString: false});
+        //scale of the paper canvas coordinates to the real image coordinates
+        var scale = parseFloat(imageSize.Width.nodeValue) / magicV;
+        
+        svg.setAttribute("width", imageSize.Width.nodeValue);
+        svg.setAttribute("height", imageSize.Height.nodeValue);
+        svg.firstChild.setAttribute("transform", "translate(0,0) scale(" + scale + "," + scale + ")");
+
+        var svg_string = (new XMLSerializer).serializeToString(svg);
+        var blob = new Blob([svg_string], {type: "image/svg+xml;charset=utf8"});
+        saveAs(blob, params.source.split('.')[0] + '-annotated.svg');
+
+}
+
 /* Interact push/pull */
 function interactSave() {
 /*
 	Save SVG overlay to Interact DB
 */
 	if(debug) console.log("> save promise");
-	
 	var i;
 	var	key;
 	var value;
@@ -666,6 +688,8 @@ function resizeAnnotationOverlay() {
 	
 	var width=$("body").width();
 	var height=$("body").height();
+        
+        //console.log('container size ' + viewer.viewport.getContainerSize());
 	$("canvas.overlay").width(width);
 	$("canvas.overlay").height(height);
 	paper.view.viewSize=[width,height];
@@ -680,7 +704,8 @@ function initAnnotationOverlay() {
 
 	var width=$("body").width();
 	var height=$("body").height();
-	$("canvas.overlay").attr('width',width);
+
+        $("canvas.overlay").attr('width',width);
 	$("canvas.overlay").attr('height',height);
 
 	var	canvas=$("canvas.overlay")[0];
@@ -788,15 +813,14 @@ function initMicrodraw() {
 	// Configure currently selected tool
 	selectedTool="zoom";
 	selectTool();
-
 	// load tile sources
 	$.get(params.source,function(obj) {
 		params.tileSources=obj.tileSources;
-		viewer = OpenSeadragon({
+                viewer = OpenSeadragon({
 			id: "openseadragon1",
 			prefixUrl: "lib/openseadragon/images/",
 			tileSources: obj.tileSources,
-			showReferenceStrip: (obj.tileSources.length>1),
+                        showReferenceStrip: (obj.tileSources.length>1),
 	        referenceStripSizeRatio: 0.2,
 			showNavigator: true,
 			navigatorId:"myNavigator",
@@ -826,7 +850,16 @@ function initMicrodraw() {
 			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
 			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 		]});
-		
+                
+                // save real image size          
+                $.get(params.tileSources[0], function(obj) {
+                    var parser = new DOMParser();
+                    xmlDoc = parser.parseFromString(obj,"text/xml");
+                    //console.log(xmlDoc);
+                    imageSize = xmlDoc.getElementsByTagName("Size")[0].attributes;
+                    //console.log(imageSize); 
+                });
+                
 		if(debug) console.log("< initMicrodraw resolve: success");
 		def.resolve();
 	});
@@ -845,7 +878,7 @@ function initMicrodraw() {
 
 $.when(
 	interactIP(),
-	MyLoginWidget.init()
+        MyLoginWidget.init()
 ).then(function(){
 	params=deparam();
 	myOrigin.appName="microdraw";

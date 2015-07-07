@@ -10,7 +10,12 @@
 
 $rootdir = "/microdraw";
 
-include $_SERVER['DOCUMENT_ROOT'].$rootdir."/php/base.php";
+//include $_SERVER['DOCUMENT_ROOT'].$rootdir."/php/base.php";
+session_start();
+$dbhost = "localhost"; // this will ususally be 'localhost', but can sometimes differ
+$dbuser = "root"; /*ENTER YOUR DB USER HERE*/; // the username that you created, or were given, to access your database
+$dbpass = "root"; /*ENTER YOUR DB PASSWORD HERE*/; // the password that you created, or were given, to access your database
+$dblogin = "MyUsers";
 $connection=mysqli_connect($dbhost,$dbuser,$dbpass,$dblogin) or die("ERROR: Can't connect to MySQL DB: " . mysql_error());
 
 if(isset($_GET["action"]))
@@ -36,7 +41,7 @@ if(isset($_GET["action"]))
 }
 function user_check()
 {
-    if($_SESSION['LoggedIn']==1)
+    if(isset($_SESSION['LoggedIn']) and ($_SESSION['LoggedIn']==1))
         echo '{"response":"Yes", "username":"'.$_SESSION['Username'].'"}';
     else
 	    echo '{"response":"No"}';
