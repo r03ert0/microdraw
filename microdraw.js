@@ -1,10 +1,11 @@
-var	debug=false;
+var	debug=true;
 
 var dbroot="./php/interact.php";
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
 var region=null;	// currently selected region (one element of Regions[])
 var handle;			// currently selected control point or handle (if any)
 var newRegionFlag;	
+var drawingPolygonFlag;
 var selectedTool;	// currently selected tool
 var viewer;			// open seadragon viewer
 var imageSize;          // real size of the opened image openseadragon (openSeadragon.Point)
@@ -330,13 +331,14 @@ function mouseDown(x,y) {
 		case "delregion":
 		case "splitregion":
 			var hitResult=paper.project.hitTest(point, {
-					tolerance:2,
+					tolerance:10,
 					stroke: true,
 					segments:true,
 					fill: true,
 					handles:true
 				});
 			newRegionFlag=false;
+
 			if (hitResult) {
 				var i;
 				for(i=0;i<Regions.length;i++) {
@@ -389,7 +391,7 @@ function mouseDown(x,y) {
 				if (selectedTool=="delregion") {
 					if(prevRegion) {
 						var newPath=prevRegion.path.subtract(region.path);
-						removeRegion(prevRegion);
+       						removeRegion(prevRegion);
 						prevRegion.path.remove();
 						newRegion({path:newPath});
 					}
@@ -428,6 +430,34 @@ function mouseDown(x,y) {
 			// signal that a new region has been created for drawing
 			newRegionFlag=true;
 			break;
+                case "draw-polygon":
+                        console.log(drawingPolygonFlag);
+                        // is already drawing a polygon or not?
+                        if(drawingPolygonFlag != true) {
+                            //deselect previously selected region
+                            if(region)
+                                region.path.selected = false;
+                            // Start a new Region with no fill color
+                            region=newRegion({path:new paper.Path({segments:[point]})});
+                            region.path.fillColor.alpha=0;
+                            drawingPolygonFlag=true;
+                            region.path.selected = true;
+                        } else {
+                            var hitResult=paper.project.hitTest(point, {tolerance:10, segments:true});
+                            if (hitResult) {
+                                console.log(hitResult);
+                                console.log(region.path);
+                            }
+                            if (hitResult && hitResult.item == region.path && hitResult.segment.point == region.path.segments[0].point) {
+                                // clicked on first point of current path
+                                // --> close path and remove drawing flag
+                                finishDrawingPolygon(true);
+                                
+                            } else { 
+                                // add point to region
+                                region.path.add(point);
+                            }
+                        }
 	}
 	paper.view.draw();
 }
@@ -449,11 +479,22 @@ function mouseUp() {
 	if(debug) console.log("> mouseUp");
 
 	if(newRegionFlag==true){
-		region.path.simplify(5);
+		region.path.simplify(500);
 		region.path.closed=true;
 		region.path.fullySelected = true;
 	}
 	paper.view.draw();
+}
+
+function finishDrawingPolygon(closed){
+        // finished the drawing of the polygon
+        if (closed==true) {
+            region.path.closed = true;
+            region.path.fillColor.alpha = 0.5;
+        }
+        region.path.fullySelected = true;
+        region.path.smooth();
+        drawingPolygonFlag = false;
 }
 
 /*
@@ -467,7 +508,11 @@ function backToPreviousTool(prevTool) {
 }
 function toolSelection(event) {
 	if(debug) console.log("> toolSelection");
-	
+
+        //end drawing of polygons and make open form
+        if (drawingPolygonFlag == true)
+            finishDrawingPolygon(false);
+
 	var prevTool=selectedTool;
 	selectedTool=$(this).attr("id");
 	selectTool();
@@ -479,6 +524,7 @@ function toolSelection(event) {
 		case "addpoint":
 		case "delpoint":
 		case "draw":
+                case "draw-polygon":
 			navEnabled=false;
 			break;
 		case "zoom":
@@ -515,7 +561,7 @@ function selectTool() {
 	
 	$("img.button").removeClass("selected");
 	$("img.button#"+selectedTool).addClass("selected");
-	//$("svg").removeClass("selected");
+	//$("svg").resource=dzi_files/test.jsonmoveClass("selected");
 	//$("svg#"+selectedTool).addClass("selected");
 }
 
@@ -821,11 +867,16 @@ function initMicrodraw() {
 			prefixUrl: "lib/openseadragon/images/",
 			tileSources: obj.tileSources,
                         showReferenceStrip: (obj.tileSources.length>1),
-	        referenceStripSizeRatio: 0.2,
-			showNavigator: true,
+	                referenceStripSizeRatio: 0.2,
+                        //sequenceMode: true,
+			//sequenceControlAnchor:'TOP_LEFT',
+                        //referenceStripPosition:'BOTTOM_RIGHT',
+                        showNavigator: true,
 			navigatorId:"myNavigator",
 			zoomInButton:"zoom-in",
 			zoomOutButton:"zoom-out",
+                        //previousButton: "prev",
+                        //nextButton: "next",
 			homeButton:"home"
 		});
 		viewer.scalebar({
