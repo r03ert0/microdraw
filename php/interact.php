@@ -1,8 +1,8 @@
 <?php
 session_start();
 $dbhost = "localhost"; // this will ususally be 'localhost', but can sometimes differ
-$dbuser = "root"; // the username that you created, or were given, to access your database
-$dbpass = "root"; // the password that you created, or were given, to access your database
+$dbuser = "microdraw"; // the username that you created, or were given, to access your database
+$dbpass = "microdraw"; // the password that you created, or were given, to access your database
 $dbname = "Interact";
 
 error_reporting(E_ALL);
