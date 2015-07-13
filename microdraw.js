@@ -1,4 +1,4 @@
-var	debug=true;
+var	debug=false;
 
 var dbroot="./php/interact.php";
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
@@ -33,8 +33,8 @@ function newRegion(arg) {
 	
 	if(arg.path) {
 		reg.path = arg.path;
-		reg.path.strokeWidth=1;
-		reg.path.strokeColor='black';
+		reg.path.strokeWidth=arg.path.strokeWidth ? arg.path.strokeWidth : 1;
+		reg.path.strokeColor=arg.path.strokColor ? arg.path.strokeColor : 'black';
 		reg.path.strokeScaling=false;
 		reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
 		reg.path.selected=false;
@@ -486,6 +486,35 @@ function mouseUp() {
 	paper.view.draw();
 }
 
+/*
+        Drawing helper functions
+*/
+
+function togglePathColor() {
+        if(debug) console.log("> togglePathColor");
+
+        if (region) {
+            var col = region.path.strokeColor;
+            if (col.equals('black')) 
+                region.path.strokeColor = 'white'
+            else
+                region.path.strokeColor = 'black';
+            paper.view.draw();
+        }
+}
+
+
+function togglePathWidth() {
+        if (debug) console.log("> togglePathWidth");
+
+        if (region) {
+            region.path.strokeWidth = (region.path.strokeWidth) % 3 + 1;
+            paper.view.draw();
+        }
+
+}
+
+
 function finishDrawingPolygon(closed){
         // finished the drawing of the polygon
         if (closed==true) {
@@ -547,6 +576,14 @@ function toolSelection(event) {
 			break;
                 case "save-svg":
                         interactSaveSVG();
+                        backToPreviousTool(prevTool);
+                        break;
+                case "color":
+                        togglePathColor();
+                        backToPreviousTool(prevTool);
+                        break;
+                case "width":
+                        togglePathWidth();
                         backToPreviousTool(prevTool);
                         break;
 		case "zoom-in":
