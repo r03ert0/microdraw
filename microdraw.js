@@ -1,4 +1,4 @@
-var	debug=false;
+var	debug=true;
 
 var dbroot="./php/interact.php";
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
@@ -34,10 +34,10 @@ function newRegion(arg) {
 	if(arg.path) {
 		reg.path = arg.path;
 		reg.path.strokeWidth=arg.path.strokeWidth ? arg.path.strokeWidth : 1;
-		reg.path.strokeColor=arg.path.strokColor ? arg.path.strokeColor : 'black';
+		reg.path.strokeColor=arg.path.strokeColor ? arg.path.strokeColor : 'black';
 		reg.path.strokeScaling=false;
-		reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
-		reg.path.selected=false;
+		reg.path.fillColor = arg.path.fillColor ? arg.path.fillColor : 'rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+                reg.path.selected=false;
 	}
 	
 	// append region tag to regionList
@@ -497,12 +497,23 @@ function togglePathColor() {
             var col = region.path.strokeColor;
             if (col.equals('black')) 
                 region.path.strokeColor = 'white'
+            else if (col.equals('white'))
+                region.path.strokeColor = 'yellow';
             else
-                region.path.strokeColor = 'black';
+                region.path.strokeColor= 'black';
             paper.view.draw();
         }
 }
 
+function toggleRegionColor() {
+        if (debug) console.log("> toggleRegionColor");
+
+        if (region) {
+            region.path.fillColor.alpha = (region.path.fillColor.alpha == 0) ? 0.5 : 0;
+            paper.view.draw(); 
+        }
+            
+}
 
 function togglePathWidth() {
         if (debug) console.log("> togglePathWidth");
@@ -578,8 +589,12 @@ function toolSelection(event) {
                         interactSaveSVG();
                         backToPreviousTool(prevTool);
                         break;
-                case "color":
+                case "color-line":
                         togglePathColor();
+                        backToPreviousTool(prevTool);
+                        break;
+                case "color-region":
+                        toggleRegionColor()
                         backToPreviousTool(prevTool);
                         break;
                 case "width":
