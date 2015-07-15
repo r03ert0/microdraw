@@ -712,7 +712,7 @@ function interactLoad() {
 			}
 			paper.view.draw();
 		}
-		if(debug) console.log("< interactLoad resolve success");
+		if(debug) console.log("< interactLoad resolve success. Number of regions:", Regions.length);
 		def.resolve();
 	}).error(function(jqXHR, textStatus, errorThrown) {
         console.log("< interactLoad resolve ERROR: " + textStatus + " " + errorThrown);
@@ -808,6 +808,8 @@ function initAnnotationOverlay() {
 
 	var	canvas=$("canvas.overlay")[0];
 	canvas.className="overlay";
+
+        Regions = []
 
 	paper.setup(canvas);
 	paper.settings.handleSize=10;
@@ -920,6 +922,7 @@ function initMicrodraw() {
 			tileSources: obj.tileSources,
                         showReferenceStrip: (obj.tileSources.length>1),
 	                referenceStripSizeRatio: 0.2,
+                        preserveViewport: true,
                         //sequenceMode: true,
 			//sequenceControlAnchor:'TOP_LEFT',
                         //referenceStripPosition:'BOTTOM_RIGHT',
