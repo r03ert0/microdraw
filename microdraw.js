@@ -49,7 +49,10 @@ function newRegion(arg) {
 	
 	// handle double click on computers
 	el.dblclick(doublePressOnRegion);
-	
+
+        // when the region name span is unfocused, save the currently entered name as region name
+        el.find(".region-name").on("blur", unfocusRegion);
+
 	// handle single and double tap on touch devices
 	/*
 		RT: it seems that a click event is also fired on touch devices,
@@ -289,8 +292,21 @@ function doublePressOnRegion(event) {
 	event.stopPropagation();
 	event.preventDefault();
 
-	regionPicker(this);
+	$(this).find(".region-name").attr('contentEditable' ,true);
+        
+	//regionPicker(this);
 }
+
+function unfocusRegion(event){
+        if (debug) console.log('> unfocusRegion');
+        var newName = $(this).text();
+        uid=$(".region-tag.selected").attr('id');
+        reg=findRegionByUID(uid);
+        changeRegionName(reg,newName);
+        $(this).attr('contentEditable' ,false);
+        
+}
+
 var tap=false
 function handleRegionTap(event) {
 /*
