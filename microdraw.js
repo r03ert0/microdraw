@@ -33,11 +33,11 @@ function newRegion(arg) {
 	
 	if(arg.path) {
 		reg.path = arg.path;
-		reg.path.strokeWidth=1;
-		reg.path.strokeColor='black';
+		reg.path.strokeWidth=arg.path.strokeWidth ? arg.path.strokeWidth : 1;
+		reg.path.strokeColor=arg.path.strokeColor ? arg.path.strokeColor : 'black';
 		reg.path.strokeScaling=false;
-		reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
-		reg.path.selected=false;
+		reg.path.fillColor = arg.path.fillColor ? arg.path.fillColor : 'rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+                reg.path.selected=false;
 	}
 	
 	// append region tag to regionList
@@ -49,7 +49,10 @@ function newRegion(arg) {
 	
 	// handle double click on computers
 	el.dblclick(doublePressOnRegion);
-	
+
+        // when the region name span is unfocused, save the currently entered name as region name
+        el.find(".region-name").on("blur", unfocusRegion);
+
 	// handle single and double tap on touch devices
 	/*
 		RT: it seems that a click event is also fired on touch devices,
@@ -289,8 +292,21 @@ function doublePressOnRegion(event) {
 	event.stopPropagation();
 	event.preventDefault();
 
-	regionPicker(this);
+	$(this).find(".region-name").attr('contentEditable' ,true);
+        
+	//regionPicker(this);
 }
+
+function unfocusRegion(event){
+        if (debug) console.log('> unfocusRegion');
+        var newName = $(this).text();
+        uid=$(".region-tag.selected").attr('id');
+        reg=findRegionByUID(uid);
+        changeRegionName(reg,newName);
+        $(this).attr('contentEditable' ,false);
+        
+}
+
 var tap=false
 function handleRegionTap(event) {
 /*
@@ -486,6 +502,46 @@ function mouseUp() {
 	paper.view.draw();
 }
 
+/*
+        Drawing helper functions
+*/
+
+function togglePathColor() {
+        if(debug) console.log("> togglePathColor");
+
+        if (region) {
+            var col = region.path.strokeColor;
+            if (col.equals('black')) 
+                region.path.strokeColor = 'white'
+            else if (col.equals('white'))
+                region.path.strokeColor = 'yellow';
+            else
+                region.path.strokeColor= 'black';
+            paper.view.draw();
+        }
+}
+
+function toggleRegionColor() {
+        if (debug) console.log("> toggleRegionColor");
+
+        if (region) {
+            region.path.fillColor.alpha = (region.path.fillColor.alpha == 0) ? 0.5 : 0;
+            paper.view.draw(); 
+        }
+            
+}
+
+function togglePathWidth() {
+        if (debug) console.log("> togglePathWidth");
+
+        if (region) {
+            region.path.strokeWidth = (region.path.strokeWidth) % 3 + 1;
+            paper.view.draw();
+        }
+
+}
+
+
 function finishDrawingPolygon(closed){
         // finished the drawing of the polygon
         if (closed==true) {
@@ -547,6 +603,18 @@ function toolSelection(event) {
 			break;
                 case "save-svg":
                         interactSaveSVG();
+                        backToPreviousTool(prevTool);
+                        break;
+                case "color-line":
+                        togglePathColor();
+                        backToPreviousTool(prevTool);
+                        break;
+                case "color-region":
+                        toggleRegionColor()
+                        backToPreviousTool(prevTool);
+                        break;
+                case "width":
+                        togglePathWidth();
                         backToPreviousTool(prevTool);
                         break;
 		case "zoom-in":
