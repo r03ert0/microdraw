@@ -215,10 +215,11 @@ function changeRegionName(reg,name) {
 	
 	var i;
 	var color=regionHashColor(name);
+        var alpha=reg.path.fillColor.alpha;
 
-	// Update path
+        // Update path
 	reg.name=name;
-	reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+	reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+','+alpha+')';
 	paper.view.draw();
 	
 	// Update region tag
@@ -350,7 +351,7 @@ function mouseDown(x,y) {
 					tolerance:10,
 					stroke: true,
 					segments:true,
-					fill: true,
+					fill: false,
 					handles:true
 				});
 			newRegionFlag=false;
