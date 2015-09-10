@@ -932,6 +932,12 @@ function initMicrodraw() {
 	selectTool();
 	// load tile sources
 	$.get(params.source,function(obj) {
+                if (typeof obj.tileSources[0] != 'string') {
+                    // tile sources are hdf5 file, so need to create function for tile sources 
+                    imageSize = {'Height': {'nodeValue': obj.tileSources[0].height}, 'Width': {'nodeValue': obj.tileSources[0].width}};
+                    // TODO only works for tile sources 0!!
+                    eval("obj.tileSources[0].getTileUrl = " + obj.tileSources[0].getTileUrl); 
+                }
 		params.tileSources=obj.tileSources;
                 viewer = OpenSeadragon({
 			id: "openseadragon1",
@@ -973,16 +979,18 @@ function initMicrodraw() {
 			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
 			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 		]});
-                
-                // save real image size          
-                $.get(params.tileSources[0], function(obj) {
+
+                // save real image size if we are looking at dzi file       
+                if (typeof params.tileSources[0]) {
+                    $.get(params.tileSources[0], function(obj) {
                     var parser = new DOMParser();
                     xmlDoc = parser.parseFromString(obj,"text/xml");
                     //console.log(xmlDoc);
                     imageSize = xmlDoc.getElementsByTagName("Size")[0].attributes;
                     //console.log(imageSize); 
-                });
-                
+                    });
+                }
+
 		if(debug) console.log("< initMicrodraw resolve: success");
 		def.resolve();
 	});
