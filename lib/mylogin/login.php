@@ -56,10 +56,10 @@ function user_login()
         $_SESSION['Username'] = $username;
         $_SESSION['EmailAddress'] = $email;
         $_SESSION['LoggedIn'] = 1;
-        echo "Yes";
+        echo '{"response":"Yes"}';
     }
     else
-	    echo "No";
+        echo '{"response":"No"}';
 }
 function user_register()
 {
@@ -70,7 +70,7 @@ function user_register()
 
 	 $checkusername = mysqli_query($connection,"SELECT * FROM ".$dblogin.".Users WHERE Username = '".$username."'");
 	 if(mysqli_num_rows($checkusername) == 1)
-		echo "Exists";
+        echo '{"response":"Exists"}';
 	 else
 	 {
 		$registerquery = mysqli_query($connection,"INSERT INTO ".$dblogin.".Users (Username, Password, EmailAddress) VALUES('".$username."', '".$password."', '".$email."')");
@@ -84,11 +84,11 @@ function user_register()
 				$_SESSION['Username'] = $username;
 				$_SESSION['EmailAddress'] = $email;
 				$_SESSION['LoggedIn'] = 1;
-				echo "Yes";
+		        echo '{"response":"Yes"}';
 			}
 		}
 		else
-			echo "Fail";
+	        echo '{"response":"Fail"}';
 	 }
 }
 function user_remind()
@@ -128,19 +128,19 @@ function user_remind()
 		$email = mysqli_real_escape_string($connection,$email);
 		$registerquery=mysqli_query($connection,"UPDATE ".$dblogin.".Users SET Password = '".$password."' WHERE Username = '".$username."' AND EmailAddress = '".$email."'");
 		if($registerquery)
-			echo "Yes";
+	        echo '{"response":"Yes"}';
 		else
-			echo "Fail";
+	        echo '{"response":"Fail"}';
 	}
 	else
 	{
-		echo "Unavailable";
+        echo '{"response":"Unavailable"}';
 	}
 }
 function user_logout()
 {
 	$_SESSION = array();
 	session_destroy();
-	echo "Yes";
+    echo '{"response":"Yes"}';
 }
 ?>
