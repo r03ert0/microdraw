@@ -6,6 +6,8 @@ php/base.php
 final.zip
 node_modules
 dzi_files
+data    
 Vervet*
 *.json
 *.swp
+php/db_access.php

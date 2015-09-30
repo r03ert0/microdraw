@@ -1,0 +1,6 @@
+<?php
+# move this file (db_access.php.example) to db_access.php and change access information for the mysql db
+$dbhost = "imedv02.ime.kfa-juelich.de"; // this will ususally be 'localhost', but can sometimes differ
+$dbuser = "microdraw"; /*ENTER YOUR DB USER HERE*/; // the username that you created, or were given, to access your database
+$dbpass = "microdraw"; /*ENTER YOUR DB PASSWORD HERE*/; // the password that you created, or were given, to access your database
+?>
