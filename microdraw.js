@@ -13,7 +13,7 @@ var myOrigin={};	// Origin identification for DB storage
 var	params;			// URL parameters
 var	myIP;			// user's IP
 
-/*
+/***1
 	Region handling functions
 */
 function newRegion(arg) {
@@ -221,7 +221,7 @@ function changeRegionName(reg,name) {
 	$(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
 }
 
-/*
+/***2
 	Interaction: mouse and tap
 */
 function clickHandler(event){
@@ -456,7 +456,7 @@ function mouseUp() {
 	paper.view.draw();
 }
 
-/*
+/***3
 	Tool selection
 */
 function backToPreviousTool(prevTool) {
@@ -515,7 +515,7 @@ function selectTool() {
 	//$("svg#"+selectedTool).addClass("selected");
 }
 
-/*
+/***4
 	Annotation storage
 */
 /* Interact push/pull */
@@ -658,7 +658,7 @@ function load() {
 	}
 }
 
-/*
+/***5
 	Initialisation
 */
 function resizeAnnotationOverlay() {
@@ -775,6 +775,7 @@ function makeSVGInline() {
 	return def.promise();
 }
 function initMicrodraw() {
+
 	if(debug) console.log("> initMicrodraw promise");
 	
 	var def=$.Deferred();
@@ -791,19 +792,49 @@ function initMicrodraw() {
 
 	// load tile sources
 	$.get(params.source,function(obj) {
-		params.tileSources=obj.tileSources;
-		viewer = OpenSeadragon({
-			id: "openseadragon1",
-			prefixUrl: "lib/openseadragon/images/",
-			tileSources: obj.tileSources,
-			showReferenceStrip: (obj.tileSources.length>1),
-	        referenceStripSizeRatio: 0.2,
-			showNavigator: true,
-			navigatorId:"myNavigator",
-			zoomInButton:"zoom-in",
-			zoomOutButton:"zoom-out",
-			homeButton:"home"
-		});
+            var triple_axis = false;
+            obj.pixelsPerMeter = 10000;
+            if (triple_axis) {
+                obj.tileSources = [];
+                function urlGetY(slice) {
+                    return function(level, x, y) {
+                        var numTiles = 1;
+                        numTiles<<= level;
+                        var url = "http://132.216.122.239/y/l" +  (level) + "/x" + x + "/y" + slice + "/z" + (numTiles-y-1) + ".png";
+                        console.log(url);
+                        return url;
+                    }
+                }
+
+                for (var slice = 0; slice <= 7403; slice++) {
+                    var temp = {
+                        height: 16*256,
+                        width:  16*256,
+                        tileSize: 256,
+                        minLevel: 0,
+                        maxLevel: 4,
+                        getTileUrl: urlGetY(slice),
+                        slice: slice
+                    };
+                    obj.tileSources.push(temp);
+                }
+	        params.tileSources=obj.tileSources;
+	        viewer = OpenSeadragon({
+		    id: "openseadragony",
+		    prefixUrl: "lib/openseadragon/images/",
+		    tileSources: obj.tileSources,
+                    showReferenceStrip: false,
+	            referenceStripSizeRatio: 0.1,
+                    referenceStripScroll: 'horizontal',
+		    showNavigator: true,
+                    sequenceMode: true,
+		    navigatorId:"myNavigator",
+		    zoomInButton:"zoom-in",
+		    zoomOutButton:"zoom-out",
+		    homeButton:"home",
+                    initialPage: 2000,
+                    preserveViewport: true
+	        });
 		viewer.scalebar({
 			type: OpenSeadragon.ScalebarType.MICROSCOPE,
 			minWidth:'150px',
@@ -826,7 +857,200 @@ function initMicrodraw() {
 			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
 			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 		]});
-		
+              
+                // Now do the X dimension
+
+                obj.tileSources = [];
+                function urlGetX(slice) {
+                    return function(level, x, y) {
+                        var numTiles = 1;
+                        numTiles<<= level;
+                        var url = "http://132.216.122.239/x/l" +  (level) + "/x" + slice + "/y" + x + "/z" + (numTiles-y-1) + ".png";
+                        console.log(url);
+                        return url;
+                    }
+                }
+
+                for (var slice = 0; slice <= 6527; slice++) {
+                    var temp = {
+                        height: 16*256,
+                        width:  16*256,
+                        tileSize: 256,
+                        minLevel: 0,
+                        maxLevel: 4,
+                        getTileUrl: urlGetX(slice),
+                        slice: slice
+                    };
+                    obj.tileSources.push(temp);
+                }
+	        viewer = OpenSeadragon({
+		    id: "openseadragonx",
+		    prefixUrl: "lib/openseadragon/images/",
+		    tileSources: obj.tileSources,
+                    showReferenceStrip: (obj.tileSources.length > 1),
+	            referenceStripSizeRatio: 0.1,
+                    referenceStripScroll: 'horizontal',
+		    showNavigator: true,
+                    sequenceMode: true,
+		    navigatorId:"myNavigator",
+		    zoomInButton:"zoom-in",
+		    zoomOutButton:"zoom-out",
+		    homeButton:"home",
+                    initialPage: 2000,
+                    preserveViewport: true
+	        });
+		viewer.scalebar({
+			type: OpenSeadragon.ScalebarType.MICROSCOPE,
+			minWidth:'150px',
+			pixelsPerMeter:obj.pixelsPerMeter,
+			color:'black',
+			fontColor:'black',
+			backgroundColor:"rgba(255,255,255,0.5)",
+			barThickness:4,
+			location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
+			xOffset:5,
+			yOffset:5
+		});
+		viewer.addHandler('open',initAnnotationOverlay);
+		viewer.addHandler("page", function (data) {
+			console.log(params.tileSources[data.page]);
+		});
+		viewer.addViewerInputHook({hooks: [
+			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
+			{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
+			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
+			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
+		]});
+
+		/* Finally the Z axis */
+                obj.tileSources = [];
+                function urlGetZ(slice) {
+                    return function(level, x, y) {
+                        var numTiles = 1;
+                        numTiles<<= level;
+                        var url = "http://132.216.122.239/z/l" + level + "/x" + x + "/y" + (numTiles-y-1) + "/z" + slice + ".png";
+                        console.log(url);
+                        return url;
+                    }
+                }
+
+                for (var slice = 0; slice <= 5692; slice++) {
+                    var temp = {
+                        height: 16*256,
+                        width:  16*256,
+                        tileSize: 256,
+                        minLevel: 0,
+                        maxLevel: 4,
+                        getTileUrl: urlGetZ(slice),
+                        slice: slice
+                    };
+                    obj.tileSources.push(temp);
+                }
+	        params.tileSources=obj.tileSources;
+	        viewer = OpenSeadragon({
+		    id: "openseadragonz",
+		    prefixUrl: "lib/openseadragon/images/",
+		    tileSources: obj.tileSources,
+                    showReferenceStrip: (obj.tileSources.length > 1),
+	            referenceStripSizeRatio: 0.1,
+                    referenceStripScroll: 'horizontal',
+		    showNavigator: true,
+                    sequenceMode: true,
+		    navigatorId:"myNavigator",
+		    zoomInButton:"zoom-in",
+                    zoomOutButton:"zoom-out",
+		    homeButton:"home",
+                    initialPage: 2000,
+                    preserveViewport: true
+	        });
+		viewer.scalebar({
+			type: OpenSeadragon.ScalebarType.MICROSCOPE,
+			minWidth:'150px',
+			pixelsPerMeter:obj.pixelsPerMeter,
+			color:'black',
+			fontColor:'black',
+			backgroundColor:"rgba(255,255,255,0.5)",
+			barThickness:4,
+			location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
+			xOffset:5,
+			yOffset:5
+		});
+		viewer.addHandler('open',initAnnotationOverlay);
+		viewer.addHandler("page", function (data) {
+			console.log(params.tileSources[data.page]);
+		});
+		viewer.addViewerInputHook({hooks: [
+			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
+			{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
+			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
+			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
+		]});
+            }
+            else {
+                obj.tileSources = [];
+                function urlGetY(slice) {
+                    return function(level, x, y) {
+                        var numTiles = 1;
+                        numTiles<<= level;
+                        var url = "http://132.216.122.239/y/l" +  (level) + "/x" + x + "/y" + slice + "/z" + (numTiles-y-1) + ".png";
+                        console.log(url);
+                        return url;
+                    }
+                }
+
+                for (var slice = 0; slice <= 7403; slice++) {
+                    var temp = {
+                        height: 16*256,
+                        width:  16*256,
+                        tileSize: 256,
+                        minLevel: 0,
+                        maxLevel: 4,
+                        getTileUrl: urlGetY(slice),
+                        slice: slice
+                    };
+                    obj.tileSources.push(temp);
+                }
+	        params.tileSources=obj.tileSources;
+	        viewer = OpenSeadragon({
+		    id: "openseadragon1",
+		    prefixUrl: "lib/openseadragon/images/",
+		    tileSources: obj.tileSources,
+                    showReferenceStrip: false,
+	            referenceStripSizeRatio: 0.1,
+                    referenceStripScroll: 'horizontal',
+		    showNavigator: true,
+                    sequenceMode: true,
+		    navigatorId:"myNavigator",
+		    zoomInButton:"zoom-in",
+		    zoomOutButton:"zoom-out",
+		    homeButton:"home",
+                    initialPage: 2000,
+                    preserveViewport: true
+	        });
+		viewer.scalebar({
+			type: OpenSeadragon.ScalebarType.MICROSCOPE,
+			minWidth:'150px',
+			pixelsPerMeter:obj.pixelsPerMeter,
+			color:'black',
+			fontColor:'black',
+			backgroundColor:"rgba(255,255,255,0.5)",
+			barThickness:4,
+			location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
+			xOffset:5,
+			yOffset:5
+		});
+		viewer.addHandler('open',initAnnotationOverlay);
+		viewer.addHandler("page", function (data) {
+			console.log(params.tileSources[data.page]);
+		});
+		viewer.addViewerInputHook({hooks: [
+			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
+			{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
+			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
+			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
+		]});
+            }
+
 		if(debug) console.log("< initMicrodraw resolve: success");
 		def.resolve();
 	});
@@ -843,6 +1067,11 @@ function initMicrodraw() {
 	return def.promise();
 }
 
+
+params=deparam();
+initMicrodraw();
+/*
+
 $.when(
 	interactIP(),
 	MyLoginWidget.init()
@@ -852,6 +1081,7 @@ $.when(
 	myOrigin.source=params.source;
 	updateUser();
 }).then(initMicrodraw);
+*/
 /*
 	// Log microdraw
 	//interactSave(JSON.stringify(myOrigin),"entered",null);
