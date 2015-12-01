@@ -671,6 +671,15 @@ function cmdPaste() {
     paper.view.draw();
 }
 
+function cmdCopy() {
+    if( region !== null ) {
+	var json=region.path.exportJSON();
+	copyRegion=JSON.parse(JSON.stringify(region));
+	copyRegion.path=json;
+	console.log( "< copy " + copyRegion.name );
+    }
+}
+
 function toolSelection(event) {
 	if(debug) console.log("> toolSelection");
 	
@@ -709,12 +718,7 @@ function toolSelection(event) {
 			backToPreviousTool(prevTool);
 			break;
 		case "copy":
-			if( region !== null ) {
-				var json=region.path.exportJSON();
-				copyRegion=JSON.parse(JSON.stringify(region));
-				copyRegion.path=json;
-				console.log( "< copy " + copyRegion.name );
-			} 
+                        cmdCopy();
 			backToPreviousTool(prevTool);
 			break;
 		case "paste":
@@ -1055,9 +1059,9 @@ function initMicrodraw() {
         shortCutHandler('^z', cmdUndo);
         shortCutHandler('^y', cmdRedo);
         shortCutHandler('^x', function() { console.log("cut!"); } );
-        shortCutHandler('^v', function() { console.log("paste!"); } );
+        shortCutHandler('^v', cmdPaste);
         shortCutHandler('^a', function() { console.log("select all!"); } );
-        shortCutHandler('^c', function() { console.log("copy!"); } );
+        shortCutHandler('^c', cmdCopy);
         shortCutHandler(46, cmdDeleteSelected );
 
 	// Configure currently selected tool
