@@ -668,6 +668,8 @@ function toolSelection(event) {
                     Regions[i].path.rotate(degree);
                 }
             }
+            paper.view.draw();
+			backToPreviousTool(prevTool);
             break;
 		case "save":
 			interactSave();
