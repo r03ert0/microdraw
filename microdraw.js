@@ -1,4 +1,4 @@
-var	debug=true;
+var	debug=false;
 
 var dbroot="http://"+localhost+"/interact/php/interact.php";
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
@@ -449,14 +449,10 @@ function mouseDown(x,y) {
 				} 
 				break;
 			}
-
-			else
-			{
-				if ( hitResult==null && region ){
-					//deselect paths
-					region.path.selected=false;
-					region=null;
-				}
+			if ( hitResult==null && region ){
+				//deselect paths
+				region.path.selected=false;
+				region=null;
 			}
 			break;
 
