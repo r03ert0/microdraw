@@ -626,6 +626,7 @@ function backToPreviousTool(prevTool) {
  */
 function cmdDeleteSelected() {
     var undoInfo = getUndo();
+    var i;
     for(i in Regions) {
 	if(Regions[i].path.selected) {
 	    removeRegion(Regions[i]);
@@ -635,6 +636,39 @@ function cmdDeleteSelected() {
 	    break;
 	}
     }
+}
+
+function cmdRotateSelected() {
+    var undoInfo = getUndo();
+    var degree=prompt("Degree of rotation");
+    var i;
+    for(i in Regions) {
+        if(Regions[i].path.selected) {
+            Regions[i].path.rotate(degree);
+        }
+    }
+    UndoStack.push(undoInfo);
+    RedoStack = [];
+    paper.view.draw();
+}
+
+function cmdPaste() {
+    if( copyRegion !== null ) {
+        var undoInfo = getUndo();
+        UndoStack.push(undoInfo);
+        RedoStack = [];
+	console.log( "paste " + copyRegion.name );
+	if( findRegionByNameInPage(copyRegion.name,current_page) ) {
+	    copyRegion.name += " Copy";
+	}
+	var reg=JSON.parse(JSON.stringify(copyRegion));
+	reg.path=new paper.Path();
+	reg.path.importJSON(copyRegion.path);
+	reg.page=null;
+	reg.path.fullySelected=true;
+	newRegion({name:copyRegion.name,page:reg.page,path:reg.path});
+    }
+    paper.view.draw();
 }
 
 function toolSelection(event) {
@@ -661,16 +695,10 @@ function toolSelection(event) {
                         cmdDeleteSelected();
 			backToPreviousTool(prevTool);
 			break;
-        case "rotate": 
-            var degree=prompt("Degree of rotation");
-            for(i in Regions) {
-                if(Regions[i].path.selected) {
-                    Regions[i].path.rotate(degree);
-                }
-            }
-            paper.view.draw();
+                case "rotate": 
+                        cmdRotateSelected();
 			backToPreviousTool(prevTool);
-            break;
+                        break;
 		case "save":
 			interactSave();
 			backToPreviousTool(prevTool);
@@ -690,20 +718,7 @@ function toolSelection(event) {
 			backToPreviousTool(prevTool);
 			break;
 		case "paste":
-			if( copyRegion !== null ) {
-				console.log( "paste " + copyRegion.name );
-				if( findRegionByNameInPage(copyRegion.name,current_page) ) {
-						copyRegion.name += " Copy";
-					}
-				var reg=JSON.parse(JSON.stringify(copyRegion));
-				reg.path=new paper.Path();
-				reg.path.importJSON(copyRegion.path);
-				reg.page=null;
-				reg.path.fullySelected=true;
-				newRegion({name:copyRegion.name,page:reg.page,path:reg.path});
-
-			}
-			paper.view.draw();
+                        cmdPaste();
 			backToPreviousTool(prevTool);
 			break;
 	}
@@ -1051,18 +1066,24 @@ function initMicrodraw() {
 
 	// load tile sources
 	$.getJSON(params.source,function(obj) {
+                if (obj.tileCodeY) {
+                    obj.tileSources = eval(obj.tileCodeY);
+                    console.log("tileSources.length " + tileSources.length);
+                }
 		params.tileSources=obj.tileSources;
 		viewer = OpenSeadragon({
 			id: "openseadragon1",
 			prefixUrl: "lib/openseadragon/images/",
 			tileSources: obj.tileSources,
-			showReferenceStrip: (obj.tileSources.length>1),
+			showReferenceStrip: false,
 	        referenceStripSizeRatio: 0.2,
 			showNavigator: true,
 			navigatorId:"myNavigator",
 			zoomInButton:"zoom-in",
 			zoomOutButton:"zoom-out",
-			homeButton:"home"
+			homeButton:"home",
+                        initialPage: Math.round(obj.tileSources.length / 2),
+                        preserveViewport: false
 		});
 		viewer.scalebar({
 			type: OpenSeadragon.ScalebarType.MICROSCOPE,
@@ -1087,22 +1108,21 @@ function initMicrodraw() {
 			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
 			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 		]});
-            }
+            });
 
-		if(debug) console.log("< initMicrodraw resolve: success");
-		def.resolve();
-	} );
+    if(debug) console.log("< initMicrodraw resolve: success");
+    def.resolve();
 	
-	$(window).resize(function() {
-		$("#regionList").height($(window).height()-$("#regionList").offset().top);
-		resizeAnnotationOverlay();
-	});
+    $(window).resize(function() {
+	$("#regionList").height($(window).height()-$("#regionList").offset().top);
+	resizeAnnotationOverlay();
+    });
 
-	appendRegionTagsFromOntology(Ontology);
+    appendRegionTagsFromOntology(Ontology);
 	
-	//makeSVGInline().then(selectTool());
+    //makeSVGInline().then(selectTool());
 	
-	return def.promise();
+    return def.promise();
 }
 
 
