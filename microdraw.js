@@ -1,8 +1,9 @@
-var	debug=false;
+var	debug=true;
 
 var dbroot="http://"+localhost+"/interact/php/interact.php";
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
 var region=null;	// currently selected region (one element of Regions[])
+var copyRegion;		// clone of the currently selected region for copy/paste
 var handle;			// currently selected control point or handle (if any)
 var newRegionFlag;	
 var selectedTool;	// currently selected tool
@@ -12,21 +13,31 @@ var magicV=1000;	// resolution of the annotation canvas
 var myOrigin={};	// Origin identification for DB storage
 var	params;			// URL parameters
 var	myIP;			// user's IP
+var current_page=0; // current page, starting on page 0
+var flagIsTranslating=false;
 
 /*
 	Region handling functions
 */
 function newRegion(arg) {
 	if(debug) console.log("> newRegion");
-	
 	var reg={};
 	
 	reg.uid=regionUniqueID();
-	if(arg.name)
+
+	if(arg.name) {
 		reg.name=arg.name;
+	}
 	else {
 		reg.name="Untitled "+reg.uid;
 	}
+
+	if( arg.page )
+		reg.page=arg.page;
+	else {
+		reg.page=current_page; 
+	}
+
 	var color=regionHashColor(reg.name);
 	
 	if(arg.path) {
@@ -114,6 +125,31 @@ function findRegionByUID(uid) {
 	console.log("Region with unique ID "+uid+" not found");
 	return null;
 }
+function findRegionByName(name) {
+	if(debug) console.log("> findRegionByName");
+	
+	var	i;
+	for(i=0;i<Regions.length;i++) {
+		if(Regions[i].name==name) {
+			return Regions[i];
+		}
+	}
+	console.log("Region with name " + name + " not found");
+	return null;
+}
+function findRegionByNameInPage(name,page) {
+	if(debug) console.log("> findRegionByNameInPage");
+	
+	var	i;
+	for(i=0;i<Regions.length;i++) {
+		if(Regions[i].name==name && Regions[i].page==page) {
+			return Regions[i];
+		}
+	}
+	console.log("Region with name " + name + " not found in page " + page);
+	return null;
+}
+
 var counter=1;
 function regionUniqueID() {
 	if(debug) console.log("> regionUniqueID");
@@ -314,6 +350,7 @@ function handleRegionTap(event) {
 	}
 	if(debug) console.log("< handleRegionTap");
 }
+
 function mouseDown(x,y) {
 	if(debug) console.log("> mouseDown");
 	
@@ -338,7 +375,7 @@ function mouseDown(x,y) {
 				});
 			newRegionFlag=false;
 			if (hitResult) {
-				var i;
+				var i,re;
 				for(i=0;i<Regions.length;i++) {
 					if(Regions[i].path==hitResult.item) {
 						re=Regions[i];
@@ -358,43 +395,43 @@ function mouseDown(x,y) {
 				if (hitResult.type == 'handle-in') {
 					handle = hitResult.segment.handleIn;
 					handle.point=point;
-				} else
-				if (hitResult.type == 'handle-out') {
+				} 
+				else if (hitResult.type == 'handle-out') {
 					handle = hitResult.segment.handleOut;
 					handle.point=point;
-				} else
-				if (hitResult.type=='segment') {
+				} 
+				else if (hitResult.type=='segment') {
 					if(selectedTool=="select") {
 						handle=hitResult.segment.point;
 						handle.point=point;
 					}
 					if(selectedTool=="delpoint")
 						hitResult.segment.remove();
-				} else
-				if (hitResult.type=='stroke' && selectedTool=="addpoint") {
+				} 
+				else if (hitResult.type=='stroke' && selectedTool=="addpoint") {
 					region.path
 					.curves[hitResult.location.index]
 					.divide(hitResult.location);
 					region.path.fullySelected=true;
 					paper.view.draw();
-				} else
-				if (selectedTool=="addregion") {
+				} 
+				else if (selectedTool=="addregion") {
 					if(prevRegion) {
 						var newPath=region.path.unite(prevRegion.path);
 						removeRegion(prevRegion);
 						region.path.remove();
 						region.path=newPath;
 					}
-				} else
-				if (selectedTool=="delregion") {
+				} 
+				else if (selectedTool=="delregion") {
 					if(prevRegion) {
 						var newPath=prevRegion.path.subtract(region.path);
 						removeRegion(prevRegion);
 						prevRegion.path.remove();
 						newRegion({path:newPath});
 					}
-				} else
-				if (selectedTool=="splitregion") {
+				} 
+				else if (selectedTool=="splitregion") {
 					if(prevRegion) {
 						var newPath=region.path.divide(prevRegion.path);
 						removeRegion(prevRegion);
@@ -409,15 +446,20 @@ function mouseDown(x,y) {
 							}
 						}
 					}
-				}
+				} 
 				break;
 			}
-			if(hitResult==null && region) {
-				// deselect paths
-				region.path.selected=false;
-				region=null;
+
+			else //if (hitResult)
+			{
+				if ( hitResult==null && region ){
+					//deselect paths
+					region.path.selected=false; //can be deleted if regions is set to zero, no?
+					region=null;
+				}
 			}
 			break;
+
 		case "draw":
 			// Start a new region
 			// if there was an older region selected, unselect it
@@ -504,6 +546,145 @@ function toolSelection(event) {
 		case "home":
 			backToPreviousTool(prevTool);
 			break;
+		case "copy":
+			if( region !== null ) {
+				var json=region.path.exportJSON();
+				copyRegion=JSON.parse(JSON.stringify(region));
+				copyRegion.path=json;
+				console.log( "< copy " + copyRegion.name );
+			} 
+			backToPreviousTool(prevTool);
+			break;
+		case "paste":
+			if( copyRegion !== null ) {
+				console.log( "paste " + copyRegion.name );
+				if( findRegionByNameInPage(copyRegion.name,current_page) ) {
+						copyRegion.name += " Copy";
+					}
+				var reg=JSON.parse(JSON.stringify(copyRegion));
+				reg.path=new paper.Path();
+				reg.path.importJSON(copyRegion.path);
+				reg.page=null;
+				reg.path.fullySelected=true;
+				newRegion({name:copyRegion.name,page:reg.page,path:reg.path});
+
+			}
+			paper.view.draw();
+			backToPreviousTool(prevTool);
+			break;
+
+
+
+
+
+
+
+
+				/*
+				
+	
+	function newRegion(arg) {
+	if(debug) console.log("> newRegion");
+	var reg={};
+	
+	reg.uid=regionUniqueID();
+
+	if(arg && arg.name)
+		reg.name="Untitled "+reg.uid;    //reg.name=arg.name; –>for that they have same uid
+	else {
+		reg.name="Untitled "+reg.uid;
+	}
+	var color=regionHashColor(reg.name);
+	
+	if(arg && arg.path) {
+		reg.path = arg.path;
+		reg.path.strokeWidth=1;
+		reg.path.strokeColor='black';
+		reg.path.strokeScaling=false;
+		reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+		reg.path.selected=false;
+	}
+	
+	// append region tag to regionList
+	var el=$(regionTag(reg.name,reg.uid));
+	$("#regionList").append(el);
+	
+
+				var copyRegion;
+			
+				if ( selectedTool=="copy" ) {
+					console.log( "> copy" );
+					//region.path.fullySelected=true;
+					copyRegion=JSON.parse(JSON.stringify(re));
+					copyRegion.name = re.name;
+					console.log( "< copy" + copyRegion.name );
+				} 
+				break;
+			}
+
+
+				if ( selectedTool=="paste" ){ //check if structure with that name is in that page : then give it + 'Copy'
+					console.log( "> paste" );
+					region = newRegion( copyRegion );   //({path:copyRegion.path});
+					console.log( region );
+					newRegionFlag=true;
+					for( var i=0; i<Regions.length; ++i ) {
+						if( Regions[i].name == re.name ) {
+							copyRegion.name = re.name + 'Copy'; //+region.page
+						}
+						else {
+							copyRegion.name = re.name;
+						}	
+					}
+				}
+			}
+			*/
+
+
+
+			/* robertos working code
+			if(hitResult==null && region) {
+				// deselect paths
+				region.path.selected=false;
+				region=null;
+			} else /*plus my stuff
+			if(hitResult==null && selectedTool=="paste") {
+				//deselect paths
+				//region.path.selected=false;
+
+			}
+			}*/
+
+
+
+
+		/*
+		nach paste zurück springen
+		case "copy":
+			for(i in Regions) {
+				if(Regions[i].path.selected) {
+					var Regions[i]); //instead of removeRegion(...)
+					paper.view.draw();
+					break;
+				}
+			}
+		*/
+		
+		/*key="regionPaths";
+	
+	// configure value to be saved
+	value={};
+	value.Regions=[];
+	for(i=0;i<Regions.length;i++)
+	{
+		el={};
+		el.path=JSON.parse(Regions[i].path.exportJSON());
+		el.name=Regions[i].name;
+		value.Regions.push(el);
+	}
+	*/
+
+
 	}
 }
 function selectTool() {
@@ -577,6 +758,7 @@ function interactLoad() {
 		"key":key
 	}).success(function(data) {
 		var	i,obj,reg;
+	//	console.log(data); JSONparse on this text of html errors
 		$("#regionList").html("");
 		obj=JSON.parse(data);
 		if(obj) {
@@ -585,10 +767,11 @@ function interactLoad() {
 				var reg={};
 				var	json;
 				reg.name=obj.Regions[i].name;
+				reg.page=obj.Regions[i].page;
 				json=obj.Regions[i].path;
 				reg.path=new paper.Path();
 				reg.path.importJSON(json);
-				newRegion({name:reg.name,path:reg.path});
+				newRegion({name:reg.name,page:reg.page,path:reg.path});
 			}
 			paper.view.draw();
 		}
@@ -790,7 +973,7 @@ function initMicrodraw() {
 	selectTool();
 
 	// load tile sources
-	$.get(params.source,function(obj) {
+	$.getJSON(params.source,function(obj) {
 		params.tileSources=obj.tileSources;
 		viewer = OpenSeadragon({
 			id: "openseadragon1",
@@ -818,7 +1001,8 @@ function initMicrodraw() {
 		});
 		viewer.addHandler('open',initAnnotationOverlay);
 		viewer.addHandler("page", function (data) {
-			console.log(params.tileSources[data.page]);
+			current_page=data.page;
+			console.log(data.page,params.tileSources[data.page]);
 		});
 		viewer.addViewerInputHook({hooks: [
 			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
@@ -852,6 +1036,11 @@ $.when(
 	myOrigin.source=params.source;
 	updateUser();
 }).then(initMicrodraw);
+
+//without database connection: comment out the part of code above and use the one below
+//params=deparam();
+//initMicrodraw();
+
 /*
 	// Log microdraw
 	//interactSave(JSON.stringify(myOrigin),"entered",null);
