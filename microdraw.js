@@ -450,11 +450,11 @@ function mouseDown(x,y) {
 				break;
 			}
 
-			else //if (hitResult)
+			else
 			{
 				if ( hitResult==null && region ){
 					//deselect paths
-					region.path.selected=false; //can be deleted if regions is set to zero, no?
+					region.path.selected=false;
 					region=null;
 				}
 			}
@@ -572,118 +572,6 @@ function toolSelection(event) {
 			paper.view.draw();
 			backToPreviousTool(prevTool);
 			break;
-
-
-
-
-
-
-
-
-				/*
-				
-	
-	function newRegion(arg) {
-	if(debug) console.log("> newRegion");
-	var reg={};
-	
-	reg.uid=regionUniqueID();
-
-	if(arg && arg.name)
-		reg.name="Untitled "+reg.uid;    //reg.name=arg.name; –>for that they have same uid
-	else {
-		reg.name="Untitled "+reg.uid;
-	}
-	var color=regionHashColor(reg.name);
-	
-	if(arg && arg.path) {
-		reg.path = arg.path;
-		reg.path.strokeWidth=1;
-		reg.path.strokeColor='black';
-		reg.path.strokeScaling=false;
-		reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
-		reg.path.selected=false;
-	}
-	
-	// append region tag to regionList
-	var el=$(regionTag(reg.name,reg.uid));
-	$("#regionList").append(el);
-	
-
-				var copyRegion;
-			
-				if ( selectedTool=="copy" ) {
-					console.log( "> copy" );
-					//region.path.fullySelected=true;
-					copyRegion=JSON.parse(JSON.stringify(re));
-					copyRegion.name = re.name;
-					console.log( "< copy" + copyRegion.name );
-				} 
-				break;
-			}
-
-
-				if ( selectedTool=="paste" ){ //check if structure with that name is in that page : then give it + 'Copy'
-					console.log( "> paste" );
-					region = newRegion( copyRegion );   //({path:copyRegion.path});
-					console.log( region );
-					newRegionFlag=true;
-					for( var i=0; i<Regions.length; ++i ) {
-						if( Regions[i].name == re.name ) {
-							copyRegion.name = re.name + 'Copy'; //+region.page
-						}
-						else {
-							copyRegion.name = re.name;
-						}	
-					}
-				}
-			}
-			*/
-
-
-
-			/* robertos working code
-			if(hitResult==null && region) {
-				// deselect paths
-				region.path.selected=false;
-				region=null;
-			} else /*plus my stuff
-			if(hitResult==null && selectedTool=="paste") {
-				//deselect paths
-				//region.path.selected=false;
-
-			}
-			}*/
-
-
-
-
-		/*
-		nach paste zurück springen
-		case "copy":
-			for(i in Regions) {
-				if(Regions[i].path.selected) {
-					var Regions[i]); //instead of removeRegion(...)
-					paper.view.draw();
-					break;
-				}
-			}
-		*/
-		
-		/*key="regionPaths";
-	
-	// configure value to be saved
-	value={};
-	value.Regions=[];
-	for(i=0;i<Regions.length;i++)
-	{
-		el={};
-		el.path=JSON.parse(Regions[i].path.exportJSON());
-		el.name=Regions[i].name;
-		value.Regions.push(el);
-	}
-	*/
-
 
 	}
 }
@@ -1040,6 +928,7 @@ $.when(
 //without database connection: comment out the part of code above and use the one below
 //params=deparam();
 //initMicrodraw();
+
 
 /*
 	// Log microdraw
