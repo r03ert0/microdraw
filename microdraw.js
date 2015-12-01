@@ -13,6 +13,9 @@ var magicV=1000;	// resolution of the annotation canvas
 var myOrigin={};	// Origin identification for DB storage
 var	params;			// URL parameters
 var	myIP;			// user's IP
+var UndoStack = [];
+var RedoStack = [];
+var mouseUndo;                  // tentative undo information.
 
 /***1
 	Region handling functions
@@ -85,7 +88,7 @@ function selectRegion(reg) {
 			region=reg;
 		}
 		else {
-			Regions[i].selected=false;
+			Regions[i].path.selected=false; // BUG?
 			Regions[i].path.fullySelected=false;
 		}
 	}
@@ -317,6 +320,8 @@ function handleRegionTap(event) {
 }
 function mouseDown(x,y) {
 	if(debug) console.log("> mouseDown");
+
+        mouseUndo = getUndo();
 	
 	var prevRegion=null;
 	var point=paper.view.viewToProject(new paper.Point(x,y));
@@ -377,6 +382,7 @@ function mouseDown(x,y) {
 					.curves[hitResult.location.index]
 					.divide(hitResult.location);
 					region.path.fullySelected=true;
+                                        commitMouseUndo();
 					paper.view.draw();
 				} else
 				if (selectedTool=="addregion") {
@@ -385,6 +391,7 @@ function mouseDown(x,y) {
 						removeRegion(prevRegion);
 						region.path.remove();
 						region.path=newPath;
+                                                commitMouseUndo();
 					}
 				} else
 				if (selectedTool=="delregion") {
@@ -393,6 +400,7 @@ function mouseDown(x,y) {
 						removeRegion(prevRegion);
 						prevRegion.path.remove();
 						newRegion({path:newPath});
+                                                commitMouseUndo();
 					}
 				} else
 				if (selectedTool=="splitregion") {
@@ -409,6 +417,7 @@ function mouseDown(x,y) {
 								newRegion({path:newPath._children[i]});
 							}
 						}
+                                                commitMouseUndo();
 					}
 				}
 				break;
@@ -428,10 +437,12 @@ function mouseDown(x,y) {
 			region=newRegion({path:new paper.Path({segments:[point]})});
 			// signal that a new region has been created for drawing
 			newRegionFlag=true;
+                        commitMouseUndo();
 			break;
 	}
 	paper.view.draw();
 }
+
 function mouseDrag(x,y) {
 	if(debug) console.log("> mouseDrag");
 
@@ -440,12 +451,14 @@ function mouseDrag(x,y) {
 		handle.x+=point.x-handle.point.x;
 		handle.y+=point.y-handle.point.y;
 		handle.point=point;
+                commitMouseUndo();
 	} else
 	if(selectedTool=="draw") {
 		region.path.add(point);
 	}
 	paper.view.draw();
 }
+
 function mouseUp() {
 	if(debug) console.log("> mouseUp");
 
@@ -455,6 +468,86 @@ function mouseUp() {
 		region.path.fullySelected = true;
 	}
 	paper.view.draw();
+}
+
+/*** UNDO ***/
+
+/**
+ * Command to actually perform an undo.
+ */
+function cmdUndo() {
+    if (UndoStack.length > 0) {
+        var redoInfo = getUndo();
+        var undoInfo = UndoStack.pop();
+        loadUndo(undoInfo);
+        RedoStack.push(redoInfo);
+        paper.view.draw();
+    }
+}
+
+/**
+ * Command to actually perform a redo.
+ */
+function cmdRedo() {
+    if (RedoStack.length > 0) {
+        var undoInfo = getUndo();
+        var redoInfo = RedoStack.pop();
+        loadUndo(redoInfo);
+        UndoStack.push(undoInfo);
+        paper.view.draw();
+    }
+}
+
+/**
+ * Return a complete copy of the current state as an undo object.
+ */
+function getUndo() {
+    var undo = [];
+    for (var i = 0; i < Regions.length; i++) {
+        var el = {
+            json: JSON.parse(Regions[i].path.exportJSON()),
+            name: Regions[i].name,
+            selected: Regions[i].path.selected,
+            fullySelected: Regions[i].path.fullySelected
+        }
+        undo.push(el);
+    }
+    return undo;
+}
+
+/**
+ * Restore the current state from an undo object.
+ */
+function loadUndo(undo) {
+    while (Regions.length > 0)
+        removeRegion(Regions[0]);
+    region = null;
+    for (var i = 0; i < undo.length; i++) {
+        var el = undo[i];
+        var path = new paper.Path();
+        path.importJSON(el.json);
+	reg = newRegion({name:el.name, path:path});
+        reg.path.selected = el.selected;
+        reg.path.fullySelected = el.fullySelected;
+        if (el.selected) {
+            if (region == null)
+                region = reg;
+            else
+                console.log("Should not happen: two regions selected?");
+        }
+    }
+}
+
+/**
+ * If we have actually made a change with a mouse operation, commit 
+ * the undo information.
+ */
+function commitMouseUndo() {
+    if (mouseUndo !== undefined) {
+        UndoStack.push(mouseUndo);
+        RedoStack = [];
+        mouseUndo = undefined;
+    }
 }
 
 /***3
@@ -467,10 +560,17 @@ function backToPreviousTool(prevTool) {
 	},500);
 }
 
-function deleteSelected() {
+
+/**
+ * This function just deletes the currently selected object.
+ */
+function cmdDeleteSelected() {
+    var undoInfo = getUndo();
     for(i in Regions) {
 	if(Regions[i].path.selected) {
 	    removeRegion(Regions[i]);
+            UndoStack.push(undoInfo);
+            RedoStack = [];
 	    paper.view.draw();
 	    break;
 	}
@@ -498,7 +598,7 @@ function toolSelection(event) {
 			handle=null;
 			break;
 		case "delete":
-                        deleteSelected();
+                        cmdDeleteSelected();
 			backToPreviousTool(prevTool);
 			break;
 		case "save":
@@ -839,13 +939,13 @@ function initMicrodraw() {
         // Initialize the control key handler
         initShortCutHandler();
 
-        shortCutHandler('^z', function() { console.log("undo!"); } );
-        shortCutHandler('^y', function() { console.log("redo!"); } );
+        shortCutHandler('^z', cmdUndo);
+        shortCutHandler('^y', cmdRedo);
         shortCutHandler('^x', function() { console.log("cut!"); } );
         shortCutHandler('^v', function() { console.log("paste!"); } );
         shortCutHandler('^a', function() { console.log("select all!"); } );
         shortCutHandler('^c', function() { console.log("copy!"); } );
-        shortCutHandler(46, deleteSelected );
+        shortCutHandler(46, cmdDeleteSelected );
 
 	// Configure currently selected tool
 	selectedTool="zoom";
@@ -872,7 +972,7 @@ function initMicrodraw() {
 		        zoomInButton:"zoom-in",
 		        zoomOutButton:"zoom-out",
 		        homeButton:"home",
-                        initialPage: obj.tileSources.length / 2,
+                        initialPage: Math.round(obj.tileSources.length / 2),
                         preserveViewport: true
 	            });
 		    viewer.scalebar({
@@ -889,7 +989,7 @@ function initMicrodraw() {
 		    });
 		    viewer.addHandler('open',initAnnotationOverlay);
 		    viewer.addHandler("page", function (data) {
-			console.log(data.page);
+			console.log("page: " + data.page);
 		    });
 		    viewer.addViewerInputHook({hooks: [
 			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
@@ -901,8 +1001,9 @@ function initMicrodraw() {
             }
             else {
                 // Trick to interpret the code in the JSON file.
-                if (obj.tileCodeY !== undefined)
+                if (obj.tileCodeY !== undefined) {
                     obj.tileSources = eval(obj.tileCodeY);
+                }
 	        viewer = OpenSeadragon({
 		    id: "openseadragon1",
 		    prefixUrl: "lib/openseadragon/images/",
@@ -916,7 +1017,7 @@ function initMicrodraw() {
 		    zoomInButton:"zoom-in",
 		    zoomOutButton:"zoom-out",
 		    homeButton:"home",
-                    initialPage: obj.tileSources.length/2,
+                    initialPage: Math.round(obj.tileSources.length / 2),
                     preserveViewport: true
 	        });
 		viewer.scalebar({
@@ -933,7 +1034,7 @@ function initMicrodraw() {
 		});
 		viewer.addHandler('open',initAnnotationOverlay);
 		viewer.addHandler("page", function (data) {
-			console.log(data.page);
+			console.log("page: " + data.page);
 		});
 		viewer.addViewerInputHook({hooks: [
 			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
