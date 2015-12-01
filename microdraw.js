@@ -874,6 +874,10 @@ function initMicrodraw() {
 	if(debug) console.log("> initMicrodraw promise");
 	
 	var def=$.Deferred();
+
+    var s_index  = params.source.lastIndexOf("/") + 1;
+    var filename = params.source.substr(s_index);
+    document.getElementById("filename").innerHTML = "File: " + filename;
 	
 	// Subscribe to login changes
 	MyLoginWidget.subscribe(loginChanged);
