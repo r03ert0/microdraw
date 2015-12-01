@@ -1,4 +1,4 @@
-var	debug=false;
+var debug=false;
 
 var dbroot="http://"+localhost+"/interact/php/interact.php";
 var Regions=[]; 	// main list of regions. Contains a paper.js path, a unique ID and a name;
@@ -14,17 +14,15 @@ var myOrigin={};	// Origin identification for DB storage
 var	params;			// URL parameters
 var	myIP;			// user's IP
 var current_page=0; // current page, starting on page 0
-var flagIsTranslating=false;
 
-/*
-	Region handling functions
+/***1
+    Region handling functions
 */
 function newRegion(arg) {
 	if(debug) console.log("> newRegion");
 	var reg={};
 	
 	reg.uid=regionUniqueID();
-
 	if(arg.name) {
 		reg.name=arg.name;
 	}
@@ -72,58 +70,58 @@ function newRegion(arg) {
 	return reg;
 }
 function removeRegion(reg) {
-	if(debug) console.log("> removeRegion");
-	
-	// remove from Regions array
-	Regions.splice(Regions.indexOf(reg),1);
-	// remove from paths
-	reg.path.remove();
-	// remove from regionList
-	var	tag=$("#regionList > .region-tag#"+reg.uid);
-	$(tag).remove();
+    if(debug) console.log("> removeRegion");
+    
+    // remove from Regions array
+    Regions.splice(Regions.indexOf(reg),1);
+    // remove from paths
+    reg.path.remove();
+    // remove from regionList
+    var tag=$("#regionList > .region-tag#"+reg.uid);
+    $(tag).remove();
 }
 function selectRegion(reg) {
-	if(debug) console.log("> selectRegion");
-	
-	var	i;
+    if(debug) console.log("> selectRegion");
+    
+    var i;
 
-	// Select path
-	for(i=0;i<Regions.length;i++) {
-		if(Regions[i]==reg) {
-			reg.path.selected=true;
-			reg.path.fullySelected=true;
-			region=reg;
-		}
-		else {
-			Regions[i].selected=false;
-			Regions[i].path.fullySelected=false;
-		}
-	}
-	paper.view.draw();
-	
-	// Select region name in list
-	$("#regionList > .region-tag").each(function(i){
-		$(this).addClass("deselected");
-		$(this).removeClass("selected");
-	});
+    // Select path
+    for(i=0;i<Regions.length;i++) {
+        if(Regions[i]==reg) {
+            reg.path.selected=true;
+            reg.path.fullySelected=true;
+            region=reg;
+        }
+        else {
+            Regions[i].path.selected=false;
+            Regions[i].path.fullySelected=false;
+        }
+    }
+    paper.view.draw();
+    
+    // Select region name in list
+    $("#regionList > .region-tag").each(function(i){
+        $(this).addClass("deselected");
+        $(this).removeClass("selected");
+    });
 
-	var	tag=$("#regionList > .region-tag#"+reg.uid);
-	$(tag).removeClass("deselected");
-	$(tag).addClass("selected");
-	
-	if(debug) console.log("< selectRegion");
+    var tag=$("#regionList > .region-tag#"+reg.uid);
+    $(tag).removeClass("deselected");
+    $(tag).addClass("selected");
+    
+    if(debug) console.log("< selectRegion");
 }
 function findRegionByUID(uid) {
-	if(debug) console.log("> findRegionByUID");
-	
-	var	i;
-	for(i=0;i<Regions.length;i++) {
-		if(Regions[i].uid==uid) {
-			return Regions[i];
-		}
-	}
-	console.log("Region with unique ID "+uid+" not found");
-	return null;
+    if(debug) console.log("> findRegionByUID");
+    
+    var i;
+    for(i=0;i<Regions.length;i++) {
+        if(Regions[i].uid==uid) {
+            return Regions[i];
+        }
+    }
+    console.log("Region with unique ID "+uid+" not found");
+    return null;
 }
 function findRegionByName(name) {
 	if(debug) console.log("> findRegionByName");
@@ -152,203 +150,203 @@ function findRegionByNameInPage(name,page) {
 
 var counter=1;
 function regionUniqueID() {
-	if(debug) console.log("> regionUniqueID");
-	
-	var i;
-	var	found=false;
-	while(found==false) {
-		found=true;
-		for(i=0;i<Regions.length;i++) {
-			if(Regions[i].uid==counter) {
-				counter++;
-				found=false;
-				break;
-			}
-		}
-	}
-	return counter;
+    if(debug) console.log("> regionUniqueID");
+    
+    var i;
+    var found=false;
+    while(found==false) {
+        found=true;
+        for(i=0;i<Regions.length;i++) {
+            if(Regions[i].uid==counter) {
+                counter++;
+                found=false;
+                break;
+            }
+        }
+    }
+    return counter;
 }
 
 function regionHashColor(name) {
-	if(debug) console.log("> regionHashColor");
-	
-	var color={};
-	var hash=name.split("").reduce(function(a,b){
-		a=((a<<5)-a)+b.charCodeAt(0);return a&a
-	},0);
+    if(debug) console.log("> regionHashColor");
+    
+    var color={};
+    var hash=name.split("").reduce(function(a,b){
+        a=((a<<5)-a)+b.charCodeAt(0);return a&a
+    },0);
 
-	// add some randomness
+    // add some randomness
     hash=Math.sin(hash++)*10000;
     hash=0xffffff*(hash-Math.floor(hash));
-	
-	color.red=hash&0xff;
-	color.green=(hash&0xff00)>>8;
-	color.blue=(hash&0xff0000)>>16;
-	return color;
+    
+    color.red=hash&0xff;
+    color.green=(hash&0xff00)>>8;
+    color.blue=(hash&0xff0000)>>16;
+    return color;
 }
 function regionTag(name,uid) {
-	if(debug) console.log("> regionTag");
-	
-	var color=regionHashColor(name);
-	var	str;
-	if(uid)
-		str=[	"<div class='region-tag' id='"+uid+"' style='padding:2px'>",
-				"<div class='region-color'",
-				"style='background-color:rgba(",
-				color.red,",",color.green,",",color.blue,",0.67",
-				")'></div>",
-				"<span class='region-name'>"+name+"</span>",
-				"</div>",
-				].join(" ");
-	else
-		str=[	"<div class='region-tag' style='padding:2px'>",
-				"<div class='region-color'",
-				"style='background-color:rgba(",
-				color.red,",",color.green,",",color.blue,",0.67",
-				")'></div>",
-				"<span class='region-name'>"+name+"</span>",
-				"</div>",
-				].join(" ");
-	return str;
+    if(debug) console.log("> regionTag");
+    
+    var color=regionHashColor(name);
+    var str;
+    if(uid)
+        str=[   "<div class='region-tag' id='"+uid+"' style='padding:2px'>",
+                "<div class='region-color'",
+                "style='background-color:rgba(",
+                color.red,",",color.green,",",color.blue,",0.67",
+                ")'></div>",
+                "<span class='region-name'>"+name+"</span>",
+                "</div>",
+                ].join(" ");
+    else
+        str=[   "<div class='region-tag' style='padding:2px'>",
+                "<div class='region-color'",
+                "style='background-color:rgba(",
+                color.red,",",color.green,",",color.blue,",0.67",
+                ")'></div>",
+                "<span class='region-name'>"+name+"</span>",
+                "</div>",
+                ].join(" ");
+    return str;
 }
 function appendRegionTagsFromOntology(o) {
-	if(debug) console.log("> appendRegionTagsFromOntology");
-	
-	for(var i=0;i<o.length;i++) {
-		if(o[i].parts) {
-			$("#regionPicker").append("<div>"+o[i].name+"</div>");
-			appendRegionTagsFromOntology(o[i].parts);
-		}
-		else {
-			var tag=regionTag(o[i].name);
-			var	el=$(tag).addClass("ontology");
-			$("#regionPicker").append(el);
+    if(debug) console.log("> appendRegionTagsFromOntology");
+    
+    for(var i=0;i<o.length;i++) {
+        if(o[i].parts) {
+            $("#regionPicker").append("<div>"+o[i].name+"</div>");
+            appendRegionTagsFromOntology(o[i].parts);
+        }
+        else {
+            var tag=regionTag(o[i].name);
+            var el=$(tag).addClass("ontology");
+            $("#regionPicker").append(el);
 
-			// handle single click on computers
-			el.click(singlePressOnRegion);
-	
-			// handle double click on computers
-			el.dblclick(doublePressOnRegion);
+            // handle single click on computers
+            el.click(singlePressOnRegion);
+    
+            // handle double click on computers
+            el.dblclick(doublePressOnRegion);
 
-			el.on("touchstart",handleRegionTap);
-		}
-	}
+            el.on("touchstart",handleRegionTap);
+        }
+    }
 }
 function regionPicker(parent) {
-	if(debug) console.log("> regionPicker");
-	
-	$("div#regionPicker").appendTo("body");
-	$("div#regionPicker").show();
+    if(debug) console.log("> regionPicker");
+    
+    $("div#regionPicker").appendTo("body");
+    $("div#regionPicker").show();
 }
 
 function changeRegionName(reg,name) {
-	if(debug) console.log("> changeRegionName");
-	
-	var i;
-	var color=regionHashColor(name);
+    if(debug) console.log("> changeRegionName");
+    
+    var i;
+    var color=regionHashColor(name);
 
-	// Update path
-	reg.name=name;
-	reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
-	paper.view.draw();
-	
-	// Update region tag
-	$(".region-tag#"+reg.uid+">.region-name").text(name);
-	$(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
+    // Update path
+    reg.name=name;
+    reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+    paper.view.draw();
+    
+    // Update region tag
+    $(".region-tag#"+reg.uid+">.region-name").text(name);
+    $(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
 }
 
-/*
-	Interaction: mouse and tap
+/***2
+    Interaction: mouse and tap
 */
 function clickHandler(event){
-	if(debug) console.log("> clickHandler");
+    if(debug) console.log("> clickHandler");
 
-	event.stopHandlers=!navEnabled;
+    event.stopHandlers=!navEnabled;
 }
 function pressHandler(event){
-	if(debug) console.log("> pressHandler");
+    if(debug) console.log("> pressHandler");
 
-	if(!navEnabled) {
-		event.stopHandlers = true;
-		mouseDown(event.originalEvent.layerX,event.originalEvent.layerY);
-	}
+    if(!navEnabled) {
+        event.stopHandlers = true;
+        mouseDown(event.originalEvent.layerX,event.originalEvent.layerY);
+    }
 }
 function dragHandler(event){
-	if(debug) console.log("> dragHandler");
+    if(debug) console.log("> dragHandler");
 
-	if(!navEnabled) {
-		event.stopHandlers = true;
-		mouseDrag(event.originalEvent.layerX,event.originalEvent.layerY);
-	}
+    if(!navEnabled) {
+        event.stopHandlers = true;
+        mouseDrag(event.originalEvent.layerX,event.originalEvent.layerY,event.delta.x,event.delta.y);
+    }
 }
 function dragEndHandler(event){
-	if(debug) console.log("> dragEndHandler");
+    if(debug) console.log("> dragEndHandler");
 
-	if(!navEnabled) {
-		event.stopHandlers = true;
-		mouseUp();
-	}
+    if(!navEnabled) {
+        event.stopHandlers = true;
+        mouseUp();
+    }
 }
 function singlePressOnRegion(event) {
-	if(debug) console.log("> singlePressOnRegion");
-	
-	event.stopPropagation();
-	event.preventDefault();
+    if(debug) console.log("> singlePressOnRegion");
+    
+    event.stopPropagation();
+    event.preventDefault();
 
-	var	el=$(this);
-	var	uid;
-	var	reg;
-	
-	if(el.hasClass("ontology")) {
-		// Click on regionPicker (ontology selection list)
-		var newName=el.find(".region-name").text();
-		uid=$(".region-tag.selected").attr('id');
-		reg=findRegionByUID(uid);
-		changeRegionName(reg,newName);
-		$("div#regionPicker").appendTo($("body")).hide();
-	}
-	else {
-		// Click on regionList (list or annotated regions)
-		uid=$(this).attr('id');
-		reg=findRegionByUID(uid);
-		if(reg)
-			selectRegion(reg);
-		else
-			console.log("region undefined");
-	}
+    var el=$(this);
+    var uid;
+    var reg;
+    
+    if(el.hasClass("ontology")) {
+        // Click on regionPicker (ontology selection list)
+        var newName=el.find(".region-name").text();
+        uid=$(".region-tag.selected").attr('id');
+        reg=findRegionByUID(uid);
+        changeRegionName(reg,newName);
+        $("div#regionPicker").appendTo($("body")).hide();
+    }
+    else {
+        // Click on regionList (list or annotated regions)
+        uid=$(this).attr('id');
+        reg=findRegionByUID(uid);
+        if(reg)
+            selectRegion(reg);
+        else
+            console.log("region undefined");
+    }
 }
 function doublePressOnRegion(event) {
-	if(debug) console.log("> doublePressOnRegion");
-	
-	event.stopPropagation();
-	event.preventDefault();
+    if(debug) console.log("> doublePressOnRegion");
+    
+    event.stopPropagation();
+    event.preventDefault();
 
-	regionPicker(this);
+    regionPicker(this);
 }
 var tap=false
 function handleRegionTap(event) {
 /*
-	Handles single and double tap in touch devices
+    Handles single and double tap in touch devices
 */
-	if(debug) console.log("> handleRegionTap");
+    if(debug) console.log("> handleRegionTap");
 
-	var	caller=this;
-	
-	if(!tap){ //if tap is not set, set up single tap
-		tap=setTimeout(function(){
-			tap=null
-		},300);
-		
-		// call singlePressOnRegion(event) using 'this' as context
-		singlePressOnRegion.call(this,event);
-	} else {
-		clearTimeout(tap);
-		tap=null;
-		
-		// call doublePressOnRegion(event) using 'this' as context
-		doublePressOnRegion.call(this,event);
-	}
-	if(debug) console.log("< handleRegionTap");
+    var caller=this;
+    
+    if(!tap){ //if tap is not set, set up single tap
+        tap=setTimeout(function(){
+            tap=null
+        },300);
+        
+        // call singlePressOnRegion(event) using 'this' as context
+        singlePressOnRegion.call(this,event);
+    } else {
+        clearTimeout(tap);
+        tap=null;
+        
+        // call doublePressOnRegion(event) using 'this' as context
+        doublePressOnRegion.call(this,event);
+    }
+    if(debug) console.log("< handleRegionTap");
 }
 
 function mouseDown(x,y) {
@@ -365,7 +363,7 @@ function mouseDown(x,y) {
 		case "delpoint":
 		case "addregion":
 		case "delregion":
-		case "splitregion":
+		case "splitregion": {
 			var hitResult=paper.project.hitTest(point, {
 					tolerance:2,
 					stroke: true,
@@ -373,6 +371,7 @@ function mouseDown(x,y) {
 					fill: true,
 					handles:true
 				});
+				
 			newRegionFlag=false;
 			if (hitResult) {
 				var i,re;
@@ -455,53 +454,67 @@ function mouseDown(x,y) {
 				region=null;
 			}
 			break;
-
-		case "draw":
+        }
+		case "draw": {
 			// Start a new region
 			// if there was an older region selected, unselect it
-			if(region)
+			if(region) {
 				region.path.selected = false;
+			}
 			// start a new region
 			region=newRegion({path:new paper.Path({segments:[point]})});
 			// signal that a new region has been created for drawing
 			newRegionFlag=true;
+		    console.log("drawing",region);
 			break;
+		}
 	}
 	paper.view.draw();
 }
-function mouseDrag(x,y) {
-	if(debug) console.log("> mouseDrag");
+function mouseDrag(x,y,dx,dy) {
+    if(debug) console.log("> mouseDrag");
 
-	var point=paper.view.viewToProject(new paper.Point(x,y));
-	if (handle) {
-		handle.x+=point.x-handle.point.x;
-		handle.y+=point.y-handle.point.y;
-		handle.point=point;
-	} else
-	if(selectedTool=="draw") {
-		region.path.add(point);
-	}
-	paper.view.draw();
+    var point=paper.view.viewToProject(new paper.Point(x,y));
+    
+    if (handle) {
+        handle.x+=point.x-handle.point.x;
+        handle.y+=point.y-handle.point.y;
+        handle.point=point;
+    } else
+    if(selectedTool=="draw") {
+        region.path.add(point);
+    } else
+    if(selectedTool=="select") {
+        event.stopHandlers = true;
+        for(i in Regions) {
+            var reg = Regions[i];
+            if(reg.path.selected) {
+                reg.path.position.x += dx;
+                reg.path.position.y += dy;
+            }
+        }
+    }
+    paper.view.draw();
 }
 function mouseUp() {
-	if(debug) console.log("> mouseUp");
+    if(debug) console.log("> mouseUp");
 
-	if(newRegionFlag==true){
-		region.path.simplify(5);
-		region.path.closed=true;
-		region.path.fullySelected = true;
-	}
-	paper.view.draw();
+    if(newRegionFlag==true){
+        region.path.simplify(5);
+        region.path.closed=true;
+        region.path.fullySelected = true;
+    }
+    paper.view.draw();
 }
 
-/*
-	Tool selection
+/***3
+    Tool selection
 */
 function backToPreviousTool(prevTool) {
-	setTimeout(function() {
-		selectedTool=prevTool;
-		selectTool()
-	},500);
+    setTimeout(function() {
+        selectedTool=prevTool;
+        selectTool()
+    },500);
 }
 function toolSelection(event) {
 	if(debug) console.log("> toolSelection");
@@ -533,6 +546,14 @@ function toolSelection(event) {
 			}
 			backToPreviousTool(prevTool);
 			break;
+        case "rotate": 
+            var degree=prompt("Degree of rotation");
+            for(i in Regions) {
+                if(Regions[i].path.selected) {
+                    Regions[i].path.rotate(degree);
+                }
+            }
+            break;
 		case "save":
 			interactSave();
 			backToPreviousTool(prevTool);
@@ -568,68 +589,67 @@ function toolSelection(event) {
 			paper.view.draw();
 			backToPreviousTool(prevTool);
 			break;
-
 	}
 }
 function selectTool() {
-	if(debug) console.log("> selectTool");
-	
-	$("img.button").removeClass("selected");
-	$("img.button#"+selectedTool).addClass("selected");
-	//$("svg").removeClass("selected");
-	//$("svg#"+selectedTool).addClass("selected");
+    if(debug) console.log("> selectTool");
+    
+    $("img.button").removeClass("selected");
+    $("img.button#"+selectedTool).addClass("selected");
+    //$("svg").removeClass("selected");
+    //$("svg#"+selectedTool).addClass("selected");
 }
 
-/*
-	Annotation storage
+/***4
+    Annotation storage
 */
 /* Interact push/pull */
 function interactSave() {
 /*
-	Save SVG overlay to Interact DB
+    Save SVG overlay to Interact DB
 */
-	if(debug) console.log("> save promise");
-	
-	var i;
-	var	key;
-	var value;
-	var el;
-	var origin;
+    if(debug) console.log("> save promise");
+    
+    var i;
+    var key;
+    var value;
+    var el;
+    var origin;
 
-	// key
-	key="regionPaths";
-	
-	// configure value to be saved
-	value={};
-	value.Regions=[];
-	for(i=0;i<Regions.length;i++)
-	{
-		el={};
-		el.path=JSON.parse(Regions[i].path.exportJSON());
-		el.name=Regions[i].name;
-		value.Regions.push(el);
-	}
-	
-	return $.ajax({
-		url:dbroot,
-		type:"POST",
-		data:{
-			"action":"save",
-			"origin":JSON.stringify(myOrigin),
-			"key":key,
-			"value":JSON.stringify(value)
-		},
-		success: function(data) {
-			console.log("< interactSave resolve: Successfully saved regions:",Regions.length);
-		},
-		error: function(jqXHR, textStatus, errorThrown) {
-			console.log("< interactSave resolve: ERROR: " + textStatus + " " + errorThrown);
-		}
-	});
+    // key
+    key="regionPaths";
+    
+    // configure value to be saved
+    value={};
+    value.Regions=[];
+    for(i=0;i<Regions.length;i++)
+    {
+        el={};
+        el.path=JSON.parse(Regions[i].path.exportJSON());
+        el.name=Regions[i].name;
+        value.Regions.push(el);
+    }
+    
+    return $.ajax({
+        url:dbroot,
+        type:"POST",
+        data:{
+            "action":"save",
+            "origin":JSON.stringify(myOrigin),
+            "key":key,
+            "value":JSON.stringify(value)
+        },
+        success: function(data) {
+            console.log("< interactSave resolve: Successfully saved regions:",Regions.length);
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log("< interactSave resolve: ERROR: " + textStatus + " " + errorThrown);
+        }
+    });
 }
 function interactLoad() {
 /*
-	Load SVG overlay from Interact DB
+    Load SVG overlay from Interact DB
 */
 	if(debug) console.log("> interactLoad promise");
 	
@@ -669,177 +689,177 @@ function interactLoad() {
 }
 function interactIP() {
 /*
-	Get my IP
+    Get my IP
 */
-	if(debug) console.log("> interactIP promise");
+    if(debug) console.log("> interactIP promise");
 
-	$("#regionList").html("<br />Connecting to database...");
-	return $.get(dbroot,{
-		"action":"remote_address"
-	}).success(function(data) {
-		if(debug) console.log("< interactIP resolve: success");
-		myIP=data;
-	}).error(function(jqXHR, textStatus, errorThrown) {
+    $("#regionList").html("<br />Connecting to database...");
+    return $.get(dbroot,{
+        "action":"remote_address"
+    }).success(function(data) {
+        if(debug) console.log("< interactIP resolve: success");
+        myIP=data;
+    }).error(function(jqXHR, textStatus, errorThrown) {
         console.log("< interactIP resolve: ERROR, "+textStatus+", "+errorThrown);
-		$("#regionList").html("<br />Error: Unable to connect to database.");
+        $("#regionList").html("<br />Error: Unable to connect to database.");
     });
 }
 
 function save() {
-	if(debug) console.log("> save");
-	
-	var i;
-	var obj;
-	var el;
+    if(debug) console.log("> save");
+    
+    var i;
+    var obj;
+    var el;
 
-	obj={};
-	obj.Regions=[];
-	for(i=0;i<Regions.length;i++)
-	{
-		el={};
-		el.path=Regions[i].path.exportJSON();
-		el.name=Regions[i].name;
-		obj.Regions.push(el);
-	}
-	localStorage.Microdraw=JSON.stringify(obj);
+    obj={};
+    obj.Regions=[];
+    for(i=0;i<Regions.length;i++)
+    {
+        el={};
+        el.path=Regions[i].path.exportJSON();
+        el.name=Regions[i].name;
+        obj.Regions.push(el);
+    }
+    localStorage.Microdraw=JSON.stringify(obj);
 
-	if(debug) console.log("+ saved regions:",Regions.length);
+    if(debug) console.log("+ saved regions:",Regions.length);
 }
 function load() {
-	if(debug) console.log("> load");
-	
-	var	i,obj,reg;
-	if(localStorage.Microdraw) {
-		console.log("Loading data from localStorage");
-		obj=JSON.parse(localStorage.Microdraw);
-		for(i=0;i<obj.Regions.length;i++) {
-			var reg={};
-			var	json;
-			reg.name=obj.Regions[i].name;
-			json=obj.Regions[i].path;
-			reg.path=new paper.Path();
-			reg.path.importJSON(json);
-			newRegion({name:reg.name,path:reg.path});
-		}
-		paper.view.draw();
-	}
+    if(debug) console.log("> load");
+    
+    var i,obj,reg;
+    if(localStorage.Microdraw) {
+        console.log("Loading data from localStorage");
+        obj=JSON.parse(localStorage.Microdraw);
+        for(i=0;i<obj.Regions.length;i++) {
+            var reg={};
+            var json;
+            reg.name=obj.Regions[i].name;
+            json=obj.Regions[i].path;
+            reg.path=new paper.Path();
+            reg.path.importJSON(json);
+            newRegion({name:reg.name,path:reg.path});
+        }
+        paper.view.draw();
+    }
 }
 
-/*
-	Initialisation
+/***5
+    Initialisation
 */
 function resizeAnnotationOverlay() {
-	if(debug) console.log("> resizeAnnotationOverlay");
-	
-	var width=$("body").width();
-	var height=$("body").height();
-	$("canvas.overlay").width(width);
-	$("canvas.overlay").height(height);
-	paper.view.viewSize=[width,height];
+    if(debug) console.log("> resizeAnnotationOverlay");
+    
+    var width=$("body").width();
+    var height=$("body").height();
+    $("canvas.overlay").width(width);
+    $("canvas.overlay").height(height);
+    paper.view.viewSize=[width,height];
 }
 function initAnnotationOverlay() {
-	if(debug) console.log("> initAnnotationOverlay");
-	
-	// set up vectorial annotation overlay
-	$("body").append("<canvas class='overlay'></canvas>");
+    if(debug) console.log("> initAnnotationOverlay");
+    
+    // set up vectorial annotation overlay
+    $("body").append("<canvas class='overlay'></canvas>");
 
-	//resizeAnnotationOverlay();
+    //resizeAnnotationOverlay();
 
-	var width=$("body").width();
-	var height=$("body").height();
-	$("canvas.overlay").attr('width',width);
-	$("canvas.overlay").attr('height',height);
+    var width=$("body").width();
+    var height=$("body").height();
+    $("canvas.overlay").attr('width',width);
+    $("canvas.overlay").attr('height',height);
 
-	var	canvas=$("canvas.overlay")[0];
-	canvas.className="overlay";
+    var canvas=$("canvas.overlay")[0];
+    canvas.className="overlay";
 
-	paper.setup(canvas);
-	paper.settings.handleSize=10;
-	
-	interactLoad().then(function(){
-		$("#regionList").height($(window).height()-$("#regionList").offset().top);
-	});
-	
-	viewer.addHandler('animation', function(event){
-		transform()
-	});
-	transform();
+    paper.setup(canvas);
+    paper.settings.handleSize=10;
+    
+    interactLoad().then(function(){
+        $("#regionList").height($(window).height()-$("#regionList").offset().top);
+    });
+    
+    viewer.addHandler('animation', function(event){
+        transform()
+    });
+    transform();
 }
 
 function transform() {
-	if(debug) console.log("> transform");
+    if(debug) console.log("> transform");
 
-	var z=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-	var sw=viewer.source.width;
-	var bounds=viewer.viewport.getBounds(true);
-    var	x=magicV*bounds.x;
-    var	y=magicV*bounds.y;
-    var	w=magicV*bounds.width;
-    var	h=magicV*bounds.height;
+    var z=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+    var sw=viewer.source.width;
+    var bounds=viewer.viewport.getBounds(true);
+    var x=magicV*bounds.x;
+    var y=magicV*bounds.y;
+    var w=magicV*bounds.width;
+    var h=magicV*bounds.height;
     paper.view.setCenter(x+w/2,y+h/2);
     paper.view.zoom=(sw*z)/magicV;
 }
 function deparam() {
-	if(debug) console.log("> deparam");
+    if(debug) console.log("> deparam");
 
-	var search = location.search.substring(1);
-	return search?JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g,'":"') + '"}',
-					 function(key, value) { return key===""?value:decodeURIComponent(value) }):{}	
+    var search = location.search.substring(1);
+    return search?JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g,'":"') + '"}',
+                     function(key, value) { return key===""?value:decodeURIComponent(value) }):{}   
 }
 function loginChanged() {
-	if(debug) console.log("> loginChanged");
+    if(debug) console.log("> loginChanged");
 
-	updateUser();
+    updateUser();
 }
 function updateUser() {
-	if(debug) console.log("> updateUser");
+    if(debug) console.log("> updateUser");
 
-	if(MyLoginWidget.username)
-		myOrigin.user=MyLoginWidget.username;
-	else {
-		var username={};
-		username.IP=myIP;
-		username.hash=navigator.userAgent.split("").reduce(function(a,b){
-			a=((a<<5)-a)+b.charCodeAt(0);return a&a
-		},0).toString(16);
-		myOrigin.user=username;
-	}
+    if(MyLoginWidget.username)
+        myOrigin.user=MyLoginWidget.username;
+    else {
+        var username={};
+        username.IP=myIP;
+        username.hash=navigator.userAgent.split("").reduce(function(a,b){
+            a=((a<<5)-a)+b.charCodeAt(0);return a&a
+        },0).toString(16);
+        myOrigin.user=username;
+    }
 }
 function makeSVGInline() {
-	if(debug) console.log("> makeSVGInline promise");
+    if(debug) console.log("> makeSVGInline promise");
 
-	var def=$.Deferred();
-	$('img.button').each(function(){
-		var $img = $(this);
-		var imgID = $img.attr('id');
-		var imgClass = $img.attr('class');
-		var imgURL = $img.attr('src');
+    var def=$.Deferred();
+    $('img.button').each(function(){
+        var $img = $(this);
+        var imgID = $img.attr('id');
+        var imgClass = $img.attr('class');
+        var imgURL = $img.attr('src');
 
-		$.get(imgURL, function(data) {
-			// Get the SVG tag, ignore the rest
-			var $svg = $(data).find('svg');
+        $.get(imgURL, function(data) {
+            // Get the SVG tag, ignore the rest
+            var $svg = $(data).find('svg');
 
-			// Add replaced image's ID to the new SVG
-			if(typeof imgID !== 'undefined') {
-				$svg = $svg.attr('id', imgID);
-			}
-			// Add replaced image's classes to the new SVG
-			if(typeof imgClass !== 'undefined') {
-				$svg = $svg.attr('class', imgClass+' replaced-svg');
-			}
+            // Add replaced image's ID to the new SVG
+            if(typeof imgID !== 'undefined') {
+                $svg = $svg.attr('id', imgID);
+            }
+            // Add replaced image's classes to the new SVG
+            if(typeof imgClass !== 'undefined') {
+                $svg = $svg.attr('class', imgClass+' replaced-svg');
+            }
 
-			// Remove any invalid XML tags as per http://validator.w3.org
-			$svg = $svg.removeAttr('xmlns:a');
+            // Remove any invalid XML tags as per http://validator.w3.org
+            $svg = $svg.removeAttr('xmlns:a');
 
-			// Replace image with new SVG
-			$img.replaceWith($svg);
-			
-			if(debug) console.log("< makeSVGInline resolve: success");
-			def.resolve();
-		}, 'xml');
-	});
-	
-	return def.promise();
+            // Replace image with new SVG
+            $img.replaceWith($svg);
+            
+            if(debug) console.log("< makeSVGInline resolve: success");
+            def.resolve();
+        }, 'xml');
+    });
+    
+    return def.promise();
 }
 function initMicrodraw() {
 	if(debug) console.log("> initMicrodraw promise");
@@ -912,25 +932,11 @@ function initMicrodraw() {
 }
 
 $.when(
-	interactIP(),
-	MyLoginWidget.init()
+    interactIP(),
+    MyLoginWidget.init()
 ).then(function(){
-	params=deparam();
-	myOrigin.appName="microdraw";
-	myOrigin.source=params.source;
-	updateUser();
+    params=deparam();
+    myOrigin.appName="microdraw";
+    myOrigin.source=params.source;
+    updateUser();
 }).then(initMicrodraw);
-
-//without database connection: comment out the part of code above and use the one below
-//params=deparam();
-//initMicrodraw();
-
-
-/*
-	// Log microdraw
-	//interactSave(JSON.stringify(myOrigin),"entered",null);
-
-	// load SVG overlay from localStorage
-	interactLoad();
-	//load();
-*/
