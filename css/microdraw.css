@@ -87,4 +87,5 @@ html,body {
     -webkit-filter: drop-shadow( 2px 2px 2px #777 );
     -moz-filter: drop-shadow( 2px 2px 2px #777 );
     filter: drop-shadow( 2px 2px 2px #777 );
+    z-index:1;
 }
