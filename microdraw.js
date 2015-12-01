@@ -1,4 +1,4 @@
-(function() {
+(function() {                   // force everything local.
 var	debug=false;
 
 var dbroot="http://"+localhost+"/interact/php/interact.php";
@@ -466,6 +466,17 @@ function backToPreviousTool(prevTool) {
 		selectTool()
 	},500);
 }
+
+function deleteSelected() {
+    for(i in Regions) {
+	if(Regions[i].path.selected) {
+	    removeRegion(Regions[i]);
+	    paper.view.draw();
+	    break;
+	}
+    }
+}
+
 function toolSelection(event) {
 	if(debug) console.log("> toolSelection");
 	
@@ -487,13 +498,7 @@ function toolSelection(event) {
 			handle=null;
 			break;
 		case "delete":
-			for(i in Regions) {
-				if(Regions[i].path.selected) {
-					removeRegion(Regions[i]);
-					paper.view.draw();
-					break;
-				}
-			}
+                        deleteSelected();
 			backToPreviousTool(prevTool);
 			break;
 		case "save":
@@ -776,21 +781,22 @@ function makeSVGInline() {
 	return def.promise();
 }
 
-var ctrlShortCuts = new Array(256);
+var shortCuts = new Array(512);
 
-function initCtrlHandler() {
+function initShortCutHandler() {
     var ctrlDown = false;
     var shiftDown = false;
 
     $(document).keydown(function(e) {
         if (e.keyCode == 17) ctrlDown = true;
         if (e.keyCode == 16) shiftDown = true;
-        if (ctrlDown) {
-            var func = ctrlShortCuts[e.keyCode];
-            if (func !== undefined) {
-                func();
-                e.preventDefault();
-            }
+        var code = e.keyCode;
+        if (ctrlDown)
+            code |= 256;
+        var func = shortCuts[code];
+        if (func !== undefined) {
+            func();
+            e.preventDefault();
         }
     }).keyup(function(e) {
         if (e.keyCode == 17) ctrlDown = false;
@@ -798,8 +804,25 @@ function initCtrlHandler() {
     });
 }
 
-function ctrlHandler(k, f) {
-    ctrlShortCuts[k.toUpperCase().charCodeAt(0)] = f;
+function shortCutHandler(key, callback) {
+    var code = 0;
+    if (typeof key === "string") {
+        if (key[0] == '^') {
+            code = key.toUpperCase().charCodeAt(1) | 256;
+        }
+        else {
+            code = key.toUpperCase().charCodeAt(0);
+        }
+    }
+    else {
+        code = key;
+    }
+    if (code >= 0 && code < shortCuts.length) {
+        shortCuts[code] = callback;
+    }
+    else {
+        console.log("Weird shortcut code: " + code + " for " + key);
+    }
 }
 
 function initMicrodraw() {
@@ -814,14 +837,15 @@ function initMicrodraw() {
 	// Enable click on toolbar buttons
         $("img.button").click(toolSelection);
         // Initialize the control key handler
-        initCtrlHandler();
+        initShortCutHandler();
 
-        ctrlHandler('z', function() { console.log("undo!"); });
-        ctrlHandler('y', function() { console.log("redo!"); });
-        ctrlHandler('x', function() { console.log("cut!"); });
-        ctrlHandler('v', function() { console.log("paste!"); });
-        ctrlHandler('a', function() { console.log("select all!"); });
-        ctrlHandler('c', function() { console.log("copy!"); });
+        shortCutHandler('^z', function() { console.log("undo!"); } );
+        shortCutHandler('^y', function() { console.log("redo!"); } );
+        shortCutHandler('^x', function() { console.log("cut!"); } );
+        shortCutHandler('^v', function() { console.log("paste!"); } );
+        shortCutHandler('^a', function() { console.log("select all!"); } );
+        shortCutHandler('^c', function() { console.log("copy!"); } );
+        shortCutHandler(46, deleteSelected );
 
 	// Configure currently selected tool
 	selectedTool="zoom";
@@ -829,12 +853,12 @@ function initMicrodraw() {
 
 	// load tile sources
 	$.get(params.source, function(obj) {
-            obj.pixelsPerMeter = params.pixelsPerMeter;
             if (obj.triple_axis) {
                 var snippets = ["tileCodeY", "tileCodeX", "tileCodeZ"];
                 var ids = ["openseadragony", "openseadragonx", "openseadragonz"];
                 for (var axis = 0; axis < 3; axis++) {
-                  obj.tileSources = eval(obj[snippets[axis]]);
+                    // Trick to interpret the code in the JSON file.
+                    obj.tileSources = eval(obj[snippets[axis]]);
 	            viewer = OpenSeadragon({
 		        id: ids[axis],
 		        prefixUrl: "lib/openseadragon/images/",
@@ -865,7 +889,7 @@ function initMicrodraw() {
 		    });
 		    viewer.addHandler('open',initAnnotationOverlay);
 		    viewer.addHandler("page", function (data) {
-			console.log(params.tileSources[data.page]);
+			console.log(data.page);
 		    });
 		    viewer.addViewerInputHook({hooks: [
 			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
@@ -879,7 +903,6 @@ function initMicrodraw() {
                 // Trick to interpret the code in the JSON file.
                 if (obj.tileCodeY !== undefined)
                     obj.tileSources = eval(obj.tileCodeY);
-	        params.tileSources=obj.tileSources;
 	        viewer = OpenSeadragon({
 		    id: "openseadragon1",
 		    prefixUrl: "lib/openseadragon/images/",
@@ -893,7 +916,7 @@ function initMicrodraw() {
 		    zoomInButton:"zoom-in",
 		    zoomOutButton:"zoom-out",
 		    homeButton:"home",
-                    initialPage: 2000,
+                    initialPage: obj.tileSources.length/2,
                     preserveViewport: true
 	        });
 		viewer.scalebar({
@@ -910,7 +933,7 @@ function initMicrodraw() {
 		});
 		viewer.addHandler('open',initAnnotationOverlay);
 		viewer.addHandler("page", function (data) {
-			console.log(params.tileSources[data.page]);
+			console.log(data.page);
 		});
 		viewer.addViewerInputHook({hooks: [
 			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
