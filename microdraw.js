@@ -17,6 +17,7 @@ var magicV=1000;	// resolution of the annotation canvas - is changed automatical
 var myOrigin={};	// Origin identification for DB storage
 var	params;			// URL parameters
 var	myIP;			// user's IP
+var drawingPolygonFlag;
 
 /***1
 	Region handling functions
@@ -462,6 +463,30 @@ function mouseDown(x,y) {
 			// signal that a new region has been created for drawing
 			newRegionFlag=true;
 			break;
+                        
+                case "draw-polygon":
+                         // is already drawing a polygon or not?
+                        if(drawingPolygonFlag != true) {
+                                //deselect previously selected region
+                                if(region)
+                                        region.path.selected = false;
+                                // Start a new Region with no fill color
+                                region=newRegion({path:new paper.Path({segments:[point]})});
+                                region.path.fillColor.alpha=0;
+                                drawingPolygonFlag=true;
+                                region.path.selected = true;
+                        } else {
+                                var hitResult=paper.project.hitTest(point, {tolerance:10, segments:true});
+                                if (hitResult && hitResult.item == region.path && hitResult.segment.point == region.path.segments[0].point) {
+                                        // clicked on first point of current path
+                                        // --> close path and remove drawing flag
+                                        finishDrawingPolygon(true);                                 
+                                } else { 
+                                        // add point to region
+                                        region.path.add(point);
+                                }
+                        }
+                        break;
 	}
 	paper.view.draw();
 }
@@ -490,6 +515,17 @@ function mouseUp() {
 	paper.view.draw();
 }
 
+function finishDrawingPolygon(closed){
+        // finished the drawing of the polygon
+        if (closed==true) {
+            region.path.closed = true;
+            region.path.fillColor.alpha = 0.5;
+        }
+        region.path.fullySelected = true;
+        //region.path.smooth();
+        drawingPolygonFlag = false;
+}
+
 /***3
 	Tool selection
 */
@@ -512,6 +548,10 @@ function deleteSelected() {
 
 function toolSelection(event) {
 	if(debug) console.log("> toolSelection");
+        
+        //end drawing of polygons and make open form
+        if (drawingPolygonFlag == true)
+            finishDrawingPolygon(false);
 	
 	var prevTool=selectedTool;
 	selectedTool=$(this).attr("id");
@@ -524,6 +564,7 @@ function toolSelection(event) {
 		case "addpoint":
 		case "delpoint":
 		case "draw":
+                case "draw-polygon":
 			navEnabled=false;
 			break;
 		case "zoom":
