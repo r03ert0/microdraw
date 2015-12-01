@@ -29,10 +29,10 @@
      id="namedview16"
      showgrid="false"
      inkscape:zoom="6.3250428"
-     inkscape:cx="6.7983729"
+     inkscape:cx="18.656"
      inkscape:cy="18.656"
-     inkscape:window-x="73"
-     inkscape:window-y="0"
+     inkscape:window-x="735"
+     inkscape:window-y="259"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg7275" />
   <defs
@@ -42,7 +42,7 @@
        y2="112.47"
        gradientUnits="userSpaceOnUse"
        x2="-312.37"
-       gradientTransform="translate(328.41418,-153.97303)"
+       gradientTransform="translate(342.41418,-159.97303)"
        y1="184.71"
        x1="-313.02">
       <stop
@@ -77,13 +77,13 @@
      y="-13.91295" />
   <path
      id="path24366-1-4"
-     d="m 15.727654,-3.0130377 c -10.31,0 -18.66,8.35 -18.66,18.6599997 0,10.3 8.35,18.65 18.66,18.65 10.3,0 18.65,-8.35 18.65,-18.65 0,-10.3099997 -8.35,-18.6599997 -18.65,-18.6599997"
+     d="m 29.727654,-9.0130377 c -10.31,0 -18.66,8.35000003 -18.66,18.66 0,10.2999997 8.35,18.6499997 18.66,18.6499997 10.3,0 18.65,-8.35 18.65,-18.6499997 0,-10.30999997 -8.35,-18.66 -18.65,-18.66"
      stroke-miterlimit="10"
      style="fill:url(#linearGradient25035);stroke-miterlimit:10"
      inkscape:connector-curvature="0" />
   <g
      id="g25056"
-     transform="translate(322.36918,-309.97296)">
+     transform="translate(290.36918,-303.97296)">
     <g
        id="g24985"
        transform="translate(-728.23254,-55.229754)"
@@ -105,42 +105,4 @@
        d="m -280.5,314.89 c 2.41,-2.41 4.83,-4.83 7.25,-7.25 0.68,-0.68 -0.38,-1.74 -1.06,-1.06 -2.42,2.42 -4.84,4.83 -7.25,7.25 -0.69,0.69 0.37,1.75 1.06,1.06 z"
        inkscape:connector-curvature="0" />
   </g>
-  <text
-     xml:space="preserve"
-     style="font-style:normal;font-weight:normal;font-size:29.79709244px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     x="-28.492077"
-     y="60.10537"
-     id="text3433"
-     sodipodi:linespacing="125%"><tspan
-       sodipodi:role="line"
-       id="tspan3435"
-       x="-28.492077"
-       y="60.10537">µ</tspan></text>
-  <rect
-     style="opacity:0.77999998;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     id="rect3437-5"
-     width="22.766644"
-     height="3.6363389"
-     x="4.1106443"
-     y="8.0710506"
-     ry="2"
-     rx="2" />
-  <rect
-     style="opacity:0.77999998;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     id="rect3437-5-9"
-     width="22.766644"
-     height="3.6363389"
-     x="4.1106443"
-     y="14.071051"
-     ry="2"
-     rx="2" />
-  <rect
-     style="opacity:0.77999998;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     id="rect3437-5-1"
-     width="22.766644"
-     height="3.6363389"
-     x="4.1106443"
-     y="20.071051"
-     ry="2"
-     rx="2" />
 </svg>
