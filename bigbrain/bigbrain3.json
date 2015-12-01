@@ -1,0 +1,9 @@
+{ 
+    "triple_axis": true, 
+    "pixelsPerMeter": 25000,
+    "tileCodeY": "(function() { tileSources = []; function urlGetY(slice) { return function(level, x, y) { var numTiles = 1 << level; var url = \"http://132.216.122.239/y/l\" +  (level) + \"/x\" + x + \"/y\" + slice + \"/z\" + (numTiles-y-1) + \".png\"; console.log(url); return url; } }; for (var slice = 0; slice <= 7403; slice++) { var temp = { height: 16*256, width:  16*256, tileSize: 256, minLevel: 0, maxLevel: 4, getTileUrl: urlGetY(slice), slice: slice }; tileSources.push(temp); } return tileSources; })();",
+    "tileCodeX": "(function() { tileSources = []; function urlGetX(slice) { return function(level, x, y) { var numTiles = 1 << level; var url = \"http://132.216.122.239/x/l\" +  (level) + \"/x\" + slice + \"/y\" + x + \"/z\" + (numTiles-y-1) + \".png\"; console.log(url); return url; } }; for (var slice = 0; slice <= 6527; slice++) { var temp = { height: 16*256, width:  16*256, tileSize: 256, minLevel: 0, maxLevel: 4, getTileUrl: urlGetX(slice), slice: slice }; tileSources.push(temp); } return tileSources; })();",
+    "tileCodeZ": "(function() { tileSources = []; function urlGetZ(slice) { return function(level, x, y) { var numTiles = 1 << level; var url = \"http://132.216.122.239/z/l\" +  (level) + \"/x\" + x + \"/y\" + (numTiles-y-1) + \"/z\" + slice + \".png\"; console.log(url); return url; } }; for (var slice = 0; slice <= 6527; slice++) { var temp = { height: 16*256, width:  16*256, tileSize: 256, minLevel: 0, maxLevel: 4, getTileUrl: urlGetZ(slice), slice: slice }; tileSources.push(temp); } return tileSources; })();"
+}
+
+

@@ -10,7 +10,7 @@ html,body {
 	position:absolute;
 	width:200px;
 	height:100%;
-	top:0;
+	top:30px;
 	left:0;
 	background-color:rgba(200,200,200,0.5);
 	z-index:10;
