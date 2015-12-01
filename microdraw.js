@@ -474,7 +474,14 @@ function mouseDown(x,y) {
 function mouseDrag(x,y,dx,dy) {
     if(debug) console.log("> mouseDrag");
 
+    // transform screen coordinate into world coordinate
     var point=paper.view.viewToProject(new paper.Point(x,y));
+
+    // transform screen delta into world delta
+    var orig=paper.view.viewToProject(new paper.Point(0,0));
+    var dpoint=paper.view.viewToProject(new paper.Point(dx,dy));
+    dpoint.x-=orig.x;
+    dpoint.y-=orig.y;
     
     if (handle) {
         handle.x+=point.x-handle.point.x;
@@ -489,8 +496,8 @@ function mouseDrag(x,y,dx,dy) {
         for(i in Regions) {
             var reg = Regions[i];
             if(reg.path.selected) {
-                reg.path.position.x += dx;
-                reg.path.position.y += dy;
+                reg.path.position.x += dpoint.x;
+                reg.path.position.y += dpoint.y;
             }
         }
     }
