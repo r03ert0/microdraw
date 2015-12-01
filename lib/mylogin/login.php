@@ -43,7 +43,7 @@ function user_check()
 }
 function user_login()
 {
-    global $connection;
+    global $connection, $dblogin;
     $username = mysqli_real_escape_string($connection,$_GET['username']);
     $password = md5(mysqli_real_escape_string($connection,$_GET['password']));
     
