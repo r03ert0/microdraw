@@ -698,7 +698,13 @@ function cmdDeleteSelected() {
 
 function cmdRotateSelected() {
     var undoInfo = getUndo();
-    var degree=prompt("Degree of rotation");
+    var degree = undefined;
+    while (degree === undefined) {
+        var prompt_value= parseInt(prompt("Degree of rotation (integer):"));
+        if (Number.isInteger(prompt_value)) {
+            degree=prompt_value;
+        }
+    }
     var i;
     for(i in ImageInfo[currentImage]["Regions"]) {
         if(ImageInfo[currentImage]["Regions"][i].path.selected) {
