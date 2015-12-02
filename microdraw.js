@@ -927,7 +927,49 @@ function initMicrodraw() {
 		if(debug) console.log("< initMicrodraw resolve: success");
 		def.resolve();
 	});
-	
+
+//show and hide menu
+var mouse_position;
+   var animating = false;
+   //GET MOUSE POSITION
+   $(document).mousemove(function (e) {
+       //$("body").on("mousemove", function(mouse_pointer) {
+       //console.log(mouse_pointer.pageX - $(window).scrollLeft());
+       //mouse_position = mouse_pointer.pageX - $(window).scrollLeft();
+       if (animating) {
+           return;
+       }
+       mouse_position = e.clientX;
+
+       if( debug==true ) {
+           console.log(mouse_position);
+       }
+       if (mouse_position <= 100) {
+           //SLIDE IN MENU
+           animating = true;
+           $('#menu_bar').animate({
+               left: 0,
+               opacity: 1
+           }, 200, function () {
+               animating = false;
+           });
+           if( debug==true ) {
+               console.log('menu shown');
+           }
+       } else if (mouse_position > 200) {
+           animating = true;
+           $('#menu_bar').animate({
+               left: -100,
+               opacity: 0
+           }, 500, function () {
+               animating = false;
+           });
+           if( debug==true ) {
+               console.log('menu hidden');
+           }
+       }
+   });
+
 	$(window).resize(function() {
 		$("#regionList").height($(window).height()-$("#regionList").offset().top);
 		resizeAnnotationOverlay();
