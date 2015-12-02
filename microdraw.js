@@ -501,34 +501,35 @@ function mouseDown(x,y) {
                         commitMouseUndo();
 		    console.log("drawing",region);
 			break; 
-                        }                       
-                case "draw-polygon":
-                         // is already drawing a polygon or not?
-                        if(drawingPolygonFlag != true) {
-                                //deselect previously selected region
-                                if(region)
-                                        region.path.selected = false;
-                                // Start a new Region with no fill color
-                                region=newRegion({path:new paper.Path({segments:[point]})});
-                                region.path.fillColor.alpha=0;
-                                drawingPolygonFlag=true;
-                                region.path.selected = true;
-                        } else {
-                                var hitResult=paper.project.hitTest(point, {tolerance:10, segments:true});
-                                if (hitResult && hitResult.item == region.path && hitResult.segment.point == region.path.segments[0].point) {
-                                        // clicked on first point of current path
-                                        // --> close path and remove drawing flag
-                                        finishDrawingPolygon(true);                                 
-                                } else { 
-                                        // add point to region
-                                        region.path.add(point);
-                                }
-                        }
-                        break;
-
-	}
+        }                       
+        case "draw-polygon": {
+            // is already drawing a polygon or not?
+            if(drawingPolygonFlag != true) {
+                //deselect previously selected region
+                if(region)
+                    region.path.selected = false;
+                    // Start a new Region with no fill color
+                    region=newRegion({path:new paper.Path({segments:[point]})});
+                    region.path.fillColor.alpha=0;
+                    drawingPolygonFlag=true;
+                    region.path.selected = true;
+            } else {
+                var hitResult=paper.project.hitTest(point, {tolerance:10, segments:true});
+                if (hitResult && hitResult.item == region.path && hitResult.segment.point == region.path.segments[0].point) {
+                    // clicked on first point of current path
+                    // --> close path and remove drawing flag
+                    finishDrawingPolygon(true);                                 
+                } else { 
+                    // add point to region
+                    region.path.add(point);
+                }
+            }
+            break;
+	    }
+    }
 	paper.view.draw();
 }
+
 
 function mouseDrag(x,y,dx,dy) {
     if(debug) console.log("> mouseDrag");
@@ -569,11 +570,23 @@ function mouseUp() {
     if(debug) console.log("> mouseUp");
 
     if(newRegionFlag==true){
-        region.path.simplify(5);
+        //region.path.simplify(5);
         region.path.closed=true;
         region.path.fullySelected = true;
     }
     paper.view.draw();
+}
+
+
+function simplify() {
+    if(region!==null) {
+        if(debug) {
+            console.log("> simplifying");
+        }
+        region.path.fullySelected = true;
+        region.path.simplify(2);
+        paper.view.draw();
+    }
 }
 
 /*** UNDO ***/
@@ -756,7 +769,7 @@ function toolSelection(event) {
 		case "addpoint":
 		case "delpoint":
 		case "draw":
-                case "draw-polygon":
+        case "draw-polygon":
 			navEnabled=false;
 			break;
 		case "zoom":
@@ -764,13 +777,13 @@ function toolSelection(event) {
 			handle=null;
 			break;
 		case "delete":
-                        cmdDeleteSelected();
+            cmdDeleteSelected();
 			backToPreviousTool(prevTool);
 			break;
-                case "rotate": 
-                        cmdRotateSelected();
+        case "rotate": 
+            cmdRotateSelected();
 			backToPreviousTool(prevTool);
-                        break;
+            break;
 		case "save":
 			interactSave();
 			backToPreviousTool(prevTool);
@@ -780,22 +793,26 @@ function toolSelection(event) {
 		case "home":
 			backToPreviousTool(prevTool);
 			break;
-                case "prev":
-                        loadPreviousImage();
-                        backToPreviousTool(prevTool);
-                        break;
-                case "next":
-                        loadNextImage();
-                        backToPreviousTool(prevTool);
-                        break;
+        case "prev":
+            loadPreviousImage();
+            backToPreviousTool(prevTool);
+            break;
+        case "next":
+            loadNextImage();
+            backToPreviousTool(prevTool);
+            break;
 		case "copy":
-                        cmdCopy();
+            cmdCopy();
 			backToPreviousTool(prevTool);
 			break;
 		case "paste":
-                        cmdPaste();
+            cmdPaste();
 			backToPreviousTool(prevTool);
 			break;
+        case "simplify":
+            simplify(region);
+            break;
+
 	}
 }
 function selectTool() {
