@@ -1,1 +1,1 @@
-var localhost = "http://localhost:5001";
+var localhost = "localhost";
