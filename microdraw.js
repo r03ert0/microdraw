@@ -1058,9 +1058,7 @@ function initMicrodraw() {
 
         shortCutHandler('^z', cmdUndo);
         shortCutHandler('^y', cmdRedo);
-        shortCutHandler('^x', function() { console.log("cut!"); } );
         shortCutHandler('^v', cmdPaste);
-        shortCutHandler('^a', function() { console.log("select all!"); } );
         shortCutHandler('^c', cmdCopy);
         shortCutHandler(46, cmdDeleteSelected );
 
@@ -1072,7 +1070,6 @@ function initMicrodraw() {
 	$.getJSON(params.source,function(obj) {
                 if (obj.tileCodeY) {
                     obj.tileSources = eval(obj.tileCodeY);
-                    console.log("tileSources.length " + tileSources.length);
                 }
 		params.tileSources=obj.tileSources;
 		viewer = OpenSeadragon({
