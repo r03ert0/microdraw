@@ -1269,7 +1269,10 @@ function initMicrodraw() {
 
     var slash_index = params.source.lastIndexOf("/") + 1;
     var filename    = params.source.substr(slash_index);
-    document.getElementById("filename").innerHTML = "File: " + filename
+    if ( filename === undefined) {
+            filename = "MicroDraw"; 
+    }
+    $("title").text(filename);
 	
 	// Subscribe to login changes
 	MyLoginWidget.subscribe(loginChanged);
