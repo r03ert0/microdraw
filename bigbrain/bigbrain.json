@@ -1,0 +1,7 @@
+{ 
+    "triple_axis": false, 
+    "pixelsPerMeter": 25000,
+    "tileCodeY": "(function() { tileSources = []; function urlGetY(slice) { return function(level, x, y) { var numTiles = 1 << level; var url = \"http://132.216.122.239/y/l\" +  (level) + \"/x\" + x + \"/y\" + slice + \"/z\" + (numTiles-y-1) + \".png\";  console.log(url); return url; } }; for (var slice = 0; slice <= 7403; slice++) { var temp = { height: 16*256, width:  16*256, tileSize: 256, minLevel: 0, maxLevel: 4, getTileUrl: urlGetY(slice), slice: slice }; tileSources.push(temp); } return tileSources; })();"
+}
+
+
