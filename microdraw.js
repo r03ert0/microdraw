@@ -1375,8 +1375,9 @@ function initMicrodraw() {
 }
 
 
-params=deparam();
+params=deparam(); console.log(params);
 initMicrodraw();
+
 /*
 
 $.when(
