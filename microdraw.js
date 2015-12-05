@@ -983,7 +983,6 @@ function loadImage(name) {
     currentImage = name;
 
     viewer.open(ImageInfo[currentImage]["source"]);
-
 }
 
 function loadNextImage() {
@@ -1011,7 +1010,8 @@ function loadPreviousImage() {
 
 
 function resizeAnnotationOverlay() {
-    if(debug) console.log("> resizeAnnotationOverlay");
+    if(debug)
+        console.log("> resizeAnnotationOverlay");
     
     var width=$("body").width();
     var height=$("body").height();
@@ -1021,57 +1021,59 @@ function resizeAnnotationOverlay() {
 }
 
 function initAnnotationOverlay(data) {
-	if(debug) console.log("> initAnnotationOverlay");
-        console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
+	if(debug) 
+        console.log("> initAnnotationOverlay");
+    console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
  
 
-        // set up regions for new canvas
-        updateRegionList();
+    // set up regions for new canvas
+    updateRegionList();
 
-        // create canvas if needed and do general canvas set up
-        var newCanvas = false;
-        if (document.getElementById(currentImage) == null) {
-	    // set up vectorial annotation overlay
-	    $("body").append("<canvas class='overlay' id='" + currentImage + "'></canvas>");
-            newCanvas = true;
-        }
+    // create canvas if needed and do general canvas set up
+    var newCanvas = false;
+    if (document.getElementById(currentImage) == null) {
+    // set up vectorial annotation overlay
+    $("body").append("<canvas class='overlay' id='" + currentImage + "'></canvas>");
+        newCanvas = true;
+    }
 
 	var width=$("body").width();
 	var height=$("body").height();
-        $("canvas.overlay").attr('width',width);
+    $("canvas.overlay").attr('width',width);
 	$("canvas.overlay").attr('height',height);
 	var canvas=document.getElementById(currentImage);
 
-        // turn current project invisible
-        if (paper.project != null)
-            paper.project.activeLayer.visible = false;
-        if (ImageInfo[currentImage]["projectID"] == undefined) {
-            // for this canvas no project exists: create it!
-            paper.setup(canvas);
-            ImageInfo[currentImage]["projectID"] = paper.project.index;
-            if (debug) console.log('Set up new project with ID ' + ImageInfo[currentImage]["projectID"]);
-        } else {
-            paper.projects[ImageInfo[currentImage]["projectID"]].activate();
-        }
-        // turn new project visible
-        paper.project.activeLayer.visible = true;
+    // turn current project invisible
+    if (paper.project != null)
+        paper.project.activeLayer.visible = false;
+    if (ImageInfo[currentImage]["projectID"] == undefined) {
+        // for this canvas no project exists: create it!
+        paper.setup(canvas);
+        ImageInfo[currentImage]["projectID"] = paper.project.index;
+        if (debug) console.log('Set up new project with ID ' + ImageInfo[currentImage]["projectID"]);
+    } else {
+        paper.projects[ImageInfo[currentImage]["projectID"]].activate();
+    }
+    // turn new project visible
+    paper.project.activeLayer.visible = true;
 
-        // resize view to correct size
-        paper.view.viewSize=[width, height];
+    // resize view to correct size
+    paper.view.viewSize=[width, height];
 	paper.settings.handleSize=10;
-	
-        // change myOrigin 
-        // TODO think about database structure
-        myOrigin.slice = currentImage;
+
+    // change myOrigin 
+    // TODO think about database structure
+    myOrigin.slice = currentImage;
 
 	if (newCanvas) {
-            interactLoad().then(function(){
-		$("#regionList").height($(window).height()-$("#regionList").offset().top);
+        interactLoad()
+        .then(function(){
+            $("#regionList").height($(window).height()-$("#regionList").offset().top);
 	    });
-        }
+    }
 
-        // set size of the current overlay to match the size of the current image
-        magicV = viewer.world.getItemAt(0).getContentSize().x;
+    // set size of the current overlay to match the size of the current image
+    magicV = viewer.world.getItemAt(0).getContentSize().x;
 
 	transform();
 }
@@ -1296,16 +1298,16 @@ function initMicrodraw() {
 	
 	// Enable click on toolbar buttons
         $("img.button").click(toolSelection);
-        // Initialize the control key handler
-        initShortCutHandler();
-
-        shortCutHandler('^z', cmdUndo);
-        shortCutHandler('^y', cmdRedo);
-        shortCutHandler('^x', function() { console.log("cut!"); } );
-        shortCutHandler('^v', cmdPaste);
-        shortCutHandler('^a', function() { console.log("select all!"); } );
-        shortCutHandler('^c', cmdCopy);
-        shortCutHandler(46, cmdDeleteSelected );
+    
+    // Initialize the control key handler and set shortcuts
+    initShortCutHandler();
+    shortCutHandler('^z', cmdUndo);
+    shortCutHandler('^y', cmdRedo);
+    shortCutHandler('^x', function() { console.log("cut!"); } );
+    shortCutHandler('^v', cmdPaste);
+    shortCutHandler('^a', function() { console.log("select all!"); } );
+    shortCutHandler('^c', cmdCopy);
+    shortCutHandler(46, cmdDeleteSelected );
 
 	// Configure currently selected tool
 	selectedTool="zoom";
@@ -1313,20 +1315,20 @@ function initMicrodraw() {
 
 	// load tile sources
 	$.getJSON(params.source,function(obj) {
-                if (obj.tileCodeY) {
-                    obj.tileSources = eval(obj.tileCodeY);
-                    console.log("tileSources.length " + tileSources.length);
-                }
-                
-                // set up the ImageInfo array and imageOrder array
-                for (var i=0; i < obj.tileSources.length; i++){
-                        imageOrder.push(""+i);
-                        ImageInfo[""+i] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
-                }
-     
-                // Init slider that can be used to change between slides
-                initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length/2));
-                currentImage = imageOrder[Math.round(obj.tileSources.length/2)];
+        if (obj.tileCodeY) {
+            obj.tileSources = eval(obj.tileCodeY);
+            console.log("tileSources.length " + tileSources.length);
+        }
+        
+        // set up the ImageInfo array and imageOrder array
+        for (var i=0; i < obj.tileSources.length; i++){
+                imageOrder.push(""+i);
+                ImageInfo[""+i] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
+        }
+
+        // init slider that can be used to change between slides
+        initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length/2));
+        currentImage = imageOrder[Math.round(obj.tileSources.length/2)];
                 
 		params.tileSources=obj.tileSources;
 		viewer = OpenSeadragon({
@@ -1336,16 +1338,18 @@ function initMicrodraw() {
 			showReferenceStrip: false,
 	        referenceStripSizeRatio: 0.2,
 			showNavigator: true,
-                        sequenceMode: false,
+            sequenceMode: false,
 			navigatorId:"myNavigator",
 			zoomInButton:"zoom-in",
 			zoomOutButton:"zoom-out",
 			homeButton:"home",
-                        preserveViewport: true
+            preserveViewport: true
 		});
                 
-                // open the currentImage
-                viewer.open(ImageInfo[currentImage]["source"]);
+        // open the currentImage
+        viewer.open(ImageInfo[currentImage]["source"]);
+		
+		// add the scalebar
 		viewer.scalebar({
 			type: OpenSeadragon.ScalebarType.MICROSCOPE,
 			minWidth:'150px',
@@ -1358,6 +1362,8 @@ function initMicrodraw() {
 			xOffset:5,
 			yOffset:5
 		});
+		
+		// add handlers: update slice name, animation, page change, mouse actions
 		viewer.addHandler('open',initAnnotationOverlay);
                 viewer.addHandler('open',updateSliceName);
                 viewer.addHandler('animation', function(event){transform()});
@@ -1371,64 +1377,55 @@ function initMicrodraw() {
 			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 		]});
 
-            });
-            
-            // Change current slice by typing in the slice number and pessing the enter key
-            $("#slice-name").keyup(slice_name_onenter);
+    });
+    
+    // Change current slice by typing in the slice number and pessing the enter key
+    $("#slice-name").keyup(slice_name_onenter);
 
     if(debug) console.log("< initMicrodraw resolve: success");
     def.resolve();
 
-    //show and hide menu
+    // Show and hide menu
     var mouse_position;
-        var animating = false;
-        //GET MOUSE POSITION
-        $(document).mousemove(function (e) {
-            //$("body").on("mousemove", function(mouse_pointer) {
-            //console.log(mouse_pointer.pageX - $(window).scrollLeft());
-            //mouse_position = mouse_pointer.pageX - $(window).scrollLeft();
-            if (animating) {
-                return;
-            }
-            mouse_position = e.clientX;
+    var animating = false;
+    $(document).mousemove(function (e) {
+        if (animating) {
+            return;
+        }
+        mouse_position = e.clientX;
 
+        if (mouse_position <= 100) {
+            //SLIDE IN MENU
+            animating = true;
+            $('#menu_bar').animate({
+                left: 0,
+                opacity: 1
+            }, 200, function () {
+                animating = false;
+            });
             if( debug==true ) {
-                console.log(mouse_position);
-            }
-            if (mouse_position <= 100) {
-                //SLIDE IN MENU
-                animating = true;
-                $('#menu_bar').animate({
-                    left: 0,
-                    opacity: 1
-                }, 200, function () {
-                    animating = false;
-                });
-                if( debug==true ) {
                 console.log('menu shown');
-                }
-            } else if (mouse_position > 200) {
-                animating = true;
-                $('#menu_bar').animate({
-                    left: -100,
-                    opacity: 0
-                }, 500, function () {
-                    animating = false;
-                });
-                if( debug==true ) {
-                console.log('menu hidden');
-                }
             }
-        });
-	
+        } else if (mouse_position > 200) {
+            animating = true;
+            $('#menu_bar').animate({
+                left: -100,
+                opacity: 0
+            }, 500, function () {
+                animating = false;
+            });
+            if( debug==true ) {
+                console.log('menu hidden');
+            }
+        }
+    });
+
     $(window).resize(function() {
-	$("#regionList").height($(window).height()-$("#regionList").offset().top);
-	resizeAnnotationOverlay();
+        $("#regionList").height($(window).height()-$("#regionList").offset().top);
+        resizeAnnotationOverlay();
     });
 
     appendRegionTagsFromOntology(Ontology);
-	
-    //makeSVGInline().then(selectTool());
 	
     return def.promise();
 }
