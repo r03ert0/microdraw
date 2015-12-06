@@ -23,6 +23,10 @@ var RedoStack = [];
 var mouseUndo;                  // tentative undo information.
 var drawingPolygonFlag;
 
+var shortCuts = []; // List of shortcuts
+var isMac = navigator.platform.match(/Mac/i)?true:false;
+var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
+
 /***1
     Region handling functions
 */
@@ -1159,57 +1163,40 @@ function makeSVGInline() {
 }
 
 function updateSliceName() {
-    console.log('updateSliceName');
-
     $("#slice-name").val(currentImage);
-
     var slash_index = params.source.lastIndexOf("/") + 1;
     var filename    = params.source.substr(slash_index);
     $("title").text("MicroDraw|"+filename+"|"+currentImage);
 }
-
-var shortCuts = new Array(512);
-
 function initShortCutHandler() {
-    var ctrlDown = false;
-    var shiftDown = false;
-
     $(document).keydown(function(e) {
-        if (e.keyCode == 17) ctrlDown = true;
-        if (e.keyCode == 16) shiftDown = true;
-        var code = e.keyCode;
-        if (ctrlDown)
-            code |= 256;
-        var func = shortCuts[code];
-        if (func !== undefined) {
-            func();
+        var key=[];
+        if (e.ctrlKey) key.push("^");
+        if (e.altKey) key.push("shift");
+        if (e.shiftKey) key.push("shift");
+        if (e.metaKey) key.push("cmd");
+        key.push(String.fromCharCode(e.keyCode));
+        key=key.join(" ");
+        if(shortCuts[key]) {
+            var callback = shortCuts[key];
+            callback();
             e.preventDefault();
         }
-    }).keyup(function(e) {
-        if (e.keyCode == 17) ctrlDown = false;
-        if (e.keyCode == 16) shiftDown = false;
     });
 }
-
-function shortCutHandler(key, callback) {
-    var code = 0;
-    if (typeof key === "string") {
-        if (key[0] == '^') {
-            code = key.toUpperCase().charCodeAt(1) | 256;
+function shortCutHandler(key,callback) {
+    var key=isMac?key.mac:key.pc;
+    var arr=key.split(" ");
+    for(var i=0;i<arr.length;i++) {
+        if(arr[i].charAt(0)=="#") {
+            arr[i]=String.fromCharCode(parseInt(arr[i].substring(1)));
+        } else
+        if(arr[i].length==1) {
+            arr[i]=arr[i].toUpperCase();
         }
-        else {
-            code = key.toUpperCase().charCodeAt(0);
-        }
     }
-    else {
-        code = key;
-    }
-    if (code >= 0 && code < shortCuts.length) {
-        shortCuts[code] = callback;
-    }
-    else {
-        console.log("Weird shortcut code: " + code + " for " + key);
-    }
+    key=arr.join(" "); console.log('key:'+key);   
+    shortCuts[key] = callback;
 }
 
 function initSlider(min_val, max_val, step, default_value) {
@@ -1303,13 +1290,13 @@ function initMicrodraw() {
     
     // Initialize the control key handler and set shortcuts
     initShortCutHandler();
-    shortCutHandler('^z', cmdUndo);
-    shortCutHandler('^y', cmdRedo);
-    shortCutHandler('^x', function() { console.log("cut!"); } );
-    shortCutHandler('^v', cmdPaste);
-    shortCutHandler('^a', function() { console.log("select all!"); } );
-    shortCutHandler('^c', cmdCopy);
-    shortCutHandler(46, cmdDeleteSelected );
+    shortCutHandler({pc:'^ z',mac:'cmd z'},cmdUndo);
+    shortCutHandler({pc:'^ y',mac:'cmd y'},cmdRedo);
+    shortCutHandler({pc:'^ x',mac:'cmd x'},function() { console.log("cut!")});
+    shortCutHandler({pc:'^ v',mac:'cmd v'},cmdPaste);
+    shortCutHandler({pc:'^ a',mac:'cmd a'},function() { console.log("select all!")});
+    shortCutHandler({pc:'^ c',mac:'cmd c'},cmdCopy);
+    shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);
 
 	// Configure currently selected tool
 	selectedTool="zoom";
