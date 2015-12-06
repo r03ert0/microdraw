@@ -1159,8 +1159,13 @@ function makeSVGInline() {
 }
 
 function updateSliceName() {
-        console.log('updateSliceName');
-     $("#slice-name").val(currentImage);
+    console.log('updateSliceName');
+
+    $("#slice-name").val(currentImage);
+
+    var slash_index = params.source.lastIndexOf("/") + 1;
+    var filename    = params.source.substr(slash_index);
+    $("title").text("MicroDraw|"+filename+"|"+currentImage);
 }
 
 var shortCuts = new Array(512);
@@ -1289,13 +1294,6 @@ function initMicrodraw() {
 	if(debug) console.log("> initMicrodraw promise");
 	
 	var def=$.Deferred();
-
-    var slash_index = params.source.lastIndexOf("/") + 1;
-    var filename    = params.source.substr(slash_index);
-    if ( filename === undefined) {
-            filename = "MicroDraw"; 
-    }
-    $("title").text(filename);
 	
 	// Subscribe to login changes
 	MyLoginWidget.subscribe(loginChanged);
