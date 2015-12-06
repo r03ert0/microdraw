@@ -552,7 +552,7 @@ function mouseDrag(x,y,dx,dy) {
         region.path.add(point);
     } else
     if(selectedTool=="select") {
-        event.stopHandlers = true;
+        // event.stopHandlers = true;
         for(i in ImageInfo[currentImage]["Regions"]) {
             var reg = ImageInfo[currentImage]["Regions"][i];
             if(reg.path.selected) {
