@@ -1,5 +1,5 @@
 (function() {                   // force everything local.
-var	debug=true;
+var	debug=1;
 
 var dbroot="http://"+localhost+"/interact/php/interact.php";
 var ImageInfo={}; //regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
@@ -99,8 +99,7 @@ function selectRegion(reg) {
             reg.path.selected=true;
             reg.path.fullySelected=true;
             region=reg;
-        }
-        else {
+        } else {
             ImageInfo[currentImage]["Regions"][i].path.selected=false;
             ImageInfo[currentImage]["Regions"][i].path.fullySelected=false;
         }
@@ -254,32 +253,27 @@ function changeRegionName(reg,name) {
 }
 
 function updateRegionList() {
-        if (debug) console.log('> updateRegionList');  
-        // deletes regions from prevImage and add regions from currentImage
-        // removing
-        if (prevImage != undefined) {
-                for (var i = 0; i < ImageInfo[prevImage]["Regions"].length; i++) {
-                        var reg = ImageInfo[prevImage]["Regions"][i];
-                        var tag=$("#regionList > .region-tag#"+reg.uid);
-    	                $(tag).remove();
-                }
-        } 
-        
-        // adding
-        for (var i = 0; i < ImageInfo[currentImage]["Regions"].length; i++) {
-            var reg = ImageInfo[currentImage]["Regions"][i];
-            // append region tag to regionList
-            var el=$(regionTag(reg.name,reg.uid));
-            $("#regionList").append(el);
+    if (debug) console.log('> updateRegionList');
 
-            // handle single click on computers
-    	    el.click(singlePressOnRegion);
-    	    // handle double click on computers
-    	    el.dblclick(doublePressOnRegion);
-    	    // handle single and double tap on touch devices
-    	    el.on("touchstart",handleRegionTap);
+    // remove all entries in the regionList
+    $("#regionList > .region-tag").each(function() {
+        $(this).remove();
+    });
 
-        }
+    // adding entries corresponding to the currentImage
+    for (var i = 0; i < ImageInfo[currentImage]["Regions"].length; i++) {
+        var reg = ImageInfo[currentImage]["Regions"][i];
+        // append region tag to regionList
+        var el=$(regionTag(reg.name,reg.uid));
+        $("#regionList").append(el);
+
+        // handle single click on computers
+        el.click(singlePressOnRegion);
+        // handle double click on computers
+        el.dblclick(doublePressOnRegion);
+        // handle single and double tap on touch devices
+        el.on("touchstart",handleRegionTap);
+    }
 }
 
 /***2
@@ -299,7 +293,8 @@ function pressHandler(event){
     }
 }
 function dragHandler(event){
-    if(debug) console.log("> dragHandler");
+    if(debug>1)
+        console.log("> dragHandler");
 
     if(!navEnabled) {
         event.stopHandlers = true;
@@ -377,7 +372,7 @@ function handleRegionTap(event) {
 }
 
 function mouseDown(x,y) {
-	if(debug) console.log("> mouseDown");
+	if(debug>1) console.log("> mouseDown");
 
         mouseUndo = getUndo();
 	
@@ -498,7 +493,7 @@ function mouseDown(x,y) {
 			region=newRegion({path:new paper.Path({segments:[point]})});
 			// signal that a new region has been created for drawing
 			newRegionFlag=true;
-                        commitMouseUndo();
+            commitMouseUndo();
 		    console.log("drawing",region);
 			break; 
         }                       
@@ -988,7 +983,7 @@ function loadImage(name) {
 function loadNextImage() {
     if (debug) console.log("> loadNextImage");
     var index = imageOrder.indexOf(currentImage);
-    var nextIndex = ((index +1 < imageOrder.length)? index+1 : 0);
+    var nextIndex = (index+1)%imageOrder.length;
 
     // update image slider
     update_slider_value(nextIndex);
@@ -1024,40 +1019,51 @@ function initAnnotationOverlay(data) {
 	if(debug) 
         console.log("> initAnnotationOverlay");
     console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
- 
 
-    // set up regions for new canvas
-    updateRegionList();
-
-    // create canvas if needed and do general canvas set up
-    var newCanvas = false;
-    if (document.getElementById(currentImage) == null) {
-    // set up vectorial annotation overlay
-    $("body").append("<canvas class='overlay' id='" + currentImage + "'></canvas>");
-        newCanvas = true;
+    /*
+       Activate the paper.js project corresponding to this slice. If it does not yet
+       exist, create a new canvas and associate it to the new project. Hide the previous
+       slice if it exists.
+    */
+    
+    // hide previous slice
+    if(prevImage) {
+        paper.projects[ImageInfo[prevImage]["projectID"]].activeLayer.visible = false;
+        $(paper.projects[ImageInfo[prevImage]["projectID"]].view.element).hide();
     }
+    
+    // if this is the first time a slice is accessed, create its canvas, its project,
+    // and load its regions from the database
+    if (ImageInfo[currentImage]["projectID"] == undefined) {
+        
+        // create canvas
+        var canvas=$("<canvas class='overlay' id='" + currentImage + "'>");
+        $("body").append(canvas);
+        
+        // create project
+        paper.setup(canvas[0]);
+        ImageInfo[currentImage]["projectID"] = paper.project.index;
 
+        // load regions from database
+        interactLoad()
+        .then(function(){
+            $("#regionList").height($(window).height()-$("#regionList").offset().top);
+            updateRegionList();
+            paper.view.draw();
+	    });
+
+        if (debug)
+            console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]+', canvas: '+canvas);
+    }
+    
+    // activate the current slice and make it visible
+    paper.projects[ImageInfo[currentImage]["projectID"]].activate();
+    paper.project.activeLayer.visible = true;
+    $(paper.project.view.element).show();
+
+    // resize the view to the correct size
 	var width=$("body").width();
 	var height=$("body").height();
-    $("canvas.overlay").attr('width',width);
-	$("canvas.overlay").attr('height',height);
-	var canvas=document.getElementById(currentImage);
-
-    // turn current project invisible
-    if (paper.project != null)
-        paper.project.activeLayer.visible = false;
-    if (ImageInfo[currentImage]["projectID"] == undefined) {
-        // for this canvas no project exists: create it!
-        paper.setup(canvas);
-        ImageInfo[currentImage]["projectID"] = paper.project.index;
-        if (debug) console.log('Set up new project with ID ' + ImageInfo[currentImage]["projectID"]);
-    } else {
-        paper.projects[ImageInfo[currentImage]["projectID"]].activate();
-    }
-    // turn new project visible
-    paper.project.activeLayer.visible = true;
-
-    // resize view to correct size
     paper.view.viewSize=[width, height];
 	paper.settings.handleSize=10;
 
@@ -1065,15 +1071,13 @@ function initAnnotationOverlay(data) {
     // TODO think about database structure
     myOrigin.slice = currentImage;
 
-	if (newCanvas) {
-        interactLoad()
-        .then(function(){
-            $("#regionList").height($(window).height()-$("#regionList").offset().top);
-	    });
-    }
+    updateRegionList();
+    paper.view.draw();
 
-    // set size of the current overlay to match the size of the current image
-    magicV = viewer.world.getItemAt(0).getContentSize().x;
+    /* RT: commenting this line out solves the image size issues
+       // set size of the current overlay to match the size of the current image
+       magicV = viewer.world.getItemAt(0).getContentSize().x;
+    */
 
 	transform();
 }
@@ -1297,7 +1301,7 @@ function initMicrodraw() {
 	MyLoginWidget.subscribe(loginChanged);
 	
 	// Enable click on toolbar buttons
-        $("img.button").click(toolSelection);
+    $("img.button").click(toolSelection);
     
     // Initialize the control key handler and set shortcuts
     initShortCutHandler();
@@ -1322,8 +1326,8 @@ function initMicrodraw() {
         
         // set up the ImageInfo array and imageOrder array
         for (var i=0; i < obj.tileSources.length; i++){
-                imageOrder.push(""+i);
-                ImageInfo[""+i] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
+            imageOrder.push(""+i);
+            ImageInfo[""+i] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
         }
 
         // init slider that can be used to change between slides
@@ -1364,9 +1368,8 @@ function initMicrodraw() {
 		});
 		
 		// add handlers: update slice name, animation, page change, mouse actions
-		viewer.addHandler('open',initAnnotationOverlay);
-                viewer.addHandler('open',updateSliceName);
-                viewer.addHandler('animation', function(event){transform()});
+		viewer.addHandler('open',function(){console.log("----->open handler");initAnnotationOverlay();updateSliceName()});
+        viewer.addHandler('animation', function(event){transform()});
 		viewer.addHandler("page", function (data) {
 			console.log(data.page,params.tileSources[data.page]);
 		});
@@ -1377,13 +1380,13 @@ function initMicrodraw() {
 			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 		]});
 
+        if(debug)
+            console.log("< initMicrodraw resolve: success");
+        def.resolve();
     });
     
     // Change current slice by typing in the slice number and pessing the enter key
     $("#slice-name").keyup(slice_name_onenter);
-
-    if(debug) console.log("< initMicrodraw resolve: success");
-    def.resolve();
 
     // Show and hide menu
     var mouse_position;
@@ -1403,9 +1406,6 @@ function initMicrodraw() {
             }, 200, function () {
                 animating = false;
             });
-            if( debug==true ) {
-                console.log('menu shown');
-            }
         } else if (mouse_position > 200) {
             animating = true;
             $('#menu_bar').animate({
@@ -1414,9 +1414,6 @@ function initMicrodraw() {
             }, 500, function () {
                 animating = false;
             });
-            if( debug==true ) {
-                console.log('menu hidden');
-            }
         }
     });
 
@@ -1430,12 +1427,10 @@ function initMicrodraw() {
     return def.promise();
 }
 
-
 params=deparam(); console.log(params);
 initMicrodraw();
 
 /*
-
 $.when(
     interactIP(),
     MyLoginWidget.init()
@@ -1445,8 +1440,8 @@ $.when(
     myOrigin.source=params.source;
     updateUser();
 }).then(initMicrodraw);
-
 */
+
 /*
 	// Log microdraw
 	//interactSave(JSON.stringify(myOrigin),"entered",null);
