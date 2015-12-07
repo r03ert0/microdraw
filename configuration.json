@@ -1,0 +1,5 @@
+{
+    "regionOntology":false,
+    "drawingEnabled":true,
+    "removeTools":["splitregion", "addregion", "delregion"]
+}

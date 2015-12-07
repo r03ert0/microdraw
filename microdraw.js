@@ -1,5 +1,5 @@
 (function() {                   // force everything local.
-var	debug=0;
+var	debug=1;
 
 var dbroot="php/interact.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
@@ -23,6 +23,7 @@ var RedoStack = {};
 var mouseUndo;                // tentative undo information.
 var drawingPolygonFlag = false;       // true when drawing a polygon
 var shortCuts = [];           // List of shortcuts
+var config; // configuration for microdraw
 
 var isMac = navigator.platform.match(/Mac/i)?true:false;
 var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
@@ -62,9 +63,6 @@ function newRegion(arg) {
 	
 	// handle double click on computers
 	el.dblclick(doublePressOnRegion);
-
-        // when the region name span is unfocused, save the currently entered name as region name
-        //el.find(".region-name").on("blur", unfocusRegion);
 
 	// handle single and double tap on touch devices
 	/*
@@ -344,7 +342,16 @@ function doublePressOnRegion(event) {
     event.stopPropagation();
     event.preventDefault();
 
-    regionPicker(this);
+    if (config.regionOntology == true) {
+        regionPicker(this);
+    }
+    else {
+        var name=prompt("Region name");
+        if (name != null) {
+            console.log(this);
+            changeRegionName(findRegionByUID(this.id), name);
+        }
+    }
 }
 
 var tap=false
@@ -1092,6 +1099,7 @@ function initAnnotationOverlay(data) {
 
     // if this is the first time a slice is accessed, create its canvas, its project,
     // and load its regions from the database
+    console.log(ImageInfo);
     if (ImageInfo[currentImage]["projectID"] == undefined) {
         
         // create canvas
@@ -1164,7 +1172,29 @@ function loginChanged() {
     if(debug) console.log("> loginChanged");
 
     updateUser();
+
+    // remove all annotations and paper projects from old user
+    // TODO maybe save to db??
+    paper.projects[ImageInfo[currentImage]["projectID"]].activeLayer.visible = false;
+    $(paper.projects[ImageInfo[currentImage]["projectID"]].view.element).hide();
+    for (var i=0; i < imageOrder.length; i++){
+
+        ImageInfo[imageOrder[i]]["Regions"] = [];
+        if (ImageInfo[imageOrder[i]]["projectID"] != undefined) {
+            paper.projects[ImageInfo[imageOrder[i]]["projectID"]].clear();
+            paper.projects[ImageInfo[imageOrder[i]]["projectID"]].remove();
+            ImageInfo[imageOrder[i]]["projectID"] = undefined;
+        }
+        $("<canvas class='overlay' id='" + currentImage + "'>").remove();
+    }
+    
+    
+    //load new users data
+
+
+    viewer.open(ImageInfo[currentImage]["source"]);
 }
+
 function updateUser() {
     if(debug) console.log("> updateUser");
 
@@ -1331,6 +1361,14 @@ function slice_name_onenter(event) {
     event.preventDefault(); // prevent the default action (scroll / move caret)
 }
 
+function loadConfiguration() {
+    // load general microdraw configuration
+    $.getJSON("configuration.json", function(data) {
+        config = data;
+    });
+
+}
+
 function initMicrodraw() {
 
     if(debug) console.log("> initMicrodraw promise");
@@ -1341,7 +1379,8 @@ function initMicrodraw() {
 	
     // Enable click on toolbar buttons
     $("img.button").click(toolSelection);
-    
+
+        
     // Initialize the control key handler and set shortcuts
     initShortCutHandler();
     shortCutHandler({pc:'^ z',mac:'cmd z'},cmdUndo);
@@ -1442,7 +1481,7 @@ function initMicrodraw() {
     $("#slice-name").keyup(slice_name_onenter);
 
     // Show and hide menu
-    var mouse_position;
+    /*var mouse_position;
     var animating = false;
     $(document).mousemove(function (e) {
         if (animating) {
@@ -1469,7 +1508,7 @@ function initMicrodraw() {
             });
         }
     });
-
+*/
     $(window).resize(function() {
         $("#regionList").height($(window).height()-$("#regionList").offset().top);
         resizeAnnotationOverlay();
@@ -1483,7 +1522,6 @@ function initMicrodraw() {
 //params=deparam();
 //initMicrodraw();
 
-
 $.when(
     interactIP(),
     MyLoginWidget.init()
@@ -1492,6 +1530,7 @@ $.when(
     myOrigin.appName="microdraw";
     myOrigin.source=params.source;
     updateUser();
+    loadConfiguration();
 }).then(initMicrodraw);
 
 
