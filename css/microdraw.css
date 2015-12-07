@@ -39,6 +39,13 @@ menu_bar#info {
 	border-radius:100px;
 }
 
+#prev, #next, #slice-name {
+	vertical-align:middle;
+}
+#slider {
+	width: calc( 100% - 4px); /* 100% - 2*margin */
+}
+
 #regionList {
 	position:relative;
 	min-height:30px;
