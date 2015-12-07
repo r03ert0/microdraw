@@ -1096,8 +1096,12 @@ function deparam() {
     if(debug) console.log("> deparam");
 
     var search = location.search.substring(1);
-    return search?JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g,'":"') + '"}',
-                     function(key, value) { return key===""?value:decodeURIComponent(value) }):{}   
+    var result=search?JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g,'":"') + '"}',
+                     function(key, value) { return key===""?value:decodeURIComponent(value) }):{};
+    if(debug)
+    	console.log("url parametres:",result);
+    	
+    return result;
 }
 function loginChanged() {
     if(debug) console.log("> loginChanged");
@@ -1300,10 +1304,13 @@ function initMicrodraw() {
 
 	// load tile sources
 	$.getJSON(params.source,function(obj) {
+		if(debug)
+			console.log("json file:",obj);
+			
         if (obj.tileCodeY) {
             obj.tileSources = eval(obj.tileCodeY);
-            console.log("tileSources.length " + tileSources.length);
         }
+		console.log("tileSources.length: " + obj.tileSources.length);
         
         // set up the ImageInfo array and imageOrder array
         for (var i=0; i < obj.tileSources.length; i++){
@@ -1313,7 +1320,7 @@ function initMicrodraw() {
 
         // init slider that can be used to change between slides
         initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length/2));
-        currentImage = imageOrder[Math.round(obj.tileSources.length/2)];
+        currentImage = imageOrder[Math.floor(obj.tileSources.length/2)];
                 
 		params.tileSources=obj.tileSources;
 		viewer = OpenSeadragon({
@@ -1413,7 +1420,7 @@ function initMicrodraw() {
     return def.promise();
 }
 
-params=deparam(); console.log(params);
+params=deparam();
 initMicrodraw();
 
 /*
