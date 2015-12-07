@@ -1,2 +1,1 @@
-var localhost="localhost";
-//var localhost="siphonophore.org";
+var localhost = "localhost";

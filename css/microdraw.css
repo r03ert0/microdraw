@@ -6,14 +6,23 @@ html,body {
 	font-size:1rem;
 	color:#333;
 }
-#info {
+menu_bar#info {
 	position:absolute;
 	width:200px;
 	height:100%;
 	top:0;
 	left:0;
 	background-color:rgba(200,200,200,0.5);
-	z-index:10;
+	z-index:10; 
+}
+#menu_bar {
+	position:absolute;
+	width:200px;
+	height:100%;
+	top:0;
+	left:0;
+	background-color:rgba(200,200,200,0.5);
+	z-index:10; 
 }
 #login {
 	height:1.5em;
@@ -28,6 +37,13 @@ html,body {
 .selected {
 	background-color:#57d1df;
 	border-radius:100px;
+}
+
+#prev, #next, #slice-name {
+	vertical-align:middle;
+}
+#slider {
+	width: calc( 100% - 4px); /* 100% - 2*margin */
 }
 
 #regionList {
@@ -87,4 +103,5 @@ html,body {
     -webkit-filter: drop-shadow( 2px 2px 2px #777 );
     -moz-filter: drop-shadow( 2px 2px 2px #777 );
     filter: drop-shadow( 2px 2px 2px #777 );
+    z-index:1;
 }

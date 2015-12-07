@@ -24,17 +24,17 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1132"
+     inkscape:window-width="1440"
+     inkscape:window-height="851"
      id="namedview16"
      showgrid="false"
-     inkscape:zoom="25.703565"
-     inkscape:cx="13.011349"
+     inkscape:zoom="12.851783"
+     inkscape:cx="22.484743"
      inkscape:cy="18.57667"
      inkscape:window-x="0"
-     inkscape:window-y="24"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g4161"
+     inkscape:current-layer="svg7350"
      inkscape:snap-bbox="true"
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
@@ -302,13 +302,9 @@
          transform="translate(113.9401,-73.72069)" />
     </g>
   </g>
-  <g
-     id="g4161"
-     transform="matrix(0,1,-1,0,36.660257,0.53382432)">
-    <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#marker5155)"
-       d="m 18.08305,5.830702 0.155621,26.260947"
-       id="path4567"
-       inkscape:connector-curvature="0" />
-  </g>
+  <path
+     d="m 10.911249,18.757046 11.178689,0.08541 c -0.5017,-1.373591 -1.012065,-2.759192 -1.450529,-4.157716 -0.246175,-0.220952 -0.04731,-0.562609 0.20722,-0.593959 0.08487,-0.01074 0.194784,0.03801 0.27629,0.111303 0.01305,0.01074 0.02299,0.0234 0.03448,0.03706 2.08194,1.875058 4.180361,3.705331 6.182013,5.679735 0.07902,0.07782 0.108085,0.173829 0.103554,0.259857 0.0284,0.103591 0.03956,0.204809 -0.06907,0.296981 -2.088761,1.779501 -4.522608,3.330327 -6.941814,4.528938 -0.258,0.127939 -0.505999,-0.108575 -0.518046,-0.334102 -0.0077,-0.02661 -7.95e-4,-0.04538 0,-0.07426 0.0022,-0.0095 -0.0033,-0.02791 0,-0.03706 0.0077,-0.04444 0.03725,-0.102167 0.06909,-0.148491 0.646769,-0.941383 1.231213,-1.933936 1.726813,-2.969789 l -10.873917,-0.0072"
+     id="rect21408"
+     inkscape:connector-curvature="0"
+     sodipodi:nodetypes="cccccccccccccccc" />
 </svg>

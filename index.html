@@ -55,10 +55,8 @@
 				<p>MicroDraw is written in JavaScript, using HTML5, CSS3 and jQuery.</p>
 				<ul class="links">
 					<li class="download"><a href="https://github.com/neuroanatomy/microdraw">Get it on GitHub</a></li>
-					<li class="document"><a href="docs/docs/Overview/GuideOverview.html">Documentation</a></li>
-					<li class="reference"><a href="docs/index.html">API Reference</a></li>
-					<li class="forum-topic"><a href="https://lists.naat.com/mailman/listinfo/MicroDraw-users">Mailing List</a></li>
-                    <li class="forum-topic"><a href="https://lists.naat.com/mailman/listinfo/MicroDraw-dev">Developers' Mailing List</a></li>
+					<li class="document"><a href="https://github.com/r03ert0/microdraw/wiki">Documentation</a></li>
+					<li class="forum-topic"><a href="https://github.com/r03ert0/microdraw/issues">Forum (GitHub issues)</a></li>
 				</ul>
 			</section>
 		</section>
@@ -70,15 +68,21 @@
 	</main>
 	
 	<script>
-	$(".download>a").attr('href',$(".download>a").attr('href').replace("{{localhost}}",localhost));
+	$(".download>a").each(function(){
+		$(this).attr('href',$(this).attr('href').replace("{{localhost}}",localhost));	
+	})
+	/*
 	$("#go").click(function(){
 		window.location="microdraw.html?source="+$("input").val();
 	});
+	*/
+	/*
 	$("input").keydown(function (e) {
 		if (e.keyCode == 13) {
 			window.location="microdraw.html?source="+$("input").val();
 		}
 	});
+	*/
 	</script>
 </body>
 </html>
