@@ -1172,7 +1172,7 @@ function initShortCutHandler() {
     $(document).keydown(function(e) {
         var key=[];
         if (e.ctrlKey) key.push("^");
-        if (e.altKey) key.push("shift");
+        if (e.altKey) key.push("alt");
         if (e.shiftKey) key.push("shift");
         if (e.metaKey) key.push("cmd");
         key.push(String.fromCharCode(e.keyCode));
