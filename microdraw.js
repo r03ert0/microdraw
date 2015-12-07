@@ -21,7 +21,7 @@ var	myIP;			          // user's IP
 var UndoStack = {};
 var RedoStack = {};
 var mouseUndo;                // tentative undo information.
-var drawingPolygonFlag;       // true when drawing a polygon
+var drawingPolygonFlag = false;       // true when drawing a polygon
 var shortCuts = [];           // List of shortcuts
 
 var isMac = navigator.platform.match(/Mac/i)?true:false;
@@ -502,6 +502,7 @@ function mouseDown(x,y) {
         }                       
         case "draw-polygon": {
             // is already drawing a polygon or not?
+            console.log(drawingPolygonFlag);
             if(drawingPolygonFlag == false) {
                 // deselect previously selected region
                 if(region)
@@ -767,7 +768,7 @@ function toolSelection(event) {
         
         //end drawing of polygons and make open form
         if (drawingPolygonFlag == true)
-            finishDrawingPolygon(false);
+            finishDrawingPolygon(true);
 	
 	var prevTool=selectedTool;
 	selectedTool=$(this).attr("id");
