@@ -1290,9 +1290,9 @@ function initMicrodraw() {
     shortCutHandler({pc:'^ v',mac:'cmd v'},cmdPaste);
     shortCutHandler({pc:'^ a',mac:'cmd a'},function() { console.log("select all!")});
     shortCutHandler({pc:'^ c',mac:'cmd c'},cmdCopy);
-    shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);
-    shortCutHandler({pc:'#37',mac:'#37'},loadPreviousImage);
-    shortCutHandler({pc:'#39',mac:'#39'},loadNextImage);
+    shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);  // delete key
+    shortCutHandler({pc:'#37',mac:'#37'},loadPreviousImage); // left-arrow key
+    shortCutHandler({pc:'#39',mac:'#39'},loadNextImage);     // right-arrow key
 
 	// Configure currently selected tool
 	selectedTool="zoom";
