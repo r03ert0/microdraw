@@ -2,28 +2,28 @@
 var	debug=1;
 
 var dbroot="http://"+localhost+"/interact/php/interact.php";
-var ImageInfo={}; //regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
-                // regions contain a paper.js path, a unique ID and a name
-var imageOrder=[]; // names of slices ordered by their openseadragon page numbers
-var currentImage = undefined;   // name of the current image
-var prevImage = undefined;  // name of the last image
-var region=null;	// currently selected region (one element of Regions[])
-var copyRegion;		// clone of the currently selected region for copy/paste
-var handle;			// currently selected control point or handle (if any)
+var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
+                              // regions contain a paper.js path, a unique ID and a name
+var imageOrder=[];            // names of slices ordered by their openseadragon page numbers
+var currentImage = undefined; // name of the current image
+var prevImage = undefined;    // name of the last image
+var region=null;	          // currently selected region (one element of Regions[])
+var copyRegion;		          // clone of the currently selected region for copy/paste
+var handle;			          // currently selected control point or handle (if any)
 var newRegionFlag;	
-var selectedTool;	// currently selected tool
-var viewer;			// open seadragon viewer
-var navEnabled=true;// flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
-var magicV=1000;	// resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
-var myOrigin={};	// Origin identification for DB storage
-var	params;			// URL parameters
-var	myIP;			// user's IP
+var selectedTool;	          // currently selected tool
+var viewer;			          // open seadragon viewer
+var navEnabled=true;          // flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
+var magicV=1000;	          // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
+var myOrigin={};	          // Origin identification for DB storage
+var	params;			          // URL parameters
+var	myIP;			          // user's IP
 var UndoStack = [];
 var RedoStack = [];
-var mouseUndo;                  // tentative undo information.
-var drawingPolygonFlag;
+var mouseUndo;                // tentative undo information.
+var drawingPolygonFlag;       // true when drawing a polygon
+var shortCuts = [];           // List of shortcuts
 
-var shortCuts = []; // List of shortcuts
 var isMac = navigator.platform.match(/Mac/i)?true:false;
 var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
 
@@ -41,12 +41,6 @@ function newRegion(arg) {
 	else {
 		reg.name="Untitled "+reg.uid;
 	}
-
-	//if( arg.page )
-	//	reg.page=arg.page;
-	//else {
-	//	reg.page=current_page; 
-	//}
 
 	var color=regionHashColor(reg.name);
 	
@@ -376,9 +370,10 @@ function handleRegionTap(event) {
 }
 
 function mouseDown(x,y) {
-	if(debug>1) console.log("> mouseDown");
+	if(debug>1)
+	    console.log("> mouseDown");
 
-        mouseUndo = getUndo();
+    mouseUndo=getUndo();
 	
 	var prevRegion=null;
 	var point=paper.view.viewToProject(new paper.Point(x,y));
@@ -393,11 +388,11 @@ function mouseDown(x,y) {
 		case "delregion":
 		case "splitregion": {
 			var hitResult=paper.project.hitTest(point, {
-					tolerance:10,
+					tolerance: 10,
 					stroke: true,
-					segments:true,
+					segments: true,
 					fill: true,
-					handles:true
+					handles: true
 				});
 				
 			newRegionFlag=false;
@@ -416,8 +411,6 @@ function mouseDown(x,y) {
 					prevRegion=region;
 				}
 				selectRegion(re);
-				//re.path.fullySelected=true;
-				//region=re;
 		
 				if (hitResult.type == 'handle-in') {
 					handle = hitResult.segment.handleIn;
@@ -440,7 +433,7 @@ function mouseDown(x,y) {
 					.curves[hitResult.location.index]
 					.divide(hitResult.location);
 					region.path.fullySelected=true;
-                                        commitMouseUndo();
+                    commitMouseUndo();
 					paper.view.draw();
 				} 
 				else if (selectedTool=="addregion") {
@@ -449,7 +442,7 @@ function mouseDown(x,y) {
 						removeRegion(prevRegion);
 						region.path.remove();
 						region.path=newPath;
-                                                commitMouseUndo();
+                        commitMouseUndo();
 					}
 				} 
 				else if (selectedTool=="delregion") {
@@ -458,7 +451,7 @@ function mouseDown(x,y) {
 						removeRegion(prevRegion);
 						prevRegion.path.remove();
 						newRegion({path:newPath});
-                                                commitMouseUndo();
+                        commitMouseUndo();
 					}
 				} 
 				else if (selectedTool=="splitregion") {
@@ -475,7 +468,7 @@ function mouseDown(x,y) {
 								newRegion({path:newPath._children[i]});
 							}
 						}
-                                                commitMouseUndo();
+                        commitMouseUndo();
 					}
 				} 
 				break;
@@ -503,15 +496,15 @@ function mouseDown(x,y) {
         }                       
         case "draw-polygon": {
             // is already drawing a polygon or not?
-            if(drawingPolygonFlag != true) {
-                //deselect previously selected region
+            if(drawingPolygonFlag == false) {
+                // deselect previously selected region
                 if(region)
-                    region.path.selected = false;
-                    // Start a new Region with no fill color
-                    region=newRegion({path:new paper.Path({segments:[point]})});
-                    region.path.fillColor.alpha=0;
-                    drawingPolygonFlag=true;
-                    region.path.selected = true;
+                    region.path.selected=false;
+                // Start a new Region with no fill color
+                region=newRegion({path:new paper.Path({segments:[point]})});
+                region.path.fillColor.alpha=0;
+                region.path.selected=true;
+                drawingPolygonFlag=true;
             } else {
                 var hitResult=paper.project.hitTest(point, {tolerance:10, segments:true});
                 if (hitResult && hitResult.item == region.path && hitResult.segment.point == region.path.segments[0].point) {
@@ -692,19 +685,19 @@ function backToPreviousTool(prevTool) {
 
 
 /**
- * This function just deletes the currently selected object.
+ * This function deletes the currently selected object.
  */
 function cmdDeleteSelected() {
     var undoInfo = getUndo();
     var i;
     for(i in ImageInfo[currentImage]["Regions"]) {
-	if(ImageInfo[currentImage]["Regions"][i].path.selected) {
-	    removeRegion(ImageInfo[currentImage]["Regions"][i]);
-            UndoStack.push(undoInfo);
-            RedoStack = [];
-	    paper.view.draw();
-	    break;
-	}
+        if(ImageInfo[currentImage]["Regions"][i].path.selected) {
+            removeRegion(ImageInfo[currentImage]["Regions"][i]);
+                UndoStack.push(undoInfo);
+                RedoStack = [];
+            paper.view.draw();
+            break;
+        }
     }
 }
 
@@ -727,16 +720,15 @@ function cmdPaste() {
         var undoInfo = getUndo();
         UndoStack.push(undoInfo);
         RedoStack = [];
-	console.log( "paste " + copyRegion.name );
-	if( findRegionByName(copyRegion.name) ) {
-	    copyRegion.name += " Copy";
-	}
-	var reg=JSON.parse(JSON.stringify(copyRegion));
-	reg.path=new paper.Path();
-	reg.path.importJSON(copyRegion.path);
-	reg.page=null;
-	reg.path.fullySelected=true;
-	newRegion({name:copyRegion.name,page:reg.page,path:reg.path});
+        console.log( "paste " + copyRegion.name );
+        if( findRegionByName(copyRegion.name) ) {
+            copyRegion.name += " Copy";
+        }
+        var reg=JSON.parse(JSON.stringify(copyRegion));
+        reg.path=new paper.Path();
+        reg.path.importJSON(copyRegion.path);
+        reg.path.fullySelected=true;
+        newRegion({name:copyRegion.name,path:reg.path});
     }
     paper.view.draw();
 }
@@ -810,6 +802,7 @@ function toolSelection(event) {
 			break;
         case "simplify":
             simplify(region);
+			backToPreviousTool(prevTool);
             break;
 
 	}
@@ -1170,6 +1163,7 @@ function updateSliceName() {
 }
 function initShortCutHandler() {
     $(document).keydown(function(e) {
+        console.log(e);
         var key=[];
         if (e.ctrlKey) key.push("^");
         if (e.altKey) key.push("alt");
@@ -1297,6 +1291,8 @@ function initMicrodraw() {
     shortCutHandler({pc:'^ a',mac:'cmd a'},function() { console.log("select all!")});
     shortCutHandler({pc:'^ c',mac:'cmd c'},cmdCopy);
     shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);
+    shortCutHandler({pc:'#37',mac:'#37'},loadPreviousImage);
+    shortCutHandler({pc:'#39',mac:'#39'},loadNextImage);
 
 	// Configure currently selected tool
 	selectedTool="zoom";
@@ -1353,8 +1349,13 @@ function initMicrodraw() {
 		});
 		
 		// add handlers: update slice name, animation, page change, mouse actions
-		viewer.addHandler('open',function(){console.log("----->open handler");initAnnotationOverlay();updateSliceName()});
-        viewer.addHandler('animation', function(event){transform()});
+		viewer.addHandler('open',function(){
+		    initAnnotationOverlay();
+		    updateSliceName();
+		});
+        viewer.addHandler('animation', function(event){
+            transform();
+        });
 		viewer.addHandler("page", function (data) {
 			console.log(data.page,params.tileSources[data.page]);
 		});
