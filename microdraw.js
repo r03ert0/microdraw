@@ -559,11 +559,11 @@ function mouseDrag(x,y,dx,dy) {
     }
     if(selectedTool=="rotate") {
         event.stopHandlers = true;
-        var degree = parseInt(dpoint.x)
+        var degree   = parseInt(dpoint.x);
         var i;
         for(i in ImageInfo[currentImage]["Regions"]) {
             if(ImageInfo[currentImage]["Regions"][i].path.selected) {
-                ImageInfo[currentImage]["Regions"][i].path.rotate(degree);
+                ImageInfo[currentImage]["Regions"][i].path.rotate(degree, point);
                 commitMouseUndo();
             }
         }
@@ -730,20 +730,6 @@ function cmdDeleteSelected() {
     }
 }
 
-function cmdRotateSelected() {
-    var undoInfo = getUndo();
-    var degree=prompt("Degree of rotation");
-    var i;
-    for(i in ImageInfo[currentImage]["Regions"]) {
-        if(ImageInfo[currentImage]["Regions"][i].path.selected) {
-            ImageInfo[currentImage]["Regions"][i].path.rotate(degree);
-        }
-    }
-    saveUndo(undoInfo);
-    paper.view.draw();
-}
-
-
 function cmdPaste() {
     if( copyRegion !== null ) {
         var undoInfo = getUndo();
@@ -788,6 +774,7 @@ function toolSelection(event) {
         case "addpoint":
         case "delpoint":
         case "draw":
+        case "rotate":
         case "draw-polygon":
             navEnabled=false;
             break;
@@ -797,10 +784,6 @@ function toolSelection(event) {
             break;
         case "delete":
             cmdDeleteSelected();
-            backToPreviousTool(prevTool);
-            break;
-        case "rotate":
-            cmdRotateSelected();
             backToPreviousTool(prevTool);
             break;
         case "save":
