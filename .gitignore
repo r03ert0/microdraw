@@ -5,14 +5,10 @@ macaque
 php/base.php
 final.zip
 node_modules
-php/db_access.php.example
-
+php/db_access.php
 base.js
-
 bigbrain.json
-
 microdrawNotes.txt
-
 documentation
 .*
 !.gitignore

@@ -18,8 +18,8 @@ var magicV=1000;	          // resolution of the annotation canvas - is changed a
 var myOrigin={};	          // Origin identification for DB storage
 var	params;			          // URL parameters
 var	myIP;			          // user's IP
-var UndoStack = [];
-var RedoStack = [];
+var UndoStack = {};
+var RedoStack = {};
 var mouseUndo;                // tentative undo information.
 var drawingPolygonFlag;       // true when drawing a polygon
 var shortCuts = [];           // List of shortcuts
@@ -377,7 +377,7 @@ function mouseDown(x,y) {
 	if(debug>1)
 	    console.log("> mouseDown");
 
-    mouseUndo=getUndo();
+    mouseUndo = getUndo();
 	
 	var prevRegion=null;
 	var point=paper.view.viewToProject(new paper.Point(x,y));
@@ -429,8 +429,10 @@ function mouseDown(x,y) {
 						handle=hitResult.segment.point;
 						handle.point=point;
 					}
-					if(selectedTool=="delpoint")
+					if(selectedTool=="delpoint") {
 						hitResult.segment.remove();
+						commitMouseUndo();
+					}
 				} 
 				else if (hitResult.type=='stroke' && selectedTool=="addpoint") {
 					region.path
@@ -591,11 +593,11 @@ function simplify() {
  * Command to actually perform an undo.
  */
 function cmdUndo() {
-    if (UndoStack.length > 0) {
+    if (UndoStack[currentImage].length > 0) {
         var redoInfo = getUndo();
-        var undoInfo = UndoStack.pop();
-        loadUndo(undoInfo);
-        RedoStack.push(redoInfo);
+        var undoInfo = UndoStack[currentImage].pop();
+        applyUndo(undoInfo);
+        RedoStack[currentImage].push(redoInfo);
         paper.view.draw();
     }
 }
@@ -604,11 +606,11 @@ function cmdUndo() {
  * Command to actually perform a redo.
  */
 function cmdRedo() {
-    if (RedoStack.length > 0) {
+    if (RedoStack[currentImage].length > 0) {
         var undoInfo = getUndo();
-        var redoInfo = RedoStack.pop();
-        loadUndo(redoInfo);
-        UndoStack.push(undoInfo);
+        var redoInfo = RedoStack[currentImage].pop();
+        applyUndo(redoInfo);
+        UndoStack[currentImage].push(undoInfo);
         paper.view.draw();
     }
 }
@@ -618,12 +620,20 @@ function cmdRedo() {
  */
 function getUndo() {
     var undo = [];
-    for (var i = 0; i < ImageInfo[currentImage]["Regions"].length; i++) {
+    var info = ImageInfo[currentImage]["Regions"];
+
+    /* Make sure the undo stack is initialized. */
+    if (UndoStack[currentImage] === undefined) {
+        UndoStack[currentImage] = [];
+        RedoStack[currentImage] = [];
+    }
+
+    for (var i = 0; i < info.length; i++) {
         var el = {
-            json: JSON.parse(ImageInfo[currentImage]["Regions"][i].path.exportJSON()),
-            name: ImageInfo[currentImage]["Regions"][i].name,
-            selected: ImageInfo[currentImage]["Regions"][i].path.selected,
-            fullySelected: ImageInfo[currentImage]["Regions"][i].path.fullySelected
+            json: JSON.parse(info[i].path.exportJSON()),
+            name: info[i].name,
+            selected: info[i].path.selected,
+            fullySelected: info[i].path.fullySelected
         }
         undo.push(el);
     }
@@ -631,11 +641,21 @@ function getUndo() {
 }
 
 /**
+ * Save an undo object. This has the side-effect of initializing the
+ * redo stack.
+ */
+function saveUndo(undoInfo) {
+	UndoStack[currentImage].push(undoInfo);
+	RedoStack[currentImage] = [];
+}
+
+/**
  * Restore the current state from an undo object.
  */
-function loadUndo(undo) {
-    while (ImageInfo[currentImage]["Regions"].length > 0)
-        removeRegion(ImageInfo[currentImage]["Regions"][0]);
+function applyUndo(undo) {
+    var info = ImageInfo[currentImage]["Regions"];
+    while (info.length > 0)
+        removeRegion(info[0]);
     region = null;
     for (var i = 0; i < undo.length; i++) {
         var el = undo[i];
@@ -645,7 +665,7 @@ function loadUndo(undo) {
         reg.path.selected = el.selected;
         reg.path.fullySelected = el.fullySelected;
         if (el.selected) {
-            if (region == null)
+            if (region === null)
                 region = reg;
             else
                 console.log("Should not happen: two regions selected?");
@@ -659,8 +679,7 @@ function loadUndo(undo) {
  */
 function commitMouseUndo() {
     if (mouseUndo !== undefined) {
-        UndoStack.push(mouseUndo);
-        RedoStack = [];
+		saveUndo(mouseUndo);
         mouseUndo = undefined;
     }
 }
@@ -697,8 +716,7 @@ function cmdDeleteSelected() {
     for(i in ImageInfo[currentImage]["Regions"]) {
         if(ImageInfo[currentImage]["Regions"][i].path.selected) {
             removeRegion(ImageInfo[currentImage]["Regions"][i]);
-                UndoStack.push(undoInfo);
-                RedoStack = [];
+			saveUndo(undoInfo);
             paper.view.draw();
             break;
         }
@@ -714,16 +732,14 @@ function cmdRotateSelected() {
             ImageInfo[currentImage]["Regions"][i].path.rotate(degree);
         }
     }
-    UndoStack.push(undoInfo);
-    RedoStack = [];
+	saveUndo(undoInfo);
     paper.view.draw();
 }
 
 function cmdPaste() {
     if( copyRegion !== null ) {
         var undoInfo = getUndo();
-        UndoStack.push(undoInfo);
-        RedoStack = [];
+		saveUndo(undoInfo);
         console.log( "paste " + copyRegion.name );
         if( findRegionByName(copyRegion.name) ) {
             copyRegion.name += " Copy";
@@ -1487,3 +1503,10 @@ $.when(
 	//load();
 */
 })();
+
+// For emacs users - set up the tabbing appropriately.
+// Local Variables:
+// mode: Javascript
+// indent-tabs-mode: t
+// tab-width: 4
+// End:
