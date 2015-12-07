@@ -1,10 +1,7 @@
 <?php
 session_start();
-$dbhost = "localhost"; // this will ususally be 'localhost', but can sometimes differ
-$dbuser = "microdraw"; // the username that you created, or were given, to access your database
-$dbpass = "microdraw"; // the password that you created, or were given, to access your database
 $dbname = "Interact";
-
+include('db_access.php');
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 
@@ -88,7 +85,9 @@ function loadLast($args)
 		." myOrigin = '".$args["origin"]."' AND"
 		." myKey = '".$args["key"]."'"
 		." ORDER BY myTimestamp DESC LIMIT 1";
-	$result = mysqli_query($connection,$q);
+        #echo $q;
+        $result = mysqli_query($connection,$q);
+
 
 	header('Content-Type: application/text');
 	$row = mysqli_fetch_assoc($result);

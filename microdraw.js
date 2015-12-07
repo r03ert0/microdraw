@@ -1,7 +1,7 @@
 (function() {                   // force everything local.
-var	debug=1;
+var	debug=0;
 
-var dbroot="http://"+localhost+"/interact/php/interact.php";
+var dbroot="php/interact.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
                               // regions contain a paper.js path, a unique ID and a name
 var imageOrder=[];            // names of slices ordered by their openseadragon page numbers
@@ -64,7 +64,7 @@ function newRegion(arg) {
 	el.dblclick(doublePressOnRegion);
 
         // when the region name span is unfocused, save the currently entered name as region name
-        el.find(".region-name").on("blur", unfocusRegion);
+        //el.find(".region-name").on("blur", unfocusRegion);
 
 	// handle single and double tap on touch devices
 	/*
@@ -906,19 +906,21 @@ function interactLoad() {
     Load SVG overlay from Interact DB
 */
 	if(debug) console.log("> interactLoad promise");
-	
+        console.log(myOrigin);	
 	var	def=$.Deferred();
 	var	key="regionPaths";
 	
-	/*$.get(dbroot,{
+	$.get(dbroot,{
 		"action":"load_last",
 		"origin":JSON.stringify(myOrigin),
 		"key":key
 	}).success(function(data) {
 		var	i,obj,reg;
+                //console.log(data);
 	//	console.log(data); JSONparse on this text of html errors
 		$("#regionList").html("");
 		obj=JSON.parse(data);
+                console.log(obj);
 		if(obj) {
 			obj=JSON.parse(obj.myValue);
 			for(i=0;i<obj.Regions.length;i++) {
@@ -933,12 +935,12 @@ function interactLoad() {
 			}
 			paper.view.draw();
 		}
-		if(debug) console.log("< interactLoad resolve success. Number of regions:", Regions.length);
+		if(debug) console.log("< interactLoad resolve success. Number of regions:", ImageInfo[currentImage]["Regions"].length);
 		def.resolve();
 	}).error(function(jqXHR, textStatus, errorThrown) {
         console.log("< interactLoad resolve ERROR: " + textStatus + " " + errorThrown);
     });
-    */
+    
     return def.promise();
 }
 function interactIP() {
@@ -1051,8 +1053,8 @@ function resizeAnnotationOverlay() {
 }
 
 function initAnnotationOverlay(data) {
-	if(debug) 
-        console.log("> initAnnotationOverlay");
+
+    if(debug) console.log("> initAnnotationOverlay");
     console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
 
     /*
@@ -1060,13 +1062,17 @@ function initAnnotationOverlay(data) {
        exist, create a new canvas and associate it to the new project. Hide the previous
        slice if it exists.
     */
-    
+
+    // change myOrigin (for loading and saving)
+    //myOrigin.slice = currentImage;
+    myOrigin.source = myOrigin.source.split('@')[0] + '@' + currentImage;
+
     // hide previous slice
-    if(prevImage) {
+    if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
         paper.projects[ImageInfo[prevImage]["projectID"]].activeLayer.visible = false;
         $(paper.projects[ImageInfo[prevImage]["projectID"]].view.element).hide();
     }
-    
+
     // if this is the first time a slice is accessed, create its canvas, its project,
     // and load its regions from the database
     if (ImageInfo[currentImage]["projectID"] == undefined) {
@@ -1090,31 +1096,27 @@ function initAnnotationOverlay(data) {
         if (debug)
             console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]+', canvas: '+canvas);
     }
-    
+
+       
     // activate the current slice and make it visible
     paper.projects[ImageInfo[currentImage]["projectID"]].activate();
     paper.project.activeLayer.visible = true;
     $(paper.project.view.element).show();
 
-    // resize the view to the correct size
-	var width=$("body").width();
-	var height=$("body").height();
+    // resize view to correct size
+    var width=$("body").width();
+    var height=$("body").height();
     paper.view.viewSize=[width, height];
-	paper.settings.handleSize=10;
-
-    // change myOrigin 
-    // TODO think about database structure
-    myOrigin.slice = currentImage;
-
+    paper.settings.handleSize=10;
+	
     updateRegionList();
     paper.view.draw();
 
-    /* RT: commenting this line out solves the image size issues
+    /* RT: commenting this line out solves the image size issues */
        // set size of the current overlay to match the size of the current image
        magicV = viewer.world.getItemAt(0).getContentSize().x;
-    */
 
-	transform();
+    transform();
 }
 
 function transform() {
@@ -1314,14 +1316,13 @@ function slice_name_onenter(event) {
 
 function initMicrodraw() {
 
-	if(debug) console.log("> initMicrodraw promise");
+    if(debug) console.log("> initMicrodraw promise");
+    var def=$.Deferred();
 	
-	var def=$.Deferred();
+    // Subscribe to login changes
+    MyLoginWidget.subscribe(loginChanged);
 	
-	// Subscribe to login changes
-	MyLoginWidget.subscribe(loginChanged);
-	
-	// Enable click on toolbar buttons
+    // Enable click on toolbar buttons
     $("img.button").click(toolSelection);
     
     // Initialize the control key handler and set shortcuts
@@ -1336,79 +1337,84 @@ function initMicrodraw() {
     shortCutHandler({pc:'#37',mac:'#37'},loadPreviousImage); // left-arrow key
     shortCutHandler({pc:'#39',mac:'#39'},loadNextImage);     // right-arrow key
 
-	// Configure currently selected tool
-	selectedTool="zoom";
-	selectTool();
-	// load tile sources
-	$.getJSON(params.source,function(obj) {
-		if(debug)
-			console.log("json file:",obj);
+    // Configure currently selected tool
+    selectedTool="zoom";
+    selectTool();
+    // load tile sources
+    $.getJSON(params.source,function(obj) {
+        if(debug)
+            console.log("json file:",obj);
 			
+        // for loading the bigbrain
         if (obj.tileCodeY) {
             obj.tileSources = eval(obj.tileCodeY);
         }
-		console.log("tileSources.length: " + obj.tileSources.length);
         
         // set up the ImageInfo array and imageOrder array
         for (var i=0; i < obj.tileSources.length; i++){
-            imageOrder.push(""+i);
-            ImageInfo[""+i] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
+            // name is either the index of the tileSource or a named specified in the json file
+            var name = ((obj.names && obj.names[i]) ? String(obj.names[i]) : String(i));
+            imageOrder.push(name);
+            ImageInfo[name] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
+            // if getTileUrl is specified, we might need to eval it to get the function
+            if (obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string'){
+                eval("ImageInfo[name]['source'].getTileUrl = " + obj.tileSources[i].getTileUrl);
+            }
         }
-
         // init slider that can be used to change between slides
         initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length/2));
         currentImage = imageOrder[Math.floor(obj.tileSources.length/2)];
                 
-		params.tileSources=obj.tileSources;
-                viewer = OpenSeadragon({
-			id: "openseadragon1",
-			prefixUrl: "lib/openseadragon/images/",
-			tileSources: [],
-			showReferenceStrip: false,
-	        referenceStripSizeRatio: 0.2,
-			showNavigator: true,
+        params.tileSources=obj.tileSources;
+            viewer = OpenSeadragon({
+            id: "openseadragon1",
+            prefixUrl: "lib/openseadragon/images/",
+            tileSources: [],
+            showReferenceStrip: false,
+            referenceStripSizeRatio: 0.2,
+            showNavigator: true,
             sequenceMode: false,
-			navigatorId:"myNavigator",
-			zoomInButton:"zoom-in",
-			zoomOutButton:"zoom-out",
-			homeButton:"home",
+            navigatorId:"myNavigator",
+            zoomInButton:"zoom-in",
+            zoomOutButton:"zoom-out",
+            homeButton:"home",
             preserveViewport: true
-		});
+	});
                 
         // open the currentImage
         viewer.open(ImageInfo[currentImage]["source"]);
 		
-		// add the scalebar
-		viewer.scalebar({
-			type: OpenSeadragon.ScalebarType.MICROSCOPE,
-			minWidth:'150px',
-			pixelsPerMeter:obj.pixelsPerMeter,
-			color:'black',
-			fontColor:'black',
-			backgroundColor:"rgba(255,255,255,0.5)",
-			barThickness:4,
-			location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
-			xOffset:5,
-			yOffset:5
-		});
+        // add the scalebar
+	viewer.scalebar({
+	    type: OpenSeadragon.ScalebarType.MICROSCOPE,
+	    minWidth:'150px',
+            pixelsPerMeter:obj.pixelsPerMeter,
+            color:'black',
+            fontColor:'black',
+            backgroundColor:"rgba(255,255,255,0.5)",
+            barThickness:4,
+            location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
+            xOffset:5,
+	    yOffset:5
+	});
 		
-		// add handlers: update slice name, animation, page change, mouse actions
-		viewer.addHandler('open',function(){
-		    initAnnotationOverlay();
-		    updateSliceName();
-		});
+        // add handlers: update slice name, animation, page change, mouse actions
+	viewer.addHandler('open',function(){
+	    initAnnotationOverlay();
+	    updateSliceName();
+        });
         viewer.addHandler('animation', function(event){
             transform();
         });
-		viewer.addHandler("page", function (data) {
-			console.log(data.page,params.tileSources[data.page]);
-		});
-		viewer.addViewerInputHook({hooks: [
-			{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
-			{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
-			{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
-			{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
-		]});
+	viewer.addHandler("page", function (data) {
+		console.log(data.page,params.tileSources[data.page]);
+	});
+	viewer.addViewerInputHook({hooks: [
+		{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
+		{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
+		{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
+		{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
+	]});
 
         if(debug)
             console.log("< initMicrodraw resolve: success");
@@ -1457,10 +1463,10 @@ function initMicrodraw() {
     return def.promise();
 }
 
-params=deparam();
-initMicrodraw();
+//params=deparam();
+//initMicrodraw();
 
-/*
+
 $.when(
     interactIP(),
     MyLoginWidget.init()
@@ -1470,7 +1476,7 @@ $.when(
     myOrigin.source=params.source;
     updateUser();
 }).then(initMicrodraw);
-*/
+
 
 /*
 	// Log microdraw
