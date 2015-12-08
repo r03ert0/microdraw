@@ -776,7 +776,7 @@ function toolSelection(event) {
 
     //end drawing of polygons and make open form
     if (drawingPolygonFlag == true)
-        finishDrawingPolygon(false);
+        finishDrawingPolygon(true);
 
     var prevTool=selectedTool;
     selectedTool=$(this).attr("id");
