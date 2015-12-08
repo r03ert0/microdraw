@@ -584,7 +584,7 @@ function mouseUp() {
     if(debug) console.log("> mouseUp");
 
     if(newRegionFlag==true){
-        //region.path.simplify(5);
+        region.path.simplify(2.5);
         region.path.closed=true;
         region.path.fullySelected = true;
     }
