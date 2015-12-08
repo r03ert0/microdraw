@@ -1,7 +1,7 @@
 (function() {                   // force everything local.
 var debug=1;
 
-var dbroot="http://"+localhost+"/interact/php/interact.php";
+var dbroot="http://"+localhost+"/microdraw/database_code/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
                               // regions contain a paper.js path, a unique ID and a name
 var imageOrder=[];            // names of slices ordered by their openseadragon page numbers
@@ -793,7 +793,7 @@ function toolSelection(event) {
             backToPreviousTool(prevTool);
             break;
         case "save":
-            interactSave();
+            microdrawDBSave();
             backToPreviousTool(prevTool);
             break;
         case "zoom-in":
@@ -836,10 +836,10 @@ function selectTool() {
 /***4
     Annotation storage
 */
-/* Interact push/pull */
-function interactSave() {
+/* microdrawDB push/pull */
+function microdrawDBSave() {
 /*
-    Save SVG overlay to Interact DB
+    Save SVG overlay to microdrawDB
 */
     if(debug) console.log("> save promise");
 
@@ -873,18 +873,18 @@ function interactSave() {
             "value":JSON.stringify(value)
         },
         success: function(data) {
-            console.log("< interactSave resolve: Successfully saved regions:",ImageInfo[currentImage]["Regions"].length);
+            console.log("< microdrawDBSave resolve: Successfully saved regions:",ImageInfo[currentImage]["Regions"].length);
         },
         error: function(jqXHR, textStatus, errorThrown) {
-            console.log("< interactSave resolve: ERROR: " + textStatus + " " + errorThrown);
+            console.log("< microdrawDBSave resolve: ERROR: " + textStatus + " " + errorThrown);
         }
     });
 }
-function interactLoad() {
+function microdrawDBLoad() {
 /*
-    Load SVG overlay from Interact DB
+    Load SVG overlay from microdrawDB
 */
-	if(debug) console.log("> interactLoad promise");
+	if(debug) console.log("> microdrawDBLoad promise");
 	
 	var	def=$.Deferred();
 	var	key="regionPaths";
@@ -902,7 +902,7 @@ function interactLoad() {
 		// if the slice that was just loaded does not correspond to the current slice,
 		// do not display this one and load the current slice.
 		if(slice!=currentImage) {
-            interactLoad()
+            microdrawDBLoad()
             .then(function(){
                 $("#regionList").height($(window).height()-$("#regionList").offset().top);
                 updateRegionList();
@@ -928,30 +928,30 @@ function interactLoad() {
 			}
 			paper.view.draw();
 		}
-		if(debug) console.log("< interactLoad resolve success");
+		if(debug) console.log("< microdrawDBLoad resolve success");
 		def.resolve();
 	}).error(function(jqXHR, textStatus, errorThrown) {
-        console.log("< interactLoad resolve ERROR: " + textStatus + " " + errorThrown);
+        console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
 		annotationLoadingFlag=false;
     });
 
     return def.promise();
 }
-function interactIP() {
+function microdrawDBIP() {
 /*
     Get my IP
 */
-    if(debug) console.log("> interactIP promise");
+    if(debug) console.log("> microdrawDBIP promise");
 
     $("#regionList").html("<br />Connecting to database...");
     return $.get(dbroot,{
         "action":"remote_address"
     }).success(function(data) {
-        if(debug) console.log("< interactIP resolve: success");
+        if(debug) console.log("< microdrawDBIP resolve: success");
         $("#regionList").html("");
         myIP=data;
     }).error(function(jqXHR, textStatus, errorThrown) {
-        console.log("< interactIP resolve: ERROR, "+textStatus+", "+errorThrown);
+        console.log("< microdrawDBIP resolve: ERROR, "+textStatus+", "+errorThrown);
         $("#regionList").html("<br />Error: Unable to connect to database.");
     });
 }
@@ -1087,7 +1087,7 @@ function initAnnotationOverlay(data) {
         ImageInfo[currentImage]["projectID"] = paper.project.index;
 
         // load regions from database
-        interactLoad()
+        microdrawDBLoad()
         .then(function(){
             $("#regionList").height($(window).height()-$("#regionList").offset().top);
             updateRegionList();
@@ -1467,7 +1467,7 @@ function initMicrodraw() {
 
 if(config.useDatabase) {
     $.when(
-        interactIP(),
+        microdrawDBIP(),
         MyLoginWidget.init()
     ).then(function(){
         params=deparam();
@@ -1483,10 +1483,10 @@ if(config.useDatabase) {
 
 /*
     // Log microdraw
-    //interactSave(JSON.stringify(myOrigin),"entered",null);
+    //microdrawDBSave(JSON.stringify(myOrigin),"entered",null);
 
     // load SVG overlay from localStorage
-    interactLoad();
+    microdrawDBLoad();
     //load();
 */
 })();
