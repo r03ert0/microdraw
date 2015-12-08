@@ -13,12 +13,12 @@ var handle;			          // currently selected control point or handle (if any)
 var selectedTool;	          // currently selected tool
 var viewer;			          // open seadragon viewer
 var navEnabled=true;          // flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
-var magicV=1000;              // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
-var myOrigin={};              // Origin identification for DB storage
-var params;                   // URL parameters
-var myIP;                     // user's IP
-var UndoStack = {};
-var RedoStack = {};
+var magicV=1000;	          // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
+var myOrigin={};	          // Origin identification for DB storage
+var	params;			          // URL parameters
+var	myIP;			          // user's IP
+var UndoStack = [];
+var RedoStack = [];
 var mouseUndo;                // tentative undo information.
 var shortCuts = [];           // List of shortcuts
 var newRegionFlag;	          // true when a region is being drawn
@@ -33,62 +33,73 @@ var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
 /***1
     Region handling functions
 */
-function newRegion(arg) {
-    if(debug) console.log("> newRegion");
-    var reg={};
+function newRegion(arg, imageNumber) {
+	if(debug) console.log("> newRegion");
+	var reg={};
+	
+	reg.uid=regionUniqueID();
+	if(arg.name) {
+		reg.name=arg.name;
+	}
+	else {
+		reg.name="Untitled "+reg.uid;
+	}
 
-    reg.uid=regionUniqueID();
-    if(arg.name) {
-        reg.name=arg.name;
-    }
-    else {
-        reg.name="Untitled "+reg.uid;
-    }
+	var color=regionHashColor(reg.name);
+	
+	if(arg.path) {
+		reg.path = arg.path;
+		reg.path.strokeWidth=arg.path.strokeWidth ? arg.path.strokeWidth : 1;
+		reg.path.strokeColor=arg.path.strokeColor ? arg.path.strokeColor : 'black';
+		reg.path.strokeScaling=false;
+		reg.path.fillColor=arg.path.fillColor ? arg.path.fillColor :'rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+		reg.path.selected=false;
+	}
 
-    var color=regionHashColor(reg.name);
+	if (imageNumber === undefined) {
+		imageNumber = currentImage;
+	}
+	if (imageNumber === currentImage) {
+		// append region tag to regionList
+		var el=$(regionTag(reg.name,reg.uid));
+		$("#regionList").append(el);
+	
+		// handle single click on computers
+		el.click(singlePressOnRegion);
+	
+		// handle double click on computers
+		el.dblclick(doublePressOnRegion);
+	
+		// handle single and double tap on touch devices
+		/*
+		  RT: it seems that a click event is also fired on touch devices,
+		  making this one redundant
+		*/
+		el.on("touchstart",handleRegionTap);
 
-    if(arg.path) {
-        reg.path = arg.path;
-        reg.path.strokeWidth=arg.path.strokeWidth ? arg.path.strokeWidth : 1;
-        reg.path.strokeColor=arg.path.strokeColor ? arg.path.strokeColor : 'black';
-        reg.path.strokeScaling=false;
-        reg.path.fillColor=arg.path.fillColor ? arg.path.fillColor :'rgba('+color.red+','+color.green+','+color.blue+',0.5)';
-        reg.path.selected=false;
-    }
-
-    // append region tag to regionList
-    var el=$(regionTag(reg.name,reg.uid));
-    $("#regionList").append(el);
-
-    // handle single click on computers
-    el.click(singlePressOnRegion);
-
-    // handle double click on computers
-    el.dblclick(doublePressOnRegion);
-
-    // handle single and double tap on touch devices
-    /*
-        RT: it seems that a click event is also fired on touch devices,
-        making this one redundant
-    */
-    el.on("touchstart",handleRegionTap);
-
-    // push the new region to the Regions array
-    ImageInfo[currentImage]["Regions"].push(reg);
-
-    return reg;
+	}
+	// push the new region to the Regions array
+	ImageInfo[imageNumber]["Regions"].push(reg);
+	return reg;
 }
-function removeRegion(reg) {
-    if(debug) console.log("> removeRegion");
-
-    // remove from Regions array
-    ImageInfo[currentImage]["Regions"].splice(ImageInfo[currentImage]["Regions"].indexOf(reg),1);
-    // remove from paths
-    reg.path.remove();
-    // remove from regionList
-    var tag=$("#regionList > .region-tag#"+reg.uid);
-    $(tag).remove();
+function removeRegion(reg, imageNumber) {
+	if(debug) console.log("> removeRegion");
+	
+	if (imageNumber === undefined) {
+		imageNumber = currentImage;
+	}
+	
+	// remove from Regions array
+	ImageInfo[imageNumber]["Regions"].splice(ImageInfo[imageNumber]["Regions"].indexOf(reg),1);
+	// remove from paths
+	reg.path.remove();
+	if (imageNumber == currentImage) {
+		// remove from regionList
+		var	tag=$("#regionList > .region-tag#"+reg.uid);
+		$(tag).remove();
+	}
 }
+
 function selectRegion(reg) {
     if(debug) console.log("> selectRegion");
 
@@ -609,11 +620,11 @@ function simplify() {
  * Command to actually perform an undo.
  */
 function cmdUndo() {
-    if (UndoStack[currentImage].length > 0) {
+    if (UndoStack.length > 0) {
         var redoInfo = getUndo();
-        var undoInfo = UndoStack[currentImage].pop();
+        var undoInfo = UndoStack.pop();
         applyUndo(undoInfo);
-        RedoStack[currentImage].push(redoInfo);
+        RedoStack.push(redoInfo);
         paper.view.draw();
     }
 }
@@ -622,11 +633,11 @@ function cmdUndo() {
  * Command to actually perform a redo.
  */
 function cmdRedo() {
-    if (RedoStack[currentImage].length > 0) {
+    if (RedoStack.length > 0) {
         var undoInfo = getUndo();
-        var redoInfo = RedoStack[currentImage].pop();
+        var redoInfo = RedoStack.pop();
         applyUndo(redoInfo);
-        UndoStack[currentImage].push(undoInfo);
+        UndoStack.push(undoInfo);
         paper.view.draw();
     }
 }
@@ -635,14 +646,8 @@ function cmdRedo() {
  * Return a complete copy of the current state as an undo object.
  */
 function getUndo() {
-    var undo = [];
+    var undo = { imageNumber: currentImage, regions: [] };
     var info = ImageInfo[currentImage]["Regions"];
-
-    /* Make sure the undo stack is initialized. */
-    if (UndoStack[currentImage] === undefined) {
-        UndoStack[currentImage] = [];
-        RedoStack[currentImage] = [];
-    }
 
     for (var i = 0; i < info.length; i++) {
         var el = {
@@ -651,7 +656,7 @@ function getUndo() {
             selected: info[i].path.selected,
             fullySelected: info[i].path.fullySelected
         }
-        undo.push(el);
+        undo.regions.push(el);
     }
     return undo;
 }
@@ -661,31 +666,35 @@ function getUndo() {
  * redo stack.
  */
 function saveUndo(undoInfo) {
-    UndoStack[currentImage].push(undoInfo);
-    RedoStack[currentImage] = [];
+	UndoStack.push(undoInfo);
+	RedoStack = [];
 }
 
 /**
  * Restore the current state from an undo object.
  */
 function applyUndo(undo) {
-    var info = ImageInfo[currentImage]["Regions"];
+    var info = ImageInfo[undo.imageNumber]["Regions"];
     while (info.length > 0)
-        removeRegion(info[0]);
+        removeRegion(info[0], undo.imageNumber);
     region = null;
-    for (var i = 0; i < undo.length; i++) {
-        var el = undo[i];
-        var path = new paper.Path();
-        path.importJSON(el.json);
-    reg = newRegion({name:el.name, path:path});
-        reg.path.selected = el.selected;
-        reg.path.fullySelected = el.fullySelected;
-        if (el.selected) {
-            if (region === null)
-                region = reg;
-            else
-                console.log("Should not happen: two regions selected?");
-        }
+    for (var i = 0; i < undo.regions.length; i++) {
+        var el = undo.regions[i];
+		var project = paper.projects[ImageInfo[undo.imageNumber]["projectID"]];
+		/* Create the path and add it to a specific project.
+		 */
+		var path = new paper.Path();
+		project.addChild(path);
+		path.importJSON(el.json);
+		reg = newRegion({name:el.name, path:path}, undo.imageNumber);
+		reg.path.selected = el.selected;
+		reg.path.fullySelected = el.fullySelected;
+		if (el.selected) {
+			if (region === null)
+				region = reg;
+			else
+				console.log("Should not happen: two regions selected?");
+		}
     }
 }
 
