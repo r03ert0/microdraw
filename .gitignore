@@ -4,9 +4,12 @@ bigbrain
 macaque
 final.zip
 node_modules
-microdrawNotes.txt
-documentation
-
+php/db_access.php
+php/base.php
 base.js
 bigbrain.json
-php/base.php
+microdrawNotes.txt
+documentation
+.*
+!.gitignore
+data

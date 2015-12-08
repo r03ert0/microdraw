@@ -22,11 +22,9 @@ var RedoStack = [];
 var mouseUndo;                // tentative undo information.
 var shortCuts = [];           // List of shortcuts
 var newRegionFlag;	          // true when a region is being drawn
-var drawingPolygonFlag;       // true when drawing a polygon
+var drawingPolygonFlag = false;       // true when drawing a polygon
 var annotationLoadingFlag;    // true when an annotation is being loaded
-var config={                  // App configuration object
-    useDatabase: true
-}
+var config={}                  // App configuration object
 var isMac = navigator.platform.match(/Mac/i)?true:false;
 var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
 
@@ -359,8 +357,19 @@ function doublePressOnRegion(event) {
     event.stopPropagation();
     event.preventDefault();
 
-    regionPicker(this);
+    if (config.drawingEnabled) {
+        if (config.regionOntology == true) {
+        regionPicker(this);
+        }
+        else {
+            var name=prompt("Region name");
+            if (name != null) {
+                changeRegionName(findRegionByUID(this.id), name);
+            }
+        }
+    }
 }
+
 var tap=false
 function handleRegionTap(event) {
 /*
@@ -392,7 +401,6 @@ function mouseDown(x,y) {
         console.log("> mouseDown");
 
     mouseUndo = getUndo();
-
     var prevRegion=null;
     var point=paper.view.viewToProject(new paper.Point(x,y));
 
@@ -515,6 +523,7 @@ function mouseDown(x,y) {
         }
         case "draw-polygon": {
             // is already drawing a polygon or not?
+            console.log(drawingPolygonFlag);
             if(drawingPolygonFlag == false) {
                 // deselect previously selected region
                 if(region)
@@ -779,7 +788,7 @@ function toolSelection(event) {
 
     //end drawing of polygons and make open form
     if (drawingPolygonFlag == true)
-        finishDrawingPolygon(false);
+        finishDrawingPolygon(true);
 
     var prevTool=selectedTool;
     selectedTool=$(this).attr("id");
@@ -848,6 +857,7 @@ function selectTool() {
 /***4
     Annotation storage
 */
+
 /* microdrawDB push/pull */
 function microdrawDBSave() {
 /*
@@ -875,9 +885,10 @@ function microdrawDBSave() {
         var h=hash(JSON.stringify(value.Regions)).toString(16);
         if(debug>1)
             console.log("hash:",h,"original hash:",slice.Hash);
-        if(h==slice.Hash) {
+        if(h==slice.Hash || slice.Hash == undefined) {
             if(debug>1)
                 console.log("No change, no save");
+            value.Hash = h;
             continue;
         }
         value.Hash=h;
@@ -890,9 +901,9 @@ function microdrawDBSave() {
                 "action":"save",
                 "origin":JSON.stringify({
                     appName:myOrigin.appName,
+                    slice:  sl,
                     source: myOrigin.source,
-                    user:   myOrigin.user,
-                    slice:  sl
+                    user:   myOrigin.user
                 }),
                 "key":key,
                 "value":JSON.stringify(value)
@@ -914,15 +925,13 @@ function microdrawDBLoad() {
 	
 	var	def=$.Deferred();
 	var	key="regionPaths";
-	
 	var slice=myOrigin.slice;
-	$.get(dbroot,{
+    $.get(dbroot,{
 		"action":"load_last",
 		"origin":JSON.stringify(myOrigin),
 		"key":key
 	}).success(function(data) {
 		var	i,obj,reg;
-		
 		annotationLoadingFlag=false;
 		
 		// if the slice that was just loaded does not correspond to the current slice,
@@ -953,15 +962,16 @@ function microdrawDBLoad() {
 				newRegion({name:reg.name,path:reg.path});
 			}
 			paper.view.draw();
-			ImageInfo[currentImage]["Hash"]=obj.Hash;
+            // if image has no hash, save one
+			ImageInfo[currentImage]["Hash"]=(obj.Hash ? obj.Hash : hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16));
+    
 		}
-		if(debug) console.log("< microdrawDBLoad resolve success");
+		if(debug) console.log("< microdrawDBLoad resolve success. Number of regions:", ImageInfo[currentImage]['Regions'].length);
 		def.resolve();
 	}).error(function(jqXHR, textStatus, errorThrown) {
         console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
 		annotationLoadingFlag=false;
     });
-
     return def.promise();
 }
 function microdrawDBIP() {
@@ -1091,12 +1101,11 @@ function initAnnotationOverlay(data) {
        slice if it exists.
     */
 
-    // change myOrigin 
-    // TODO think about database structure
+    // change myOrigin (for loading and saving)
     myOrigin.slice = currentImage;
 
     // hide previous slice
-    if(prevImage) {
+    if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
         paper.projects[ImageInfo[prevImage]["projectID"]].activeLayer.visible = false;
         $(paper.projects[ImageInfo[prevImage]["projectID"]].view.element).hide();
     }
@@ -1114,12 +1123,14 @@ function initAnnotationOverlay(data) {
         ImageInfo[currentImage]["projectID"] = paper.project.index;
 
         // load regions from database
-        microdrawDBLoad()
-        .then(function(){
-            $("#regionList").height($(window).height()-$("#regionList").offset().top);
-            updateRegionList();
-            paper.view.draw();
-        });
+        if (config.useDatabase) {
+            microdrawDBLoad()
+            .then(function(){
+                $("#regionList").height($(window).height()-$("#regionList").offset().top);
+                updateRegionList();
+                paper.view.draw();
+            });
+        }
 
         if (debug)
             console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]);
@@ -1135,14 +1146,12 @@ function initAnnotationOverlay(data) {
     var height=$("body").height();
     paper.view.viewSize=[width, height];
     paper.settings.handleSize=10;
-
     updateRegionList();
     paper.view.draw();
 
-    /* RT: commenting this line out solves the image size issues
+    /* RT: commenting this line out solves the image size issues */
        // set size of the current overlay to match the size of the current image
        magicV = viewer.world.getItemAt(0).getContentSize().x;
-    */
 
     transform();
 }
@@ -1175,7 +1184,29 @@ function loginChanged() {
     if(debug) console.log("> loginChanged");
 
     updateUser();
+
+    // remove all annotations and paper projects from old user
+    // TODO maybe save to db??
+    paper.projects[ImageInfo[currentImage]["projectID"]].activeLayer.visible = false;
+    $(paper.projects[ImageInfo[currentImage]["projectID"]].view.element).hide();
+    for (var i=0; i < imageOrder.length; i++){
+
+        ImageInfo[imageOrder[i]]["Regions"] = [];
+        if (ImageInfo[imageOrder[i]]["projectID"] != undefined) {
+            paper.projects[ImageInfo[imageOrder[i]]["projectID"]].clear();
+            paper.projects[ImageInfo[imageOrder[i]]["projectID"]].remove();
+            ImageInfo[imageOrder[i]]["projectID"] = undefined;
+        }
+        $("<canvas class='overlay' id='" + currentImage + "'>").remove();
+    }
+    
+    
+    //load new users data
+
+
+    viewer.open(ImageInfo[currentImage]["source"]);
 }
+
 function updateUser() {
     if(debug) console.log("> updateUser");
 
@@ -1339,6 +1370,34 @@ function slice_name_onenter(event) {
     event.preventDefault(); // prevent the default action (scroll / move caret)
 }
 
+function loadConfiguration() {
+    var def = $.Deferred();
+    // load general microdraw configuration
+    $.getJSON("configuration.json", function(data) {
+        config = data;
+        
+        drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint", "delpoint", "addregion", "delregion", "splitregion", "rotate", "save", "copy", "paste", "delete"]
+        if (config.drawingEnabled == false) {
+            // remove drawing tools from ui
+            for (var i = 0; i < drawingTools.length; i++){
+                $("#" + drawingTools[i]).remove();
+            }
+
+        }
+        for (var i = 0; i < config.removeTools.length; i++) {
+            $("#" + config.removeTools[i]).remove();
+        }
+        if (config.useDatabase == false) {
+            $("#save").remove();
+        }
+        def.resolve();
+    });
+
+    return def.promise();
+
+
+}
+
 function initMicrodraw() {
 
     if(debug) console.log("> initMicrodraw promise");
@@ -1358,11 +1417,13 @@ function initMicrodraw() {
     initShortCutHandler();
     shortCutHandler({pc:'^ z',mac:'cmd z'},cmdUndo);
     shortCutHandler({pc:'^ y',mac:'cmd y'},cmdRedo);
-    shortCutHandler({pc:'^ x',mac:'cmd x'},function() { console.log("cut!")});
-    shortCutHandler({pc:'^ v',mac:'cmd v'},cmdPaste);
-    shortCutHandler({pc:'^ a',mac:'cmd a'},function() { console.log("select all!")});
-    shortCutHandler({pc:'^ c',mac:'cmd c'},cmdCopy);
-    shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);  // delete key
+    if (config.drawingEnabled) {
+        shortCutHandler({pc:'^ x',mac:'cmd x'},function() { console.log("cut!")});
+        shortCutHandler({pc:'^ v',mac:'cmd v'},cmdPaste);
+        shortCutHandler({pc:'^ a',mac:'cmd a'},function() { console.log("select all!")});
+        shortCutHandler({pc:'^ c',mac:'cmd c'},cmdCopy);
+        shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);  // delete key
+    }
     shortCutHandler({pc:'#37',mac:'#37'},loadPreviousImage); // left-arrow key
     shortCutHandler({pc:'#39',mac:'#39'},loadNextImage);     // right-arrow key
 
@@ -1375,17 +1436,22 @@ function initMicrodraw() {
         if(debug)
             console.log("json file:",obj);
 
+        // for loading the bigbrain
         if (obj.tileCodeY) {
             obj.tileSources = eval(obj.tileCodeY);
         }
-        console.log("tileSources.length: " + obj.tileSources.length);
-
+        
         // set up the ImageInfo array and imageOrder array
         for (var i=0; i < obj.tileSources.length; i++){
-            imageOrder.push(""+i);
-            ImageInfo[""+i] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
+            // name is either the index of the tileSource or a named specified in the json file
+            var name = ((obj.names && obj.names[i]) ? String(obj.names[i]) : String(i));
+            imageOrder.push(name);
+            ImageInfo[name] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
+            // if getTileUrl is specified, we might need to eval it to get the function
+            if (obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string'){
+                eval("ImageInfo[name]['source'].getTileUrl = " + obj.tileSources[i].getTileUrl);
+            }
         }
-
         // init slider that can be used to change between slides
         initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length/2));
         currentImage = imageOrder[Math.floor(obj.tileSources.length/2)];
@@ -1449,36 +1515,36 @@ function initMicrodraw() {
     // Change current slice by typing in the slice number and pessing the enter key
     $("#slice-name").keyup(slice_name_onenter);
 
-    /*
     // Show and hide menu
-    var mouse_position;
-    var animating = false;
-    $(document).mousemove(function (e) {
-        if (animating) {
-            return;
-        }
-        mouse_position = e.clientX;
-
-        if (mouse_position <= 100) {
-            //SLIDE IN MENU
-            animating = true;
-            $('#menu_bar').animate({
-                left: 0,
-                opacity: 1
-            }, 200, function () {
-                animating = false;
-            });
-        } else if (mouse_position > 200) {
-            animating = true;
-            $('#menu_bar').animate({
-                left: -100,
-                opacity: 0
-            }, 500, function () {
-                animating = false;
-            });
-        }
-    });
-    */
+    if (config.hideToolbar) {
+        var mouse_position;
+        var animating = false;
+        $(document).mousemove(function (e) {
+            if (animating) {
+                return;
+            }
+            mouse_position = e.clientX;
+    
+            if (mouse_position <= 100) {
+                //SLIDE IN MENU
+                animating = true;
+                $('#menu_bar').animate({
+                    left: 0,
+                    opacity: 1
+                }, 200, function () {
+                    animating = false;
+                });
+            } else if (mouse_position > 200) {
+                animating = true;
+                $('#menu_bar').animate({
+                    left: -100,
+                    opacity: 0
+                }, 500, function () {
+                    animating = false;
+                });
+            }
+        });
+    }
 
     $(window).resize(function() {
         $("#regionList").height($(window).height()-$("#regionList").offset().top);
@@ -1490,20 +1556,26 @@ function initMicrodraw() {
     return def.promise();
 }
 
-if(config.useDatabase) {
-    $.when(
-        microdrawDBIP(),
-        MyLoginWidget.init()
+$(function() {
+    $.when(loadConfiguration()
     ).then(function(){
-        params=deparam();
-        myOrigin.appName="microdraw";
-        myOrigin.source=params.source;
-        updateUser();
-    }).then(initMicrodraw);
-} else {
-    params=deparam();
-    initMicrodraw();
-}
+        if(config.useDatabase) {
+            $.when(
+                microdrawDBIP(),
+                MyLoginWidget.init()
+            ).then(function(){
+                params=deparam();
+                myOrigin.appName="microdraw";
+                myOrigin.slice=currentImage;
+                myOrigin.source=params.source;
+                updateUser();
+            }).then(initMicrodraw);
+        } else {
+            params=deparam();
+            initMicrodraw();
+        }
+    });
+});
 
 
 /*
