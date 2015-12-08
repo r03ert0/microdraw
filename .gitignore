@@ -7,3 +7,6 @@ node_modules
 microdrawNotes.txt
 documentation
 
+base.js
+bigbrain.json
+php/base.php
