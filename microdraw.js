@@ -1,7 +1,7 @@
 (function() {                   // force everything local.
 var debug=1;
 
-var dbroot="php/interact.php";
+var dbroot="http://"+localhost+"/php/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
                               // regions contain a paper.js path, a unique ID and a name
 var imageOrder=[];            // names of slices ordered by their openseadragon page numbers
@@ -163,21 +163,25 @@ function regionUniqueID() {
     return counter;
 }
 
+function hash(str) {
+    var result=str.split("").reduce(function(a,b){
+        a=((a<<5)-a)+b.charCodeAt(0);return a&a
+    },0);
+    return result;
+}
 function regionHashColor(name) {
     if(debug) console.log("> regionHashColor");
 
     var color={};
-    var hash=name.split("").reduce(function(a,b){
-        a=((a<<5)-a)+b.charCodeAt(0);return a&a
-    },0);
+    var h=hash(name);
 
     // add some randomness
-    hash=Math.sin(hash++)*10000;
-    hash=0xffffff*(hash-Math.floor(hash));
+    h=Math.sin(h++)*10000;
+    h=0xffffff*(h-Math.floor(h));
 
-    color.red=hash&0xff;
-    color.green=(hash&0xff00)>>8;
-    color.blue=(hash&0xff0000)>>16;
+    color.red=h&0xff;
+    color.green=(h&0xff00)>>8;
+    color.blue=(h&0xff0000)>>16;
     return color;
 }
 function regionTag(name,uid) {
@@ -504,7 +508,6 @@ function mouseDown(x,y) {
             // signal that a new region has been created for drawing
             newRegionFlag=true;
             commitMouseUndo();
-            console.log("drawing",region);
             break;
         }
         case "draw-polygon": {
@@ -590,7 +593,7 @@ function mouseUp() {
     if(debug) console.log("> mouseUp");
 
     if(newRegionFlag==true){
-        //region.path.simplify(5);
+        region.path.simplify(2.5);
         region.path.closed=true;
         region.path.fullySelected = true;
     }
@@ -802,7 +805,7 @@ function toolSelection(event) {
             backToPreviousTool(prevTool);
             break;
         case "save":
-            interactSave();
+            microdrawDBSave();
             backToPreviousTool(prevTool);
             break;
         case "zoom-in":
@@ -864,60 +867,76 @@ function interactSaveSVG() {
 
 }
 
-/* Interact push/pull */
-function interactSave() {
+/* microdrawDB push/pull */
+function microdrawDBSave() {
 /*
-    Save SVG overlay to Interact DB
+    Save SVG overlay to microdrawDB
 */
     if(debug) console.log("> save promise");
 
-    var i;
-    var key;
-    var value;
-    var el;
-    var origin;
-
     // key
-    key="regionPaths";
+    var key="regionPaths";
 
-    // configure value to be saved
-    value={};
-    value.Regions=[];
-    for(i=0;i<ImageInfo[currentImage]["Regions"].length;i++)
-    {
-        el={};
-        el.path=JSON.parse(ImageInfo[currentImage]["Regions"][i].path.exportJSON());
-        el.name=ImageInfo[currentImage]["Regions"][i].name;
-        value.Regions.push(el);
-    }
-
-    return $.ajax({
-        url:dbroot,
-        type:"POST",
-        data:{
-            "action":"save",
-            "origin":JSON.stringify(myOrigin),
-            "key":key,
-            "value":JSON.stringify(value)
-        },
-        success: function(data) {
-            console.log("< interactSave resolve: Successfully saved regions:",ImageInfo[currentImage]["Regions"].length);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log("< interactSave resolve: ERROR: " + textStatus + " " + errorThrown);
+    for(var sl in ImageInfo) {
+        // configure value to be saved
+        var slice=ImageInfo[sl];
+        var value={};
+        value.Regions=[];
+        for(var i=0;i<slice.Regions.length;i++)
+        {
+            var el={};
+            el.path=JSON.parse(slice.Regions[i].path.exportJSON());
+            el.name=slice.Regions[i].name;
+            value.Regions.push(el);
         }
-    });
+    
+        // check if the slice annotations have changed since loaded by computing a hash
+        var h=hash(JSON.stringify(value.Regions)).toString(16);
+        if(debug>1)
+            console.log("hash:",h,"original hash:",slice.Hash);
+        if(h==slice.Hash || slice.Hash == undefined) {
+            if(debug>1)
+                console.log("No change, no save");
+            value.Hash = h;
+            continue;
+        }
+        value.Hash=h;
+
+        // post data to database
+        $.ajax({
+            url:dbroot,
+            type:"POST",
+            data:{
+                "action":"save",
+                "origin":JSON.stringify({
+                    appName:myOrigin.appName,
+                    slice:  sl,
+                    source: myOrigin.source,
+                    user:   myOrigin.user
+                }),
+                "key":key,
+                "value":JSON.stringify(value)
+            },
+            success: function(data) {
+                console.log("< microdrawDBSave resolve: Successfully saved regions:",slice.Regions.length,"slice: "+sl.toString(),"response:",data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log("< microdrawDBSave resolve: ERROR: " + textStatus + " " + errorThrown,"slice: "+sl.toString());
+            }
+        });
+    }
 }
-function interactLoad() {
+function microdrawDBLoad() {
 /*
-    Load SVG overlay from Interact DB
+    Load SVG overlay from microdrawDB
 */
-	if(debug) console.log("> interactLoad promise");
-        console.log(myOrigin);	
+	if(debug) console.log("> microdrawDBLoad promise");
+	
 	var	def=$.Deferred();
 	var	key="regionPaths";
-	//var slice=myOrigin.slice;
-    var slice = myOrigin.source.split('@')[1];
+	var slice=myOrigin.slice;
+    console.log(JSON.stringify(myOrigin));
+    //var slice = myOrigin.source.split('@')[1];
     $.get(dbroot,{
 		"action":"load_last",
 		"origin":JSON.stringify(myOrigin),
@@ -929,7 +948,7 @@ function interactLoad() {
 		// if the slice that was just loaded does not correspond to the current slice,
 		// do not display this one and load the current slice.
 		if(slice!=currentImage) {
-            interactLoad()
+            microdrawDBLoad()
             .then(function(){
                 $("#regionList").height($(window).height()-$("#regionList").offset().top);
                 updateRegionList();
@@ -941,7 +960,6 @@ function interactLoad() {
 	
 		// parse the data and add to the current canvas
 		obj=JSON.parse(data);
-                console.log(obj);
 		if(obj) {
 			obj=JSON.parse(obj.myValue);
 			for(i=0;i<obj.Regions.length;i++) {
@@ -955,30 +973,33 @@ function interactLoad() {
 				newRegion({name:reg.name,path:reg.path});
 			}
 			paper.view.draw();
+            // if image has no hash, save one
+			ImageInfo[currentImage]["Hash"]=(obj.Hash ? obj.Hash : hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16));
+    
 		}
-		if(debug) console.log("< interactLoad resolve success. Number of regions:", ImageInfo[currentImage]["Regions"].length);
+		if(debug) console.log("< microdrawDBLoad resolve success. Number of regions:", ImageInfo[currentImage]['Regions'].length);
 		def.resolve();
 	}).error(function(jqXHR, textStatus, errorThrown) {
-        console.log("< interactLoad resolve ERROR: " + textStatus + " " + errorThrown);
+        console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
 		annotationLoadingFlag=false;
     });
     return def.promise();
 }
-function interactIP() {
+function microdrawDBIP() {
 /*
     Get my IP
 */
-    if(debug) console.log("> interactIP promise");
+    if(debug) console.log("> microdrawDBIP promise");
 
     $("#regionList").html("<br />Connecting to database...");
     return $.get(dbroot,{
         "action":"remote_address"
     }).success(function(data) {
-        if(debug) console.log("< interactIP resolve: success");
+        if(debug) console.log("< microdrawDBIP resolve: success");
         $("#regionList").html("");
         myIP=data;
     }).error(function(jqXHR, textStatus, errorThrown) {
-        console.log("< interactIP resolve: ERROR, "+textStatus+", "+errorThrown);
+        console.log("< microdrawDBIP resolve: ERROR, "+textStatus+", "+errorThrown);
         $("#regionList").html("<br />Error: Unable to connect to database.");
     });
 }
@@ -1092,8 +1113,8 @@ function initAnnotationOverlay(data) {
     */
 
     // change myOrigin (for loading and saving)
-    //myOrigin.slice = currentImage;
-    myOrigin.source = myOrigin.source.split('@')[0] + '@' + currentImage;
+    myOrigin.slice = currentImage;
+    //myOrigin.source = myOrigin.source.split('@')[0] + '@' + currentImage;
 
     // hide previous slice
     if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
@@ -1116,7 +1137,7 @@ function initAnnotationOverlay(data) {
 
         // load regions from database
         if (config.useDatabase) {
-            interactLoad()
+            microdrawDBLoad()
             .then(function(){
                 $("#regionList").height($(window).height()-$("#regionList").offset().top);
                 updateRegionList();
@@ -1207,9 +1228,7 @@ function updateUser() {
     else {
         var username={};
         username.IP=myIP;
-        username.hash=navigator.userAgent.split("").reduce(function(a,b){
-            a=((a<<5)-a)+b.charCodeAt(0);return a&a
-        },0).toString(16);
+        username.hash=hash(navigator.userAgent).toString(16);
         myOrigin.user=username;
     }
 }
@@ -1555,11 +1574,12 @@ $(function() {
     ).then(function(){
         if(config.useDatabase) {
             $.when(
-                interactIP(),
+                microdrawDBIP(),
                 MyLoginWidget.init()
             ).then(function(){
                 params=deparam();
                 myOrigin.appName="microdraw";
+                myOrigin.slice=currentImage;
                 myOrigin.source=params.source;
                 updateUser();
             }).then(initMicrodraw);
@@ -1573,10 +1593,10 @@ $(function() {
 
 /*
     // Log microdraw
-    //interactSave(JSON.stringify(myOrigin),"entered",null);
+    //microdrawDBSave(JSON.stringify(myOrigin),"entered",null);
 
     // load SVG overlay from localStorage
-    interactLoad();
+    microdrawDBLoad();
     //load();
 */
 })();
