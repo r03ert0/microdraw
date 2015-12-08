@@ -857,24 +857,6 @@ function selectTool() {
 /***4
     Annotation storage
 */
-/* Save Overlay to SVG Image */
-function interactSaveSVG() {
-       
-        //set SVG size, scale and transform parameters such that they fit to the original image resolution
-        //paper.view.draw();
-        var svg = paper.project.exportSVG({asString: false});
-        //scale of the paper canvas coordinates to the real image coordinates
-        var scale = parseFloat(imageSize.Width.nodeValue) / magicV;
-        
-        svg.setAttribute("width", imageSize.Width.nodeValue);
-        svg.setAttribute("height", imageSize.Height.nodeValue);
-        svg.firstChild.setAttribute("transform", "translate(0,0) scale(" + scale + "," + scale + ")");
-
-        var svg_string = (new XMLSerializer).serializeToString(svg);
-        var blob = new Blob([svg_string], {type: "image/svg+xml;charset=utf8"});
-        saveAs(blob, params.source.split('.')[0] + '-annotated.svg');
-
-}
 
 /* microdrawDB push/pull */
 function microdrawDBSave() {
