@@ -2,10 +2,11 @@ _old
 _rsrc
 bigbrain
 macaque
-php/base.php
 final.zip
 node_modules
-base.js
-bigbrain.json
 microdrawNotes.txt
 documentation
+
+base.js
+bigbrain.json
+php/base.php
