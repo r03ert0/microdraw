@@ -1,5 +1,7 @@
 {
+    "useDatabase":true,
+    "hideToolbar":false,
     "regionOntology":false,
     "drawingEnabled":true,
-    "removeTools":["splitregion", "addregion", "delregion"]
+    "removeTools":[]
 }
