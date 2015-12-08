@@ -1,7 +1,7 @@
-(function() {                   // force everything local.
+//(function() {                   // force everything local.
 var debug=1;
 
-var dbroot="http://"+localhost+"/php/microdraw_db.php";
+var dbroot="http://"+localhost+"microdraw/php/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
                               // regions contain a paper.js path, a unique ID and a name
 var imageOrder=[];            // names of slices ordered by their openseadragon page numbers
@@ -1586,7 +1586,7 @@ $(function() {
     microdrawDBLoad();
     //load();
 */
-})();
+//})();
 
 // For emacs users - set up the tabbing appropriately.
 // Local Variables:

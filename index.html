@@ -71,18 +71,18 @@
 	$(".download>a").each(function(){
 		$(this).attr('href',$(this).attr('href').replace("{{localhost}}",localhost));	
 	})
-	
+	/*
 	$("#go").click(function(){
-		window.location="microdraw.html?source="+$("input").val();
+		window.location=localhost+"/microdraw.html?source="+$("input").val();
 	});
-	
-	
+	*/
+	/*
 	$("input").keydown(function (e) {
 		if (e.keyCode == 13) {
-			window.location="microdraw.html?source="+$("input").val();
+			window.location=localhost+"/microdraw.html?source="+$("input").val();
 		}
 	});
-	
+	*/
 	</script>
 </body>
 </html>

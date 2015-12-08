@@ -3,7 +3,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 
-include $_SERVER['DOCUMENT_ROOT']."/microdraw-new/php/base.php";
+include $_SERVER['DOCUMENT_ROOT']."/microdraw/php/base.php";
 $connection=mysqli_connect($dbhost, $dbuser, $dbpass,$dbname) or die("MySQL Error 1: " . mysql_error());
 
 if(isset($_GET["action"])) $action=$_GET;

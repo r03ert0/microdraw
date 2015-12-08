@@ -8,10 +8,9 @@
 //error_reporting(E_ALL);
 //ini_set('display_errors', 'On');
 
-$rootdir = "/microdraw-new";
+$rootdir = "/microdraw";
 
 include $_SERVER['DOCUMENT_ROOT'].$rootdir."/php/base.php";
-session_start();
 $connection=mysqli_connect($dbhost,$dbuser,$dbpass,$dblogin) or die("ERROR: Can't connect to MySQL DB: " . mysql_error());
 
 if(isset($_GET["action"]))
@@ -37,7 +36,7 @@ if(isset($_GET["action"]))
 }
 function user_check()
 {
-    if(isset($_SESSION['LoggedIn']) and ($_SESSION['LoggedIn']==1))
+    if($_SESSION['LoggedIn']==1)
         echo '{"response":"Yes", "username":"'.$_SESSION['Username'].'"}';
     else
 	    echo '{"response":"No"}';
