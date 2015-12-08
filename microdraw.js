@@ -850,7 +850,6 @@ function microdrawDBSave() {
     var key="regionPaths";
 
     for(var sl in ImageInfo) {
-        console.log("slice:",sl);
         // configure value to be saved
         var slice=ImageInfo[sl];
         var value={};
@@ -865,9 +864,11 @@ function microdrawDBSave() {
     
         // check if the slice annotations have changed since loaded by computing a hash
         var h=hash(JSON.stringify(value.Regions)).toString(16);
-        console.log("hash:",h,"original hash:",slice.Hash);
+        if(debug>1)
+            console.log("hash:",h,"original hash:",slice.Hash);
         if(h==slice.Hash) {
-            console.log("No change, no save");
+            if(debug>1)
+                console.log("No change, no save");
             continue;
         }
         value.Hash=h;
