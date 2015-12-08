@@ -1,7 +1,7 @@
-(function() {                   // force everything local.
+//(function() {                   // force everything local.
 var debug=1;
 
-var dbroot="http://"+localhost+"/microdraw/database_code/microdraw_db.php";
+var dbroot="http://"+localhost+"/microdraw/php/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
                               // regions contain a paper.js path, a unique ID and a name
 var imageOrder=[];            // names of slices ordered by their openseadragon page numbers
@@ -25,7 +25,7 @@ var newRegionFlag;	          // true when a region is being drawn
 var drawingPolygonFlag;       // true when drawing a polygon
 var annotationLoadingFlag;    // true when an annotation is being loaded
 var config={                  // App configuration object
-    useDatabase: false
+    useDatabase: true
 }
 var isMac = navigator.platform.match(/Mac/i)?true:false;
 var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
@@ -165,21 +165,25 @@ function regionUniqueID() {
     return counter;
 }
 
+function hash(str) {
+    var result=str.split("").reduce(function(a,b){
+        a=((a<<5)-a)+b.charCodeAt(0);return a&a
+    },0);
+    return result;
+}
 function regionHashColor(name) {
     if(debug) console.log("> regionHashColor");
 
     var color={};
-    var hash=name.split("").reduce(function(a,b){
-        a=((a<<5)-a)+b.charCodeAt(0);return a&a
-    },0);
+    var h=hash(name);
 
     // add some randomness
-    hash=Math.sin(hash++)*10000;
-    hash=0xffffff*(hash-Math.floor(hash));
+    h=Math.sin(h++)*10000;
+    h=0xffffff*(h-Math.floor(h));
 
-    color.red=hash&0xff;
-    color.green=(hash&0xff00)>>8;
-    color.blue=(hash&0xff0000)>>16;
+    color.red=h&0xff;
+    color.green=(h&0xff00)>>8;
+    color.blue=(h&0xff0000)>>16;
     return color;
 }
 function regionTag(name,uid) {
@@ -496,7 +500,6 @@ function mouseDown(x,y) {
             // signal that a new region has been created for drawing
             newRegionFlag=true;
             commitMouseUndo();
-            console.log("drawing",region);
             break;
         }
         case "draw-polygon": {
@@ -843,42 +846,55 @@ function microdrawDBSave() {
 */
     if(debug) console.log("> save promise");
 
-    var i;
-    var key;
-    var value;
-    var el;
-    var origin;
-
     // key
-    key="regionPaths";
+    var key="regionPaths";
 
-    // configure value to be saved
-    value={};
-    value.Regions=[];
-    for(i=0;i<ImageInfo[currentImage]["Regions"].length;i++)
-    {
-        el={};
-        el.path=JSON.parse(ImageInfo[currentImage]["Regions"][i].path.exportJSON());
-        el.name=ImageInfo[currentImage]["Regions"][i].name;
-        value.Regions.push(el);
-    }
-
-    return $.ajax({
-        url:dbroot,
-        type:"POST",
-        data:{
-            "action":"save",
-            "origin":JSON.stringify(myOrigin),
-            "key":key,
-            "value":JSON.stringify(value)
-        },
-        success: function(data) {
-            console.log("< microdrawDBSave resolve: Successfully saved regions:",ImageInfo[currentImage]["Regions"].length);
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log("< microdrawDBSave resolve: ERROR: " + textStatus + " " + errorThrown);
+    for(var sl in ImageInfo) {
+        console.log("slice:",sl);
+        // configure value to be saved
+        var slice=ImageInfo[sl];
+        var value={};
+        value.Regions=[];
+        for(var i=0;i<slice.Regions.length;i++)
+        {
+            var el={};
+            el.path=JSON.parse(slice.Regions[i].path.exportJSON());
+            el.name=slice.Regions[i].name;
+            value.Regions.push(el);
         }
-    });
+    
+        // check if the slice annotations have changed since loaded by computing a hash
+        var h=hash(JSON.stringify(value.Regions)).toString(16);
+        console.log("hash:",h,"original hash:",slice.Hash);
+        if(h==slice.Hash) {
+            console.log("No change, no save");
+            continue;
+        }
+        value.Hash=h;
+
+        // post data to database
+        $.ajax({
+            url:dbroot,
+            type:"POST",
+            data:{
+                "action":"save",
+                "origin":JSON.stringify({
+                    appName:myOrigin.appName,
+                    source: myOrigin.source,
+                    user:   myOrigin.user,
+                    slice:  sl
+                }),
+                "key":key,
+                "value":JSON.stringify(value)
+            },
+            success: function(data) {
+                console.log("< microdrawDBSave resolve: Successfully saved regions:",slice.Regions.length,"slice: "+sl.toString(),"response:",data);
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.log("< microdrawDBSave resolve: ERROR: " + textStatus + " " + errorThrown,"slice: "+sl.toString());
+            }
+        });
+    }
 }
 function microdrawDBLoad() {
 /*
@@ -927,6 +943,7 @@ function microdrawDBLoad() {
 				newRegion({name:reg.name,path:reg.path});
 			}
 			paper.view.draw();
+			ImageInfo[currentImage]["Hash"]=obj.Hash;
 		}
 		if(debug) console.log("< microdrawDBLoad resolve success");
 		def.resolve();
@@ -1157,9 +1174,7 @@ function updateUser() {
     else {
         var username={};
         username.IP=myIP;
-        username.hash=navigator.userAgent.split("").reduce(function(a,b){
-            a=((a<<5)-a)+b.charCodeAt(0);return a&a
-        },0).toString(16);
+        username.hash=hash(navigator.userAgent).toString(16);
         myOrigin.user=username;
     }
 }
@@ -1489,7 +1504,7 @@ if(config.useDatabase) {
     microdrawDBLoad();
     //load();
 */
-})();
+//})();
 
 // For emacs users - set up the tabbing appropriately.
 // Local Variables:

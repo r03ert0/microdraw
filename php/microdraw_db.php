@@ -3,10 +3,8 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 
-include $_SERVER['DOCUMENT_ROOT']."/php/base.php";
+include $_SERVER['DOCUMENT_ROOT']."/microdraw/php/base.php";
 $connection=mysqli_connect($dbhost, $dbuser, $dbpass,$dbname) or die("MySQL Error 1: " . mysql_error());
-
-session_start();
 
 if(isset($_GET["action"])) $action=$_GET;
 if(isset($_POST["action"])) $action=$_POST;
@@ -37,15 +35,17 @@ function save($args)
 	$q="INSERT INTO ".$dbname.".KeyValue (myOrigin, myKey, myValue) VALUES('"
 		.$args["origin"]."','"
 		.$args["key"]."','"
-		.$args["value"]."')";
+		.mysqli_real_escape_string($connection,$args["value"])."')";
 	$result = mysqli_query($connection,$q);
 
 	header('Content-Type: application/json');
 	if($result) {
-		echo '{"result":"success"}';
+		$response["result"]="success";
 	} else {
-		echo '{"result":"error"}';
+		$response["result"]="error";
+		$response["description"]=mysqli_error($connection);
 	}
+	echo json_encode($response);
 }
 
 function load($args)
