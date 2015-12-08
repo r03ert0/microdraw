@@ -7,12 +7,11 @@ var ImageInfo={};             // regions, and projectID (for the paper.js canvas
 var imageOrder=[];            // names of slices ordered by their openseadragon page numbers
 var currentImage = undefined; // name of the current image
 var prevImage = undefined;    // name of the last image
-var region=null;              // currently selected region (one element of Regions[])
-var copyRegion;               // clone of the currently selected region for copy/paste
-var handle;                   // currently selected control point or handle (if any)
-var newRegionFlag;
-var selectedTool;             // currently selected tool
-var viewer;                   // open seadragon viewer
+var region=null;	          // currently selected region (one element of Regions[])
+var copyRegion;		          // clone of the currently selected region for copy/paste
+var handle;			          // currently selected control point or handle (if any)
+var selectedTool;	          // currently selected tool
+var viewer;			          // open seadragon viewer
 var navEnabled=true;          // flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
 var magicV=1000;              // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
 var myOrigin={};              // Origin identification for DB storage
@@ -21,9 +20,13 @@ var myIP;                     // user's IP
 var UndoStack = {};
 var RedoStack = {};
 var mouseUndo;                // tentative undo information.
-var drawingPolygonFlag;       // true when drawing a polygon
 var shortCuts = [];           // List of shortcuts
-
+var newRegionFlag;	          // true when a region is being drawn
+var drawingPolygonFlag;       // true when drawing a polygon
+var annotationLoadingFlag;    // true when an annotation is being loaded
+var config={                  // App configuration object
+    useDatabase: false
+}
 var isMac = navigator.platform.match(/Mac/i)?true:false;
 var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
 
@@ -878,40 +881,57 @@ function interactLoad() {
 /*
     Load SVG overlay from Interact DB
 */
-    if(debug) console.log("> interactLoad promise");
-
-    var def=$.Deferred();
-    var key="regionPaths";
-
-    /*$.get(dbroot,{
-        "action":"load_last",
-        "origin":JSON.stringify(myOrigin),
-        "key":key
-    }).success(function(data) {
-        var i,obj,reg;
-    //  console.log(data); JSONparse on this text of html errors
-        $("#regionList").html("");
-        obj=JSON.parse(data);
-        if(obj) {
-            obj=JSON.parse(obj.myValue);
-            for(i=0;i<obj.Regions.length;i++) {
-                var reg={};
-                var json;
-                reg.name=obj.Regions[i].name;
-                reg.page=obj.Regions[i].page;
-                json=obj.Regions[i].path;
-                reg.path=new paper.Path();
-                reg.path.importJSON(json);
-                newRegion({name:reg.name,page:reg.page,path:reg.path});
-            }
-            paper.view.draw();
-        }
-        if(debug) console.log("< interactLoad resolve success");
-        def.resolve();
-    }).error(function(jqXHR, textStatus, errorThrown) {
+	if(debug) console.log("> interactLoad promise");
+	
+	var	def=$.Deferred();
+	var	key="regionPaths";
+	
+	var slice=myOrigin.slice;
+	$.get(dbroot,{
+		"action":"load_last",
+		"origin":JSON.stringify(myOrigin),
+		"key":key
+	}).success(function(data) {
+		var	i,obj,reg;
+		
+		annotationLoadingFlag=false;
+		
+		// if the slice that was just loaded does not correspond to the current slice,
+		// do not display this one and load the current slice.
+		if(slice!=currentImage) {
+            interactLoad()
+            .then(function(){
+                $("#regionList").height($(window).height()-$("#regionList").offset().top);
+                updateRegionList();
+                paper.view.draw();
+            });
+            def.fail();
+		    return;
+		}
+	
+		// parse the data and add to the current canvas
+		obj=JSON.parse(data);
+		if(obj) {
+			obj=JSON.parse(obj.myValue);
+			for(i=0;i<obj.Regions.length;i++) {
+				var reg={};
+				var	json;
+				reg.name=obj.Regions[i].name;
+				reg.page=obj.Regions[i].page;
+				json=obj.Regions[i].path;
+				reg.path=new paper.Path();
+				reg.path.importJSON(json);
+				newRegion({name:reg.name,path:reg.path});
+			}
+			paper.view.draw();
+		}
+		if(debug) console.log("< interactLoad resolve success");
+		def.resolve();
+	}).error(function(jqXHR, textStatus, errorThrown) {
         console.log("< interactLoad resolve ERROR: " + textStatus + " " + errorThrown);
+		annotationLoadingFlag=false;
     });
-    */
+
     return def.promise();
 }
 function interactIP() {
@@ -925,6 +945,7 @@ function interactIP() {
         "action":"remote_address"
     }).success(function(data) {
         if(debug) console.log("< interactIP resolve: success");
+        $("#regionList").html("");
         myIP=data;
     }).error(function(jqXHR, textStatus, errorThrown) {
         console.log("< interactIP resolve: ERROR, "+textStatus+", "+errorThrown);
@@ -1026,6 +1047,12 @@ function resizeAnnotationOverlay() {
 function initAnnotationOverlay(data) {
     if(debug)
         console.log("> initAnnotationOverlay");
+    
+    // do not start loading a new annotation if a previous one is still being loaded
+    if(annotationLoadingFlag==true) {
+        return;
+    }
+    
     console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
 
     /*
@@ -1033,6 +1060,10 @@ function initAnnotationOverlay(data) {
        exist, create a new canvas and associate it to the new project. Hide the previous
        slice if it exists.
     */
+
+    // change myOrigin 
+    // TODO think about database structure
+    myOrigin.slice = currentImage;
 
     // hide previous slice
     if(prevImage) {
@@ -1061,7 +1092,7 @@ function initAnnotationOverlay(data) {
         });
 
         if (debug)
-            console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]+', canvas: '+canvas);
+            console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]);
     }
 
     // activate the current slice and make it visible
@@ -1074,10 +1105,6 @@ function initAnnotationOverlay(data) {
     var height=$("body").height();
     paper.view.viewSize=[width, height];
     paper.settings.handleSize=10;
-
-    // change myOrigin
-    // TODO think about database structure
-    myOrigin.slice = currentImage;
 
     updateRegionList();
     paper.view.draw();
@@ -1178,7 +1205,6 @@ function updateSliceName() {
 }
 function initShortCutHandler() {
     $(document).keydown(function(e) {
-        console.log(e);
         var key=[];
         if (e.ctrlKey) key.push("^");
         if (e.altKey) key.push("alt");
@@ -1204,7 +1230,7 @@ function shortCutHandler(key,callback) {
             arr[i]=arr[i].toUpperCase();
         }
     }
-    key=arr.join(" "); console.log('key:'+key);
+    key=arr.join(" ");  
     shortCuts[key] = callback;
 }
 
@@ -1296,7 +1322,10 @@ function initMicrodraw() {
 
     // Enable click on toolbar buttons
     $("img.button").click(toolSelection);
-
+    
+    // set annotation loading flag to false
+    annotationLoadingFlag=false;
+    
     // Initialize the control key handler and set shortcuts
     initShortCutHandler();
     shortCutHandler({pc:'^ z',mac:'cmd z'},cmdUndo);
@@ -1392,6 +1421,7 @@ function initMicrodraw() {
     // Change current slice by typing in the slice number and pessing the enter key
     $("#slice-name").keyup(slice_name_onenter);
 
+    /*
     // Show and hide menu
     var mouse_position;
     var animating = false;
@@ -1420,6 +1450,7 @@ function initMicrodraw() {
             });
         }
     });
+    */
 
     $(window).resize(function() {
         $("#regionList").height($(window).height()-$("#regionList").offset().top);
@@ -1431,20 +1462,21 @@ function initMicrodraw() {
     return def.promise();
 }
 
-params=deparam();
-initMicrodraw();
-
-/*
-$.when(
-    interactIP(),
-    MyLoginWidget.init()
-).then(function(){
+if(config.useDatabase) {
+    $.when(
+        interactIP(),
+        MyLoginWidget.init()
+    ).then(function(){
+        params=deparam();
+        myOrigin.appName="microdraw";
+        myOrigin.source=params.source;
+        updateUser();
+    }).then(initMicrodraw);
+} else {
     params=deparam();
-    myOrigin.appName="microdraw";
-    myOrigin.source=params.source;
-    updateUser();
-}).then(initMicrodraw);
-*/
+    initMicrodraw();
+}
+
 
 /*
     // Log microdraw
