@@ -944,8 +944,6 @@ function microdrawDBLoad() {
 	var	def=$.Deferred();
 	var	key="regionPaths";
 	var slice=myOrigin.slice;
-    console.log(JSON.stringify(myOrigin));
-    //var slice = myOrigin.source.split('@')[1];
     $.get(dbroot,{
 		"action":"load_last",
 		"origin":JSON.stringify(myOrigin),
@@ -1123,7 +1121,6 @@ function initAnnotationOverlay(data) {
 
     // change myOrigin (for loading and saving)
     myOrigin.slice = currentImage;
-    //myOrigin.source = myOrigin.source.split('@')[0] + '@' + currentImage;
 
     // hide previous slice
     if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
@@ -1133,7 +1130,6 @@ function initAnnotationOverlay(data) {
 
     // if this is the first time a slice is accessed, create its canvas, its project,
     // and load its regions from the database
-    console.log(ImageInfo);
     if (ImageInfo[currentImage]["projectID"] == undefined) {
 
         // create canvas
