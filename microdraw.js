@@ -917,8 +917,8 @@ function interactLoad() {
 	var	def=$.Deferred();
 	var	key="regionPaths";
 	//var slice=myOrigin.slice;
-        var slice = myOrigin.source.split('@')[1];
-	$.get(dbroot,{
+    var slice = myOrigin.source.split('@')[1];
+    $.get(dbroot,{
 		"action":"load_last",
 		"origin":JSON.stringify(myOrigin),
 		"key":key
@@ -1115,12 +1115,14 @@ function initAnnotationOverlay(data) {
         ImageInfo[currentImage]["projectID"] = paper.project.index;
 
         // load regions from database
-        interactLoad()
-        .then(function(){
-            $("#regionList").height($(window).height()-$("#regionList").offset().top);
-            updateRegionList();
-            paper.view.draw();
-        });
+        if (config.useDatabase) {
+            interactLoad()
+            .then(function(){
+                $("#regionList").height($(window).height()-$("#regionList").offset().top);
+                updateRegionList();
+                paper.view.draw();
+            });
+        }
 
         if (debug)
             console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]);
