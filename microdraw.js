@@ -670,10 +670,22 @@ function saveUndo(undoInfo) {
 	RedoStack = [];
 }
 
+function setImage(imageNumber) {
+    if (debug) console.log("> setImage");
+    var index = imageOrder.indexOf(imageNumber);
+
+    // update image slider
+    update_slider_value(index);
+
+    loadImage(imageOrder[index]);
+}
+
 /**
  * Restore the current state from an undo object.
  */
 function applyUndo(undo) {
+    if (undo.imageNumber !== currentImage)
+        setImage(undo.imageNumber);
     var info = ImageInfo[undo.imageNumber]["Regions"];
     while (info.length > 0)
         removeRegion(info[0], undo.imageNumber);
