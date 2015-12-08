@@ -523,6 +523,9 @@ function mouseDown(x,y) {
             }
             break;
         }
+        case "rotate":
+            region.origin=point;
+            break;
     }
     paper.view.draw();
 }
@@ -566,7 +569,7 @@ function mouseDrag(x,y,dx,dy) {
         var i;
         for(i in ImageInfo[currentImage]["Regions"]) {
             if(ImageInfo[currentImage]["Regions"][i].path.selected) {
-                ImageInfo[currentImage]["Regions"][i].path.rotate(degree, point);
+                ImageInfo[currentImage]["Regions"][i].path.rotate(degree, region.origin);
                 commitMouseUndo();
             }
         }
