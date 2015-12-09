@@ -1395,7 +1395,9 @@ function loadConfiguration() {
     $.getJSON("configuration.json", function(data) {
         config = data;
         
-        drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint", "delpoint", "addregion", "delregion", "splitregion", "rotate", "save", "copy", "paste", "delete"]
+        drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint",
+                        "delpoint", "addregion", "delregion", "splitregion", "rotate",
+                        "save", "copy", "paste", "delete"];
         if (config.drawingEnabled == false) {
             // remove drawing tools from ui
             for (var i = 0; i < drawingTools.length; i++){
@@ -1587,7 +1589,8 @@ function toggleMenu () {
 }
 
 $(function() {
-    $.when(loadConfiguration()
+    $.when(
+        loadConfiguration()
     ).then(function(){
         if(config.useDatabase) {
             $.when(

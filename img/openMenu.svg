@@ -14,7 +14,7 @@
    width="20.309999"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="openMenu4.svg">
+   sodipodi:docname="openMenu.svg">
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -24,13 +24,13 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1183"
-     inkscape:window-height="820"
+     inkscape:window-width="1476"
+     inkscape:window-height="1090"
      id="namedview16"
      showgrid="false"
-     inkscape:zoom="4.4724807"
-     inkscape:cx="10.749178"
-     inkscape:cy="11.61635"
+     inkscape:zoom="44.868273"
+     inkscape:cx="10.635985"
+     inkscape:cy="10.347572"
      inkscape:window-x="73"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
@@ -52,12 +52,14 @@
       <stop
          id="stop22496-54-6-4"
          stop-color="#FFF"
-         offset="0" />
+         offset="0"
+         style="stop-color:#dcdcdc;stop-opacity:1" />
       <stop
          id="stop22498-4-8-1"
          stop-color="#FFF"
          stop-opacity="0"
-         offset="1" />
+         offset="1"
+         style="stop-color:#dcdcdc;stop-opacity:0" />
     </linearGradient>
   </defs>
   <metadata
@@ -68,7 +70,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -76,7 +78,7 @@
      id="path24366-1-4"
      d="M 9.9376699,0.43998682 C 4.4469209,0.43998682 0,4.8869074 0,10.377656 c 0,5.485424 4.4469209,9.932345 9.9376699,9.932345 5.4854231,0 9.9323441,-4.446921 9.9323441,-9.932345 0,-5.4907486 -4.446921,-9.93766918 -9.9323441,-9.93766918"
      stroke-miterlimit="10"
-     style="fill:url(#linearGradient25035);stroke-miterlimit:10"
+     style="fill:url(#linearGradient25035);stroke-miterlimit:10;opacity:1"
      inkscape:connector-curvature="0" />
   <path
      style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.40213841;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"

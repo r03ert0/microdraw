@@ -1,5 +1,5 @@
 {
-    "useDatabase":false,
+    "useDatabase":true,
     "hideToolbar":false,
     "regionOntology":true,
     "drawingEnabled":true,
