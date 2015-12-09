@@ -19,7 +19,6 @@ html,body {
 	position:absolute;
 	width:200px;
 	height:150px;
-	/*height:157px; if in configuration.json "useDatabase":false;*/
 	top:0px;
 	left:0px;
 	z-index:10; 
@@ -49,7 +48,6 @@ html,body {
 	height: 100%;
 	top:0;
 	left:0;
-	/*bottom:0px; if you want the left side transparent grey all the way down*/
 	background-color:rgba(200,200,200,0.5);
 	z-index:10;
 	display:block;

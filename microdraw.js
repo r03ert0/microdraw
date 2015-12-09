@@ -47,8 +47,8 @@ function newRegion(arg, imageNumber) {
 	
 	if(arg.path) {
 		reg.path = arg.path;
-		reg.path.strokeWidth=arg.path.strokeWidth ? arg.path.strokeWidth : 1;
-		reg.path.strokeColor=arg.path.strokeColor ? arg.path.strokeColor : 'black';
+        reg.path.strokeWidth=arg.path.strokeWidth ? arg.path.strokeWidth : 1;
+        reg.path.strokeColor=arg.path.strokeColor ? arg.path.strokeColor : 'black';
 		reg.path.strokeScaling=false;
 		reg.path.fillColor=arg.path.fillColor ? arg.path.fillColor :'rgba('+color.red+','+color.green+','+color.blue+',0.5)';
 		reg.path.selected=false;
@@ -265,6 +265,27 @@ function changeRegionName(reg,name) {
     $(".region-tag#"+reg.uid+">.region-name").text(name);
     $(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
 }
+
+
+function toggleRegion(reg,name) {
+    if(region!==null) {
+        if(debug) {
+            console.log("> toggle region");
+        }
+        var color=regionHashColor(reg.name);
+        if(reg.path.fillColor!=null) {
+            reg.path.fillColor=null;
+            reg.path.strokeWidth=0;
+            reg.path.fullySelected=false;
+        }
+        else {
+            reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+            reg.path.strokeWidth=1;
+        }
+        paper.view.draw();
+    }
+}
+
 
 function updateRegionList() {
     if (debug) console.log('> updateRegionList');
@@ -860,6 +881,10 @@ function toolSelection(event) {
             break;
         case "openMenu":
             toggleMenu();
+            backToPreviousTool(prevTool);
+            break;
+        case "toggleregion":
+            toggleRegion(region,name);
             backToPreviousTool(prevTool);
             break;
     }
