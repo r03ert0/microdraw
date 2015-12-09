@@ -24,3 +24,5 @@ documentation
 .*
 !.gitignore
 data
+
+configuration.json

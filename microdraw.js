@@ -274,15 +274,21 @@ function toggleRegion(reg,name) {
         }
         var color=regionHashColor(reg.name);
         if(reg.path.fillColor!=null) {
+            reg.path.storeColor=reg.path.fillColor;
             reg.path.fillColor=null;
+
             reg.path.strokeWidth=0;
             reg.path.fullySelected=false;
+            reg.storeName=reg.name;
+            reg.name=reg.name+'*';
         }
         else {
-            reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+            reg.path.fillColor=reg.path.storeColor;
             reg.path.strokeWidth=1;
+            reg.name=reg.storeName;
         }
         paper.view.draw();
+        $(".region-tag#"+reg.uid+">.region-name").text(reg.name);
     }
 }
 
