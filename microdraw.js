@@ -854,7 +854,14 @@ function toolSelection(event) {
             simplify(region);
             backToPreviousTool(prevTool);
             break;
-
+        case "closeMenu":
+            toggleMenu();
+            backToPreviousTool(prevTool);
+            break;
+        case "openMenu":
+            toggleMenu();
+            backToPreviousTool(prevTool);
+            break;
     }
 }
 function selectTool() {
@@ -1540,7 +1547,7 @@ function initMicrodraw() {
             if (mouse_position <= 100) {
                 //SLIDE IN MENU
                 animating = true;
-                $('#menu_bar').animate({
+                $('#menuBar').animate({
                     left: 0,
                     opacity: 1
                 }, 200, function () {
@@ -1548,7 +1555,7 @@ function initMicrodraw() {
                 });
             } else if (mouse_position > 200) {
                 animating = true;
-                $('#menu_bar').animate({
+                $('#menuBar').animate({
                     left: -100,
                     opacity: 0
                 }, 500, function () {
@@ -1566,6 +1573,17 @@ function initMicrodraw() {
     appendRegionTagsFromOntology(Ontology);
 
     return def.promise();
+}
+
+function toggleMenu () {
+    if ( $('#menuBar').css('display') == 'none' ) {
+        $('#menuBar').css('display', 'block');
+        $('#menuButton').css('display', 'none');
+    } 
+    else {
+        $('#menuBar').css('display', 'none');
+        $('#menuButton').css('display', 'block');
+    }
 }
 
 $(function() {

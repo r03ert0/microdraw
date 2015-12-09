@@ -9,22 +9,22 @@
 
 <body>
 
-<div id="menu_bar">
-	<!-- Toolbar -->
-	<div id="info" class="table">
-		<div class="row" style="height:10px">
-			<div class="cell" id="login"></div>
-		</div>
-	</div>
-	
+<div id="info" class="table">
 	<div class="row" style="height:10px">
-		<div class="cell" style="height:150px">
-			<div id="myNavigator" style="width:200px;height:150px"></div>
-		</div>
+		<div class="cell" id="login"></div>
 	</div>
-	
-	<div class="row" style="height:10px">
+	<div id="myNavigator"></div>
+</div>
+
+<div id="menuButton">
+	<img class="button" id="openMenu" title="Menu" src="img/openMenu.svg" />
+</div>
+
+<!-- Toolbar -->
+<div id="menuBar" class="table">
+	<div class="row">
 		<div class="cell" style="text-align:center">
+			<img class="button" id="closeMenu" title="Close Menu" src="img/closeMenu.svg" />
 			<div class="buttonGroup">
 				<img class="button" id="zoom"        title="Navigator"              src="img/navigate.svg" />
 				<img class="button" id="home"        title="Home"                   src="img/home.svg" />
@@ -62,10 +62,13 @@
 		<div class="cell">
 			<br />
 			Regions
-			<div id="regionList" style="height:auto;margin-bottom:0;overflow-y:scroll"></div>
+			<div id="regionList"></div>
 		</div>
 	</div>
 </div>
+
+</div>
+
 
 <!-- Region Picker -->
 <div id="regionPicker">
