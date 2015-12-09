@@ -941,7 +941,6 @@ function microdrawDBLoad() {
     Load SVG overlay from microdrawDB
 */
 	if(debug) console.log("> microdrawDBLoad promise");
-	
 	var	def=$.Deferred();
 	var	key="regionPaths";
 	var slice=myOrigin.slice;
@@ -1065,6 +1064,8 @@ function loadImage(name) {
     // set current image to new image
     currentImage = name;
 
+    hideAnnotationOverlay(prevImage);
+
     viewer.open(ImageInfo[currentImage]["source"]);
 }
 
@@ -1103,6 +1104,18 @@ function resizeAnnotationOverlay() {
     paper.view.viewSize=[width,height];
 }
 
+function hideAnnotationOverlay(image){
+    // hides the paper canvas for the given image
+    if (debug)
+        console.log("> hideAnnotationOverlay ("+image+")");
+
+    if(paper.projects[ImageInfo[image]["projectID"]]) {
+        paper.projects[ImageInfo[image]["projectID"]].activeLayer.visible = false;
+        $(paper.projects[ImageInfo[image]["projectID"]].view.element).hide();
+    }
+ 
+}
+
 function initAnnotationOverlay(data) {
     if(debug)
         console.log("> initAnnotationOverlay");
@@ -1112,7 +1125,6 @@ function initAnnotationOverlay(data) {
         return;
     }
     
-    console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
 
     /*
        Activate the paper.js project corresponding to this slice. If it does not yet
@@ -1123,12 +1135,13 @@ function initAnnotationOverlay(data) {
     // change myOrigin (for loading and saving)
     myOrigin.slice = currentImage;
 
-    // hide previous slice
-    if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
+    // hide previous slice -- moved to function hideAnnotationOverlay, that is called by loadImage
+    /*if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
         paper.projects[ImageInfo[prevImage]["projectID"]].activeLayer.visible = false;
         $(paper.projects[ImageInfo[prevImage]["projectID"]].view.element).hide();
-    }
+    }*/
 
+   
     // if this is the first time a slice is accessed, create its canvas, its project,
     // and load its regions from the database
     if (ImageInfo[currentImage]["projectID"] == undefined) {
