@@ -1,5 +1,5 @@
 //(function() {                   // force everything local.
-var debug=1;
+var debug=false;
 
 var dbroot="http://"+localhost+"/microdraw/php/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
@@ -972,6 +972,7 @@ function microdrawDBLoad() {
     Load SVG overlay from microdrawDB
 */
 	if(debug) console.log("> microdrawDBLoad promise");
+	
 	var	def=$.Deferred();
 	var	key="regionPaths";
 	var slice=myOrigin.slice;
@@ -1095,8 +1096,6 @@ function loadImage(name) {
     // set current image to new image
     currentImage = name;
 
-    hideAnnotationOverlay(prevImage);
-
     viewer.open(ImageInfo[currentImage]["source"]);
 }
 
@@ -1135,18 +1134,6 @@ function resizeAnnotationOverlay() {
     paper.view.viewSize=[width,height];
 }
 
-function hideAnnotationOverlay(image){
-    // hides the paper canvas for the given image
-    if (debug)
-        console.log("> hideAnnotationOverlay ("+image+")");
-
-    if(paper.projects[ImageInfo[image]["projectID"]]) {
-        paper.projects[ImageInfo[image]["projectID"]].activeLayer.visible = false;
-        $(paper.projects[ImageInfo[image]["projectID"]].view.element).hide();
-    }
- 
-}
-
 function initAnnotationOverlay(data) {
     if(debug)
         console.log("> initAnnotationOverlay");
@@ -1156,6 +1143,7 @@ function initAnnotationOverlay(data) {
         return;
     }
     
+    console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
 
     /*
        Activate the paper.js project corresponding to this slice. If it does not yet
@@ -1166,13 +1154,12 @@ function initAnnotationOverlay(data) {
     // change myOrigin (for loading and saving)
     myOrigin.slice = currentImage;
 
-    // hide previous slice -- moved to function hideAnnotationOverlay, that is called by loadImage
-    /*if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
+    // hide previous slice
+    if(prevImage && paper.projects[ImageInfo[prevImage]["projectID"]]) {
         paper.projects[ImageInfo[prevImage]["projectID"]].activeLayer.visible = false;
         $(paper.projects[ImageInfo[prevImage]["projectID"]].view.element).hide();
-    }*/
+    }
 
-   
     // if this is the first time a slice is accessed, create its canvas, its project,
     // and load its regions from the database
     if (ImageInfo[currentImage]["projectID"] == undefined) {
@@ -1214,7 +1201,7 @@ function initAnnotationOverlay(data) {
 
     /* RT: commenting this line out solves the image size issues */
        // set size of the current overlay to match the size of the current image
-       //magicV = viewer.world.getItemAt(0).getContentSize().x;
+       magicV = viewer.world.getItemAt(0).getContentSize().x;
 
     transform();
 }
@@ -1464,8 +1451,8 @@ function loadConfiguration() {
 }
 
 function initMicrodraw() {
-
-    if(debug) console.log("> initMicrodraw promise");
+    if(debug)
+    	console.log("> initMicrodraw promise");
 
     var def=$.Deferred();
 
@@ -1496,86 +1483,33 @@ function initMicrodraw() {
     selectedTool="zoom";
     selectTool();
 
-    // load tile sources
-    $.getJSON(params.source,function(obj) {
-        if(debug)
-            console.log("json file:",obj);
-
-        // for loading the bigbrain
-        if (obj.tileCodeY) {
-            obj.tileSources = eval(obj.tileCodeY);
-        }
-        
-        // set up the ImageInfo array and imageOrder array
-        for (var i=0; i < obj.tileSources.length; i++){
-            // name is either the index of the tileSource or a named specified in the json file
-            var name = ((obj.names && obj.names[i]) ? String(obj.names[i]) : String(i));
-            imageOrder.push(name);
-            ImageInfo[name] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
-            // if getTileUrl is specified, we might need to eval it to get the function
-            if (obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string'){
-                eval("ImageInfo[name]['source'].getTileUrl = " + obj.tileSources[i].getTileUrl);
-            }
-        }
-        // init slider that can be used to change between slides
-        initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length/2));
-        currentImage = imageOrder[Math.floor(obj.tileSources.length/2)];
-
-        params.tileSources=obj.tileSources;
-        viewer = OpenSeadragon({
-            id: "openseadragon1",
-            prefixUrl: "lib/openseadragon/images/",
-            tileSources: [],
-            showReferenceStrip: false,
-            referenceStripSizeRatio: 0.2,
-            showNavigator: true,
-            sequenceMode: false,
-            navigatorId:"myNavigator",
-            zoomInButton:"zoom-in",
-            zoomOutButton:"zoom-out",
-            homeButton:"home",
-            preserveViewport: true
-        });
-
-        // open the currentImage
-        viewer.open(ImageInfo[currentImage]["source"]);
-
-        // add the scalebar
-        viewer.scalebar({
-            type: OpenSeadragon.ScalebarType.MICROSCOPE,
-            minWidth:'150px',
-            pixelsPerMeter:obj.pixelsPerMeter,
-            color:'black',
-            fontColor:'black',
-            backgroundColor:"rgba(255,255,255,0.5)",
-            barThickness:4,
-            location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
-            xOffset:5,
-            yOffset:5
-        });
-
-        // add handlers: update slice name, animation, page change, mouse actions
-        viewer.addHandler('open',function(){
-            initAnnotationOverlay();
-            updateSliceName();
-        });
-        viewer.addHandler('animation', function(event){
-            transform();
-        });
-        viewer.addHandler("page", function (data) {
-            console.log(data.page,params.tileSources[data.page]);
-        });
-        viewer.addViewerInputHook({hooks: [
-            {tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
-            {tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
-            {tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
-            {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
-        ]});
-
-        if(debug)
-            console.log("< initMicrodraw resolve: success");
-        def.resolve();
-    });
+	// decide between json (local) and jsonp (cross-origin)
+	var ext=params.source.split(".");
+	ext=ext[ext.length-1];
+	if(ext=="jsonp") {
+		if(debug)
+			console.log("Reading cross-origin jsonp file");
+		$.ajax({
+			type: 'GET',
+			url: params.source+"?callback=?",
+			jsonpCallback: 'f',
+			dataType: 'jsonp',
+			async: false,
+			contentType: "application/json",
+			success: function(obj){initMicrodraw2(obj);def.resolve()}
+		});
+	} else
+	if(ext=="json") {
+		if(debug)
+			console.log("Reading local json file");
+		$.ajax({
+			type: 'GET',
+			url: params.source,
+			async: false,
+			contentType: "application/json",
+			success: function(obj){initMicrodraw2(obj);def.resolve()}
+		});
+	}
 
     // Change current slice by typing in the slice number and pessing the enter key
     $("#slice-name").keyup(slice_name_onenter);
@@ -1620,7 +1554,85 @@ function initMicrodraw() {
 
     return def.promise();
 }
+function initMicrodraw2(obj) {
+	if(debug)
+        console.log("json file:",obj);
 
+	// for loading the bigbrain
+	if (obj.tileCodeY) {
+		obj.tileSources = eval(obj.tileCodeY);
+	}
+
+	// set up the ImageInfo array and imageOrder array
+	for (var i=0; i < obj.tileSources.length; i++){
+		// name is either the index of the tileSource or a named specified in the json file
+		var name = ((obj.names && obj.names[i]) ? String(obj.names[i]) : String(i));
+		imageOrder.push(name);
+		ImageInfo[name] = {"source": obj.tileSources[i], "Regions": [], "projectID": undefined};
+		// if getTileUrl is specified, we might need to eval it to get the function
+		if (obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string'){
+			eval("ImageInfo[name]['source'].getTileUrl = " + obj.tileSources[i].getTileUrl);
+		}
+	}
+	
+	// init slider that can be used to change between slides
+	initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length/2));
+	currentImage = imageOrder[Math.floor(obj.tileSources.length/2)];
+
+	params.tileSources=obj.tileSources;
+	viewer = OpenSeadragon({
+		id: "openseadragon1",
+		prefixUrl: "lib/openseadragon/images/",
+		tileSources: [],
+		showReferenceStrip: false,
+		referenceStripSizeRatio: 0.2,
+		showNavigator: true,
+		sequenceMode: false,
+		navigatorId:"myNavigator",
+		zoomInButton:"zoom-in",
+		zoomOutButton:"zoom-out",
+		homeButton:"home",
+		preserveViewport: true
+	});
+
+	// open the currentImage
+	viewer.open(ImageInfo[currentImage]["source"]);
+
+	// add the scalebar
+	viewer.scalebar({
+		type: OpenSeadragon.ScalebarType.MICROSCOPE,
+		minWidth:'150px',
+		pixelsPerMeter:obj.pixelsPerMeter,
+		color:'black',
+		fontColor:'black',
+		backgroundColor:"rgba(255,255,255,0.5)",
+		barThickness:4,
+		location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
+		xOffset:5,
+		yOffset:5
+	});
+
+	// add handlers: update slice name, animation, page change, mouse actions
+	viewer.addHandler('open',function(){
+		initAnnotationOverlay();
+		updateSliceName();
+	});
+	viewer.addHandler('animation', function(event){
+		transform();
+	});
+	viewer.addHandler("page", function (data) {
+		console.log(data.page,params.tileSources[data.page]);
+	});
+	viewer.addViewerInputHook({hooks: [
+		{tracker: 'viewer', handler: 'clickHandler', hookHandler: clickHandler},
+		{tracker: 'viewer', handler: 'pressHandler', hookHandler: pressHandler},
+		{tracker: 'viewer', handler: 'dragHandler', hookHandler: dragHandler},
+		{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
+	]});
+
+	if(debug)
+		console.log("< initMicrodraw2 resolve: success");
+}
 function toggleMenu () {
     if ( $('#menuBar').css('display') == 'none' ) {
         $('#menuBar').css('display', 'block');
