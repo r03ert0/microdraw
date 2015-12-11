@@ -86,6 +86,7 @@ html,body {
 	bottom:0px;
 	overflow-y:scroll;
 }
+
 #regionPicker {
 	position:absolute;
 	width:200px;
@@ -107,6 +108,11 @@ html,body {
 	border:thin solid grey;
 	display:inline-block;
 	vertical-align:middle;
+}
+.eye {
+	display:inline-block;
+	vertical-align:middle;
+	z-index:10;
 }
 .region-tag.selected {
 	background-color:rgba(255,255,255,0.75);

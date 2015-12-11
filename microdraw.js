@@ -202,6 +202,7 @@ function regionTag(name,uid) {
     var str;
     if(uid)
         str=[   "<div class='region-tag' id='"+uid+"' style='padding:2px'>",
+                "<img class='eye' title='Region visible' id='eye_"+uid+"' src='img/eyeOpened.svg' />",
                 "<div class='region-color'",
                 "style='background-color:rgba(",
                 color.red,",",color.green,",",color.blue,",0.67",
@@ -267,7 +268,7 @@ function changeRegionName(reg,name) {
 }
 
 
-function toggleRegion(reg,name) {
+function toggleRegion(reg) {
     if(region!==null) {
         if(debug) {
             console.log("> toggle region");
@@ -280,17 +281,20 @@ function toggleRegion(reg,name) {
             reg.path.strokeWidth=0;
             reg.path.fullySelected=false;
             reg.storeName=reg.name;
-            reg.name=reg.name+'*';
+            //reg.name=reg.name+'*';
+            $('#eye_'+reg.uid).attr('src','img/eyeClosed.svg');
         }
         else {
             reg.path.fillColor=reg.path.storeColor;
             reg.path.strokeWidth=1;
             reg.name=reg.storeName;
+            $('#eye_'+reg.uid).attr('src','img/eyeOpened.svg');
         }
         paper.view.draw();
         $(".region-tag#"+reg.uid+">.region-name").text(reg.name);
     }
 }
+
 
 
 function updateRegionList() {
@@ -360,24 +364,33 @@ function singlePressOnRegion(event) {
     var uid;
     var reg;
 
-    if(el.hasClass("ontology")) {
-        // Click on regionPicker (ontology selection list)
-        var newName=el.find(".region-name").text();
-        uid=$(".region-tag.selected").attr('id');
-        reg=findRegionByUID(uid);
-        changeRegionName(reg,newName);
-        $("div#regionPicker").appendTo($("body")).hide();
+    if(debug) console.log(event);
+    if (event.clientX > 20) {
+    
+        if(el.hasClass("ontology")) {
+            // Click on regionPicker (ontology selection list)
+            var newName=el.find(".region-name").text();
+            uid=$(".region-tag.selected").attr('id');
+            reg=findRegionByUID(uid);
+            changeRegionName(reg,newName);
+            $("div#regionPicker").appendTo($("body")).hide();
+        }
+        else {
+            // Click on regionList (list or annotated regions)
+            uid=$(this).attr('id');
+            reg=findRegionByUID(uid);
+            if(reg)
+                selectRegion(reg);
+            else
+                console.log("region undefined");
+        }
     }
     else {
-        // Click on regionList (list or annotated regions)
-        uid=$(this).attr('id');
-        reg=findRegionByUID(uid);
-        if(reg)
-            selectRegion(reg);
-        else
-            console.log("region undefined");
+        var reg = findRegionByUID(this.id);
+        toggleRegion(reg);
     }
 }
+
 function doublePressOnRegion(event) {
     if(debug) console.log("> doublePressOnRegion");
 
@@ -650,6 +663,9 @@ function simplify() {
     }
 }
 
+
+
+
 /*** UNDO ***/
 
 /**
@@ -887,10 +903,6 @@ function toolSelection(event) {
             break;
         case "openMenu":
             toggleMenu();
-            backToPreviousTool(prevTool);
-            break;
-        case "toggleregion":
-            toggleRegion(region,name);
             backToPreviousTool(prevTool);
             break;
     }
@@ -1494,7 +1506,6 @@ function initMicrodraw() {
 			url: params.source+"?callback=?",
 			jsonpCallback: 'f',
 			dataType: 'jsonp',
-			async: false,
 			contentType: "application/json",
 			success: function(obj){initMicrodraw2(obj);def.resolve()}
 		});
@@ -1505,8 +1516,8 @@ function initMicrodraw() {
 		$.ajax({
 			type: 'GET',
 			url: params.source,
-			async: false,
-			contentType: "application/json",
+			dataType: "json",
+            contentType: "application/json",
 			success: function(obj){initMicrodraw2(obj);def.resolve()}
 		});
 	}
@@ -1564,6 +1575,7 @@ function initMicrodraw2(obj) {
 	}
 
 	// set up the ImageInfo array and imageOrder array
+    console.log(obj);
 	for (var i=0; i < obj.tileSources.length; i++){
 		// name is either the index of the tileSource or a named specified in the json file
 		var name = ((obj.names && obj.names[i]) ? String(obj.names[i]) : String(i));
