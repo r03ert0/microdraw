@@ -87,6 +87,45 @@ html,body {
 	overflow-y:scroll;
 }
 
+#colorSelector {
+	position:absolute;
+	width:200px;
+	height:110px;
+	top:371px;
+	left:200px;
+	background-color:rgba(200,200,200,0.5);
+	display:none;
+	z-index:10;
+}
+.colorInput {
+	width:2em;
+	height:1.5em;
+	vertical-align:middle;
+	text-align:right;
+	background-color:rgba(255,255,255,0.7);
+	border:thin solid lightgrey;
+	border-radius:5px;
+    box-shadow: none !important;
+	z-index:10;
+}
+#selectStrokeColor {
+	/*width:4.4em;*/
+	position:absolute;
+	/*left:89px;*/
+	right:0px;
+	border-radius:0px;
+	border:thin solid lightgrey;
+	background-color:rgba(255,255,255,0.7);
+}
+#okStrokeColor {
+	position:absolute;
+	/*left:95px;*/
+	right:0px;
+	border-radius:5px;
+	border:thin solid lightgrey;
+	background-color:rgba(255,255,255,0.7);
+}
+
 #regionPicker {
 	position:absolute;
 	width:200px;

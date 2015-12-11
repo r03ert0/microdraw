@@ -1,5 +1,5 @@
 //(function() {                   // force everything local.
-var debug=false;
+var debug=true;
 
 var dbroot="http://"+localhost+"/microdraw/php/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
@@ -651,7 +651,6 @@ function mouseUp() {
     paper.view.draw();
 }
 
-
 function simplify() {
     if(region!==null) {
         if(debug) {
@@ -664,6 +663,67 @@ function simplify() {
 }
 
 
+var currentColorRegion;
+
+function annotationStyle(reg) {
+    console.log(reg.path.fillColor);
+    if(region!==null) {
+        if(debug) {
+            console.log("> changing annotation style");
+        }
+        currentColorRegion = reg;
+        if ($('#colorSelector').css('display') == 'none') {
+            $('#redInput').val( parseInt( reg.path.fillColor.red * 255 ) );
+            $('#greenInput').val( parseInt( reg.path.fillColor.green * 255 ) );
+            $('#blueInput').val( parseInt( reg.path.fillColor.blue * 255 ) );
+            $('#alphaInput').val( parseFloat( reg.path.fillColor.alpha ) );
+
+            $('#colorSelector').css('display', 'block');
+        }
+        else {
+            $('#colorSelector').css('display', 'none');
+        }
+    }
+}
+
+function setRegionColor() {
+    var reg = currentColorRegion;
+    reg.path.fillColor.red = parseFloat( $('#redInput').val() ) / 255;
+    reg.path.fillColor.green = parseFloat( $('#greenInput').val() ) / 255;
+    reg.path.fillColor.blue = parseFloat( $('#blueInput').val() ) / 255;
+    reg.path.fillColor.alpha = parseFloat( $('#alphaInput').val() );
+
+    // Update region tag
+    var color = currentColorRegion;
+    color.red = parseFloat( $('#redInput').val() );
+    color.green = parseFloat( $('#greenInput').val() );
+    color.blue = parseFloat( $('#blueInput').val() );
+
+    $(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
+
+    switch( $('#selectStrokeColor')[0].selectedIndex ) {
+        case 0:
+            reg.path.strokeColor = "black";
+            break;
+        case 1:
+            reg.path.strokeColor = "white";
+            break;
+        case 2:
+            reg.path.strokeColor = "red";
+            break;
+        case 3:
+            reg.path.strokeColor = "green";
+            break;
+        case 4:
+            reg.path.strokeColor = "blue";
+            break;
+        case 5:
+            reg.path.strokeColor = "yellow";
+            break;
+    }
+    
+    $('#colorSelector').css('display', 'none');
+}
 
 
 /*** UNDO ***/
@@ -903,6 +963,10 @@ function toolSelection(event) {
             break;
         case "openMenu":
             toggleMenu();
+            backToPreviousTool(prevTool);
+            break;
+        case "annotstyle":
+            annotationStyle(region);
             backToPreviousTool(prevTool);
             break;
     }

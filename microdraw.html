@@ -50,6 +50,7 @@
 				<img class="button" id="delregion"    title="Subtraction of regions" src="img/subtract.svg" />
 				<img class="button" id="splitregion"  title="Split region"           src="img/split.svg" />
 				<img class="button" id="rotate"       title="Rotate region"          src="img/rotate.svg" />
+				<img class="button" id="annotstyle"   title="Annotation style"       src="img/annotStyle.svg" />
 			</div>
 			<div class="buttonGroup">
 				<img class="button" id="save"        title="Save annotations"       src="img/save.svg" />
@@ -69,6 +70,27 @@
 	</div>
 </div>
 
+<div id="colorSelector">
+	stroke color
+	<select id="selectStrokeColor">
+		<option value="0">black</option>
+		<option value="1">white</option>
+		<option value="2">red</option>
+		<option value="3">green</option>
+		<option value="4">blue</option>
+		<option value="5">yellow</option>
+	</select>
+	<br>
+	<br>
+	fill color
+	<input type="text" class="colorInput" id="redInput">
+	<input type="text" class="colorInput" id="greenInput">
+	<input type="text" class="colorInput" id="blueInput">
+	<input type="text" class="colorInput" id="alphaInput">
+	<br>
+	<br>
+	<input type="button" id="okStrokeColor" value="ok" onClick="setRegionColor();">
+</div>
 
 <!-- Region Picker -->
 <div id="regionPicker">
