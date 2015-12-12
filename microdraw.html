@@ -72,7 +72,7 @@
 
 <div id="colorSelector">
 	stroke color
-	<select id="selectStrokeColor">
+	<select id="selectStrokeColor" onChange="onSelectStrokeColor();">
 		<option value="0">black</option>
 		<option value="1">white</option>
 		<option value="2">red</option>
@@ -83,10 +83,10 @@
 	<br>
 	<br>
 	fill color
-	<input type="text" class="colorInput" id="redInput">
-	<input type="text" class="colorInput" id="greenInput">
-	<input type="text" class="colorInput" id="blueInput">
-	<input type="text" class="colorInput" id="alphaInput">
+	<input type="color" id="fillColorPicker" value="#ff0000" onChange="onFillColorPicker(this.value);" >
+	<br>
+	<br>
+	&alpha;<input type="range" min="0" max="100" id="alphaSlider" onInput="onAlphaSlider(this.value);" ><input id="alphaFill" onInput="onAlphaInput(this.value);" >
 	<br>
 	<br>
 	<input type="button" id="okStrokeColor" value="ok" onClick="setRegionColor();">

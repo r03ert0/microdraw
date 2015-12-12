@@ -672,12 +672,16 @@ function annotationStyle(reg) {
             console.log("> changing annotation style");
         }
         currentColorRegion = reg;
-        if ($('#colorSelector').css('display') == 'none') {
-            $('#redInput').val( parseInt( reg.path.fillColor.red * 255 ) );
-            $('#greenInput').val( parseInt( reg.path.fillColor.green * 255 ) );
-            $('#blueInput').val( parseInt( reg.path.fillColor.blue * 255 ) );
-            $('#alphaInput').val( parseFloat( reg.path.fillColor.alpha ) );
+        var alpha = reg.path.fillColor.alpha;
+        $('#alphaSlider').val(alpha*100);
+        $('#alphaFill').val(parseInt(alpha*100));
 
+        if ($('#colorSelector').css('display') == 'none') {
+
+            var hexColor = '#' + ( reg.path.fillColor.red * 255 ).toString(16) + ( reg.path.fillColor.green * 255 ).toString(16) + ( reg.path.fillColor.blue * 255 ).toString(16);
+
+            $('#fillColorPicker').val( hexColor );
+        
             $('#colorSelector').css('display', 'block');
         }
         else {
@@ -688,18 +692,18 @@ function annotationStyle(reg) {
 
 function setRegionColor() {
     var reg = currentColorRegion;
-    reg.path.fillColor.red = parseFloat( $('#redInput').val() ) / 255;
-    reg.path.fillColor.green = parseFloat( $('#greenInput').val() ) / 255;
-    reg.path.fillColor.blue = parseFloat( $('#blueInput').val() ) / 255;
-    reg.path.fillColor.alpha = parseFloat( $('#alphaInput').val() );
+    var hexColor = $('#fillColorPicker').val();
+    var red = parseInt( hexColor.substring( 1, 3 ), 16 );
+    var green = parseInt( hexColor.substring( 3, 5 ), 16);
+    var blue = parseInt( hexColor.substring( 5, 7 ), 16);
 
+    reg.path.fillColor.red = red / 255;
+    reg.path.fillColor.green = green / 255;
+    reg.path.fillColor.blue = blue / 255;
+    reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
+    
     // Update region tag
-    var color = currentColorRegion;
-    color.red = parseFloat( $('#redInput').val() );
-    color.green = parseFloat( $('#greenInput').val() );
-    color.blue = parseFloat( $('#blueInput').val() );
-
-    $(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
+    $(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+red+','+green+','+blue+',0.67)');
 
     switch( $('#selectStrokeColor')[0].selectedIndex ) {
         case 0:
@@ -723,6 +727,53 @@ function setRegionColor() {
     }
     
     $('#colorSelector').css('display', 'none');
+}
+function onFillColorPicker(value) {
+    $('#fillColorPicker').val(value);
+    var reg = currentColorRegion;
+    var hexColor = $('#fillColorPicker').val();
+    var red = parseInt( hexColor.substring( 1, 3 ), 16 );
+    var green = parseInt( hexColor.substring( 3, 5 ), 16);
+    var blue = parseInt( hexColor.substring( 5, 7 ), 16);
+    reg.path.fillColor.red = red / 255;
+    reg.path.fillColor.green = green / 255;
+    reg.path.fillColor.blue = blue / 255;
+    reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
+    paper.view.draw();
+}
+function onSelectStrokeColor() {
+    var reg = currentColorRegion;
+    switch( $('#selectStrokeColor')[0].selectedIndex ) {
+        case 0:
+            reg.path.strokeColor = "black";
+            break;
+        case 1:
+            reg.path.strokeColor = "white";
+            break;
+        case 2:
+            reg.path.strokeColor = "red";
+            break;
+        case 3:
+            reg.path.strokeColor = "green";
+            break;
+        case 4:
+            reg.path.strokeColor = "blue";
+            break;
+        case 5:
+            reg.path.strokeColor = "yellow";
+            break;
+    }
+    paper.view.draw();
+}
+function onAlphaSlider(value) {
+    $('#alphaFill').val(value);
+    var reg = currentColorRegion;
+    reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
+}
+function onAlphaInput(value) {
+    $('#alphaSlider').val(value);
+    var reg = currentColorRegion;
+    reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
 }
 
 
