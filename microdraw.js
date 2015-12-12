@@ -74,10 +74,9 @@ function newRegion(arg, imageNumber) {
 		  making this one redundant
 		*/
 		el.on("touchstart",handleRegionTap);
-
 	}
 
-     // Select region name in list
+    // Select region name in list
     $("#regionList > .region-tag").each(function(i){
         $(this).addClass("deselected");
         $(this).removeClass("selected");
@@ -91,6 +90,7 @@ function newRegion(arg, imageNumber) {
 	ImageInfo[imageNumber]["Regions"].push(reg);
 	return reg;
 }
+
 function removeRegion(reg, imageNumber) {
 	if(debug) console.log("> removeRegion");
 	
@@ -139,6 +139,7 @@ function selectRegion(reg) {
 
     if(debug) console.log("< selectRegion");
 }
+
 function findRegionByUID(uid) {
     if(debug) console.log("> findRegionByUID");
 
@@ -151,7 +152,6 @@ function findRegionByUID(uid) {
     console.log("Region with unique ID "+uid+" not found");
     return null;
 }
-
 
 function findRegionByName(name) {
     if(debug) console.log("> findRegionByName");
@@ -191,6 +191,7 @@ function hash(str) {
     },0);
     return result;
 }
+
 function regionHashColor(name) {
     if(debug) console.log("> regionHashColor");
 
@@ -206,6 +207,7 @@ function regionHashColor(name) {
     color.blue=(h&0xff0000)>>16;
     return color;
 }
+
 function regionTag(name,uid) {
     if(debug) console.log("> regionTag");
 
@@ -232,6 +234,7 @@ function regionTag(name,uid) {
                 ].join(" ");
     return str;
 }
+
 function appendRegionTagsFromOntology(o) {
     if(debug) console.log("> appendRegionTagsFromOntology");
 
@@ -255,6 +258,7 @@ function appendRegionTagsFromOntology(o) {
         }
     }
 }
+
 function regionPicker(parent) {
     if(debug) console.log("> regionPicker");
 
@@ -278,12 +282,12 @@ function changeRegionName(reg,name) {
     $(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
 }
 
-
+/*** toggle visibility of region 
+***/
 function toggleRegion(reg) {
     if(region!==null) {
-        if(debug) {
-            console.log("> toggle region");
-        }
+        if(debug) console.log("> toggle region"); 
+
         var color=regionHashColor(reg.name);
         if(reg.path.fillColor!=null) {
             reg.path.storeColor=reg.path.fillColor;
@@ -306,10 +310,8 @@ function toggleRegion(reg) {
     }
 }
 
-
-
 function updateRegionList() {
-    if (debug) console.log('> updateRegionList');
+    if (debug) console.log("> updateRegionList");
 
     // remove all entries in the regionList
     $("#regionList > .region-tag").each(function() {
@@ -340,6 +342,7 @@ function clickHandler(event){
 
     event.stopHandlers=!navEnabled;
 }
+
 function pressHandler(event){
     if(debug) console.log("> pressHandler");
 
@@ -348,6 +351,7 @@ function pressHandler(event){
         mouseDown(event.originalEvent.layerX,event.originalEvent.layerY);
     }
 }
+
 function dragHandler(event){
     if(debug>1)
         console.log("> dragHandler");
@@ -357,6 +361,7 @@ function dragHandler(event){
         mouseDrag(event.originalEvent.layerX,event.originalEvent.layerY,event.delta.x,event.delta.y);
     }
 }
+
 function dragEndHandler(event){
     if(debug) console.log("> dragEndHandler");
 
@@ -365,6 +370,7 @@ function dragEndHandler(event){
         mouseUp();
     }
 }
+
 function singlePressOnRegion(event) {
     if(debug) console.log("> singlePressOnRegion");
 
@@ -454,8 +460,7 @@ function handleRegionTap(event) {
 }
 
 function mouseDown(x,y) {
-    if(debug>1)
-        console.log("> mouseDown");
+    if(debug>1) console.log("> mouseDown");
 
     mouseUndo = getUndo();
     var prevRegion=null;
@@ -610,7 +615,6 @@ function mouseDown(x,y) {
     paper.view.draw();
 }
 
-
 function mouseDrag(x,y,dx,dy) {
     if(debug) console.log("> mouseDrag");
 
@@ -668,53 +672,61 @@ function mouseUp() {
     paper.view.draw();
 }
 
+/*** simplify the region path 
+***/
 function simplify() {
     if(region!==null) {
-        if(debug) {
-            console.log("> simplifying");
-        }
+        if(debug) console.log("> simplifying region path");
+
         region.path.fullySelected = true;
         region.path.simplify(2);
         paper.view.draw();
     }
 }
 
-
+/*** flip region along y-axis around its center point
+***/
 function flipRegion(reg) {
-    var i;
-    for(i in ImageInfo[currentImage]["Regions"]) {
-        if(ImageInfo[currentImage]["Regions"][i].path.selected) {
-            ImageInfo[currentImage]["Regions"][i].path.scale(-1, 1);
+    if(region!==null) {
+        if(debug) console.log("> flipping region");
+
+        var i;
+        for(i in ImageInfo[currentImage]["Regions"]) {
+            if(ImageInfo[currentImage]["Regions"][i].path.selected) {
+                ImageInfo[currentImage]["Regions"][i].path.scale(-1, 1);
+            }
         }
-    }
     paper.view.draw();
+    }
 }
 
-
-
+/*** 
+    the following functions serve changing the annotation style
+***/
 var currentColorRegion;
-
+// add leading zeros
 function pad(number, length) { 
     var str = '' + number; 
     while (str.length < length) 
         str = '0' + str; 
     return str; 
 }
-
+/*** get current alpha & color values for colorPicker display 
+***/
 function annotationStyle(reg) {
-    console.log(reg.path.fillColor);
+    if(debug) console.log(reg.path.fillColor);
+
     if(region!==null) {
-        if(debug) {
-            console.log("> changing annotation style");
-        }
+        if(debug) console.log("> changing annotation style");
+        
         currentColorRegion = reg;
         var alpha = reg.path.fillColor.alpha;
         $('#alphaSlider').val(alpha*100);
         $('#alphaFill').val(parseInt(alpha*100));
 
         var hexColor = '#' + pad(( reg.path.fillColor.red * 255 ).toString(16),2) + pad(( reg.path.fillColor.green * 255 ).toString(16),2) + pad(( reg.path.fillColor.blue * 255 ).toString(16),2);
-        
         if(debug) console.log(hexColor);
+        
         $('#fillColorPicker').val( hexColor );
 
         if ($('#colorSelector').css('display') == 'none') {
@@ -725,7 +737,8 @@ function annotationStyle(reg) {
         }
     }
 }
-
+/*** set picked color & alpha 
+***/
 function setRegionColor() {
     var reg = currentColorRegion;
     var hexColor = $('#fillColorPicker').val();
@@ -738,9 +751,10 @@ function setRegionColor() {
     reg.path.fillColor.blue = blue / 255;
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
     
-    // Update region tag
+    // update region tag
     $(".region-tag#"+reg.uid+">.region-color").css('background-color','rgba('+red+','+green+','+blue+',0.67)');
-
+  
+    // update stroke color
     switch( $('#selectStrokeColor')[0].selectedIndex ) {
         case 0:
             reg.path.strokeColor = "black";
@@ -761,9 +775,10 @@ function setRegionColor() {
             reg.path.strokeColor = "yellow";
             break;
     }
-    
     $('#colorSelector').css('display', 'none');
 }
+/*** update all values on the fly 
+***/
 function onFillColorPicker(value) {
     $('#fillColorPicker').val(value);
     var reg = currentColorRegion;
@@ -777,6 +792,7 @@ function onFillColorPicker(value) {
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
     paper.view.draw();
 }
+
 function onSelectStrokeColor() {
     var reg = currentColorRegion;
     switch( $('#selectStrokeColor')[0].selectedIndex ) {
@@ -801,11 +817,13 @@ function onSelectStrokeColor() {
     }
     paper.view.draw();
 }
+
 function onAlphaSlider(value) {
     $('#alphaFill').val(value);
     var reg = currentColorRegion;
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
 }
+
 function onAlphaInput(value) {
     $('#alphaSlider').val(value);
     var reg = currentColorRegion;
@@ -920,6 +938,7 @@ function commitMouseUndo() {
     }
 }
 
+
 /***3
     Tool selection
 */
@@ -941,7 +960,6 @@ function backToPreviousTool(prevTool) {
         selectTool()
     },500);
 }
-
 
 /**
  * This function deletes the currently selected object.
@@ -1062,6 +1080,7 @@ function toolSelection(event) {
             break;
     }
 }
+
 function selectTool() {
     if(debug) console.log("> selectTool");
 
@@ -1070,6 +1089,7 @@ function selectTool() {
     //$("svg").removeClass("selected");
     //$("svg#"+selectedTool).addClass("selected");
 }
+
 
 /***4
     Annotation storage
@@ -1134,6 +1154,7 @@ function microdrawDBSave() {
         });
     }
 }
+
 function microdrawDBLoad() {
 /*
     Load SVG overlay from microdrawDB
@@ -1191,6 +1212,7 @@ function microdrawDBLoad() {
     });
     return def.promise();
 }
+
 function microdrawDBIP() {
 /*
     Get my IP
@@ -1230,6 +1252,7 @@ function save() {
 
     if(debug) console.log("+ saved regions:",ImageInfo[currentImage]["Regions"].length);
 }
+
 function load() {
     if(debug) console.log("> load");
 
@@ -1250,10 +1273,10 @@ function load() {
     }
 }
 
+
 /***5
     Initialisation
 */
-
 
 function loadImage(name) {
     if (debug) console.log("> loadImage(" + name + ")");
@@ -1275,7 +1298,6 @@ function loadNextImage() {
     update_slider_value(nextIndex);
 
     loadImage(imageOrder[nextIndex]);
-
 }
 
 function loadPreviousImage() {
@@ -1310,7 +1332,7 @@ function initAnnotationOverlay(data) {
         return;
     }
     
-    console.log('new overlay size' + viewer.world.getItemAt(0).getContentSize());
+    console.log("new overlay size" + viewer.world.getItemAt(0).getContentSize());
 
     /*
        Activate the paper.js project corresponding to this slice. If it does not yet
@@ -1349,8 +1371,7 @@ function initAnnotationOverlay(data) {
             });
         }
 
-        if (debug)
-            console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]);
+        if (debug) console.log('Set up new project, currentImage: '+currentImage+', ID: '+ImageInfo[currentImage]["projectID"]);
     }
 
     // activate the current slice and make it visible
@@ -1386,17 +1407,18 @@ function transform() {
     paper.view.setCenter(x+w/2,y+h/2);
     paper.view.zoom=(sw*z)/magicV;
 }
+
 function deparam() {
     if(debug) console.log("> deparam");
 
     var search = location.search.substring(1);
     var result=search?JSON.parse('{"' + search.replace(/&/g, '","').replace(/=/g,'":"') + '"}',
                      function(key, value) { return key===""?value:decodeURIComponent(value) }):{};
-    if(debug)
-        console.log("url parametres:",result);
+    if(debug) console.log("url parametres:",result);
 
     return result;
 }
+
 function loginChanged() {
     if(debug) console.log("> loginChanged");
 
@@ -1417,9 +1439,7 @@ function loginChanged() {
         $("<canvas class='overlay' id='" + currentImage + "'>").remove();
     }
     
-    
     //load new users data
-
 
     viewer.open(ImageInfo[currentImage]["source"]);
 }
@@ -1436,6 +1456,7 @@ function updateUser() {
         myOrigin.user=username;
     }
 }
+
 function makeSVGInline() {
     if(debug) console.log("> makeSVGInline promise");
 
@@ -1479,6 +1500,7 @@ function updateSliceName() {
     var filename    = params.source.substr(slash_index);
     $("title").text("MicroDraw|"+filename+"|"+currentImage);
 }
+
 function initShortCutHandler() {
     $(document).keydown(function(e) {
         var key=[];
@@ -1495,6 +1517,7 @@ function initShortCutHandler() {
         }
     });
 }
+
 function shortCutHandler(key,callback) {
     var key=isMac?key.mac:key.pc;
     var arr=key.split(" ");
@@ -1613,13 +1636,10 @@ function loadConfiguration() {
     });
 
     return def.promise();
-
-
 }
 
 function initMicrodraw() {
-    if(debug)
-    	console.log("> initMicrodraw promise");
+    if(debug) console.log("> initMicrodraw promise");
 
     var def=$.Deferred();
 
@@ -1720,9 +1740,9 @@ function initMicrodraw() {
 
     return def.promise();
 }
+
 function initMicrodraw2(obj) {
-	if(debug)
-        console.log("json file:",obj);
+	if(debug) console.log("json file:",obj);
 
 	// for loading the bigbrain
 	if (obj.tileCodeY) {
@@ -1797,9 +1817,9 @@ function initMicrodraw2(obj) {
 		{tracker: 'viewer', handler: 'dragEndHandler', hookHandler: dragEndHandler}
 	]});
 
-	if(debug)
-		console.log("< initMicrodraw2 resolve: success");
+	if(debug) console.log("< initMicrodraw2 resolve: success");
 }
+
 function toggleMenu () {
     if ( $('#menuBar').css('display') == 'none' ) {
         $('#menuBar').css('display', 'block');
