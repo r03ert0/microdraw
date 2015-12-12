@@ -76,6 +76,17 @@ function newRegion(arg, imageNumber) {
 		el.on("touchstart",handleRegionTap);
 
 	}
+
+     // Select region name in list
+    $("#regionList > .region-tag").each(function(i){
+        $(this).addClass("deselected");
+        $(this).removeClass("selected");
+    });
+
+    var tag=$("#regionList > .region-tag#"+reg.uid);
+    $(tag).removeClass("deselected");
+    $(tag).addClass("selected");
+
 	// push the new region to the Regions array
 	ImageInfo[imageNumber]["Regions"].push(reg);
 	return reg;
@@ -665,6 +676,13 @@ function simplify() {
 
 var currentColorRegion;
 
+function pad(number, length) { 
+    var str = '' + number; 
+    while (str.length < length) 
+        str = '0' + str; 
+    return str; 
+}
+
 function annotationStyle(reg) {
     console.log(reg.path.fillColor);
     if(region!==null) {
@@ -676,12 +694,12 @@ function annotationStyle(reg) {
         $('#alphaSlider').val(alpha*100);
         $('#alphaFill').val(parseInt(alpha*100));
 
-        if ($('#colorSelector').css('display') == 'none') {
-
-            var hexColor = '#' + ( reg.path.fillColor.red * 255 ).toString(16) + ( reg.path.fillColor.green * 255 ).toString(16) + ( reg.path.fillColor.blue * 255 ).toString(16);
-
-            $('#fillColorPicker').val( hexColor );
+        var hexColor = '#' + pad(( reg.path.fillColor.red * 255 ).toString(16),2) + pad(( reg.path.fillColor.green * 255 ).toString(16),2) + pad(( reg.path.fillColor.blue * 255 ).toString(16),2);
         
+        if(debug) console.log(hexColor);
+        $('#fillColorPicker').val( hexColor );
+
+        if ($('#colorSelector').css('display') == 'none') {
             $('#colorSelector').css('display', 'block');
         }
         else {
