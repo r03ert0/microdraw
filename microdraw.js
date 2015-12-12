@@ -989,6 +989,8 @@ function cmdPaste() {
         reg.path=new paper.Path();
         reg.path.importJSON(copyRegion.path);
         reg.path.fullySelected=true;
+        var color=regionHashColor(reg.name);
+        reg.path.fillColor='rgba('+color.red+','+color.green+','+color.blue+',0.5)';
         newRegion({name:copyRegion.name,path:reg.path});
     }
     paper.view.draw();
