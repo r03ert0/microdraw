@@ -674,6 +674,18 @@ function simplify() {
 }
 
 
+function flipRegion(reg) {
+    var i;
+    for(i in ImageInfo[currentImage]["Regions"]) {
+        if(ImageInfo[currentImage]["Regions"][i].path.selected) {
+            ImageInfo[currentImage]["Regions"][i].path.scale(-1, 1);
+        }
+    }
+    paper.view.draw();
+}
+
+
+
 var currentColorRegion;
 
 function pad(number, length) { 
@@ -1024,6 +1036,10 @@ function toolSelection(event) {
             break;
         case "simplify":
             simplify(region);
+            backToPreviousTool(prevTool);
+            break;
+        case "flip":
+            flipRegion(region);
             backToPreviousTool(prevTool);
             break;
         case "closeMenu":
