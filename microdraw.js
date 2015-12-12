@@ -408,16 +408,22 @@ function doublePressOnRegion(event) {
     event.stopPropagation();
     event.preventDefault();
 
-    if (config.drawingEnabled) {
-        if (config.regionOntology == true) {
-        regionPicker(this);
-        }
-        else {
-            var name=prompt("Region name");
-            if (name != null) {
-                changeRegionName(findRegionByUID(this.id), name);
+    if (event.clientX > 20) {
+        if (config.drawingEnabled) {
+            if (config.regionOntology == true) {
+            regionPicker(this);
+            }
+            else {
+                var name=prompt("Region name");
+                if (name != null) {
+                    changeRegionName(findRegionByUID(this.id), name);
+                }
             }
         }
+    }
+    else {
+        var reg = findRegionByUID(this.id);
+        toggleRegion(reg);
     }
 }
 
