@@ -1125,7 +1125,7 @@ function microdrawDBSave() {
         var h=hash(JSON.stringify(value.Regions)).toString(16);
         if(debug>1)
             console.log("hash:",h,"original hash:",slice.Hash);
-        if(h==slice.Hash || slice.Hash == undefined) {
+        if(slice.Hash !== undefined && h==slice.Hash) {
             if(debug>1)
                 console.log("No change, no save");
             value.Hash = h;
