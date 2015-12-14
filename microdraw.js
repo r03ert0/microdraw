@@ -665,7 +665,6 @@ function mouseUp() {
     if(debug) console.log("> mouseUp");
 
     if(newRegionFlag==true){
-        region.path.simplify(2.5);
         region.path.closed=true;
         region.path.fullySelected = true;
     }
@@ -678,8 +677,10 @@ function simplify() {
     if(region!==null) {
         if(debug) console.log("> simplifying region path");
 
-        region.path.fullySelected = true;
-        region.path.simplify(2);
+        var orig_segments=region.path.segments.length;
+        region.path.simplify();
+        var final_segments=region.path.segments.length;
+        console.log(parseInt(final_segments/orig_segments*100)+"% segments conserved");
         paper.view.draw();
     }
 }
@@ -1391,7 +1392,7 @@ function initAnnotationOverlay(data) {
 
     /* RT: commenting this line out solves the image size issues */
        // set size of the current overlay to match the size of the current image
-       magicV = viewer.world.getItemAt(0).getContentSize().x;
+       magicV = viewer.world.getItemAt(0).getContentSize().x/100;
 
     transform();
 }
