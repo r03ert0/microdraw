@@ -1,5 +1,5 @@
 //(function() {                   // force everything local.
-var debug=true;
+var debug=false;
 
 var dbroot="http://"+localhost+"/microdraw/php/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])

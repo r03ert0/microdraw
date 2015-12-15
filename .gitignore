@@ -3,26 +3,26 @@ _rsrc
 
 bigbrain
 macaque
+doc
 
-final.zip
-node_modules
-
-
-php/base.php
-
-final.zip
-node_modules
-
-php/base.php
-
-
-base.js
 bigbrain/bigbrain.json
 bigbrain.json
-microdrawNotes.txt
-documentation
-.*
-!.gitignore
-data
+
+final.zip
+node_modules
+
+php/base.php
+
+base.js
+
+microdraw_me.js
 
 configuration.json
+
+microdrawNotes.txt
+
+favicon.ico
+.*
+!.gitignore
+
+data
