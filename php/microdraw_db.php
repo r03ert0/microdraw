@@ -86,11 +86,11 @@ function loadLast($args)
 		." myKey = '".$args["key"]."'"
 		." ORDER BY myTimestamp DESC LIMIT 1";
 	$result = mysqli_query($connection,$q);
-
-	header('Content-Type: application/text');
-	$row = mysqli_fetch_assoc($result);
-	echo json_encode($row);
-
+	if(mysqli_num_rows($result)>0) {
+		header('Content-Type: application/text');
+		$row = mysqli_fetch_assoc($result);
+		echo json_encode($row);
+	}
 	mysqli_free_result($result);
 }
 function remote_address()

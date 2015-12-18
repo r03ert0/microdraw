@@ -1,5 +1,5 @@
 //(function() {                   // force everything local.
-var debug=false;
+var debug=0;
 
 var dbroot="http://"+localhost+"/microdraw/php/microdraw_db.php";
 var ImageInfo={};             // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. ImageInfo[imageOrder[viewer.current_page()]])
@@ -193,7 +193,7 @@ function hash(str) {
 }
 
 function regionHashColor(name) {
-    if(debug) console.log("> regionHashColor");
+    //if(debug) console.log("> regionHashColor");
 
     var color={};
     var h=hash(name);
@@ -209,7 +209,7 @@ function regionHashColor(name) {
 }
 
 function regionTag(name,uid) {
-    if(debug) console.log("> regionTag");
+    //if(debug) console.log("> regionTag");
 
     var color=regionHashColor(name);
     var str;
@@ -338,13 +338,13 @@ function updateRegionList() {
     Interaction: mouse and tap
 */
 function clickHandler(event){
-    if(debug) console.log("> clickHandler");
+    //if(debug) console.log("> clickHandler");
 
     event.stopHandlers=!navEnabled;
 }
 
 function pressHandler(event){
-    if(debug) console.log("> pressHandler");
+    //if(debug) console.log("> pressHandler");
 
     if(!navEnabled) {
         event.stopHandlers = true;
@@ -545,19 +545,41 @@ function mouseDown(x,y) {
                     }
                 }
                 else if (selectedTool=="splitregion") {
+                    /*selected region is prevRegion! 
+                    region is the region that should be split based on prevRegion
+                    newRegionPath is outlining that part of region which has not been overlaid by prevRegion
+                    i.e. newRegion is what was region
+                    and prevRegion color should go to the other part*/
                     if(prevRegion) {
+                        var prevColor= prevRegion.path.fillColor; 
+                        //color of the overlaid part
+                        var color= region.path.fillColor;
+                        
                         var newPath=region.path.divide(prevRegion.path);
+                        
                         removeRegion(prevRegion);
+                        
                         region.path.remove();
+                                                
                         region.path=newPath;
+                        var newReg;
                         for(i=0;i<newPath._children.length;i++)
                         {
-                            if(i==0)
+                            if(i==0) {
                                 region.path=newPath._children[i];
+                            }
                             else {
-                                newRegion({path:newPath._children[i]});
+                                newReg = newRegion({path:newPath._children[i]});
                             }
                         }
+                        
+                        region.path.fillColor= color; 
+                        if ( newReg ) newReg.path.fillColor = prevColor;
+
+                        updateRegionList();
+                        selectRegion( region );
+                        paper.view.draw();
+
                         commitMouseUndo();
                     }
                 }
@@ -616,7 +638,7 @@ function mouseDown(x,y) {
 }
 
 function mouseDrag(x,y,dx,dy) {
-    if(debug) console.log("> mouseDrag");
+    //if(debug) console.log("> mouseDrag");
 
     // transform screen coordinate into world coordinate
     var point=paper.view.viewToProject(new paper.Point(x,y));
@@ -1174,6 +1196,8 @@ function microdrawDBLoad() {
 	}).success(function(data) {
 		var	i,obj,reg;
 		annotationLoadingFlag=false;
+        if(data.length==0)
+            return;
 		
 		// if the slice that was just loaded does not correspond to the current slice,
 		// do not display this one and load the current slice.
@@ -1189,7 +1213,8 @@ function microdrawDBLoad() {
 		}
 	
 		// parse the data and add to the current canvas
-		obj=JSON.parse(data);
+		// console.log("[",data,"]");
+        obj=JSON.parse(data);
 		if(obj) {
 			obj=JSON.parse(obj.myValue);
 			for(i=0;i<obj.Regions.length;i++) {
@@ -1316,8 +1341,7 @@ function loadPreviousImage() {
 
 
 function resizeAnnotationOverlay() {
-    if(debug)
-        console.log("> resizeAnnotationOverlay");
+    //if(debug) console.log("> resizeAnnotationOverlay");
 
     var width=$("body").width();
     var height=$("body").height();
@@ -1327,8 +1351,7 @@ function resizeAnnotationOverlay() {
 }
 
 function initAnnotationOverlay(data) {
-    if(debug)
-        console.log("> initAnnotationOverlay");
+    //if(debug) console.log("> initAnnotationOverlay");
     
     // do not start loading a new annotation if a previous one is still being loaded
     if(annotationLoadingFlag==true) {
@@ -1398,7 +1421,7 @@ function initAnnotationOverlay(data) {
 }
 
 function transform() {
-    if(debug) console.log("> transform");
+    //if(debug) console.log("> transform");
 
     var z=viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
     var sw=viewer.source.width;
