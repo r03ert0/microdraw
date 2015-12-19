@@ -212,7 +212,7 @@ function regionHashColor(name) {
 }
 
 function regionTag(name,uid) {
-    //if(debug) console.log("> regionTag");
+    //if( debug ) console.log("> regionTag");
 
     var str;
     var color = regionHashColor(name);
@@ -221,35 +221,29 @@ function regionTag(name,uid) {
         var mult = 1.0;
         if( reg ) {
             mult = 255;
-            //console.log( "color 1");
             color = reg.path.fillColor;
         }
         else {
-            //console.log( "color 2");
             color = regionHashColor(name);
         }
-        //console.log(color);
-        //console.log(color.red + ", " + color.green + ", " + color.blue);
-        //console.log(color.red*mult + ", " + color.green*mult + ", " + color.blue*mult);
-        str = [ "<div class='region-tag' id='"+uid+"' style='padding:2px'>",
-                "<img class='eye' title='Region visible' id='eye_"+uid+"' src='img/eyeOpened.svg' />",
+        str = [ "<div class='region-tag' id='" + uid + "' style='padding:2px'>",
+                "<img class='eye' title='Region visible' id='eye_" + uid + "' src='img/eyeOpened.svg' />",
                 "<div class='region-color'",
                 "style='background-color:rgba(",
                 parseInt(color.red*mult),",",parseInt(color.green*mult),",",parseInt(color.blue*mult),",0.67",
                 ")'></div>",
-                "<span class='region-name'>"+name+"</span>",
+                "<span class='region-name'>" + name + "</span>",
                 "</div>",
                 ].join(" ");
     }
     else {
         color = regionHashColor(name);
-        //console.log( "color 3");
         str = [ "<div class='region-tag' style='padding:2px'>",
                 "<div class='region-color'",
                 "style='background-color:rgba(",
                 color.red,",",color.green,",",color.blue,",0.67",
                 ")'></div>",
-                "<span class='region-name'>"+name+"</span>",
+                "<span class='region-name'>" + name + "</span>",
                 "</div>",
                 ].join(" ");
     }
@@ -512,7 +506,7 @@ function mouseDown(x,y) {
 
     handle = null;
 
-    switch(selectedTool) {
+    switch( selectedTool ) {
         case "select":
         case "addpoint":
         case "delpoint":
@@ -577,6 +571,7 @@ function mouseDown(x,y) {
                         region.path.remove();
                         region.path = newPath;
                         commitMouseUndo();
+                        backToSelect();
                     }
                 }
                 else if( selectedTool == "delregion" ) {
@@ -585,7 +580,9 @@ function mouseDown(x,y) {
                         removeRegion(prevRegion);
                         prevRegion.path.remove();
                         newRegion({path:newPath});
+
                         commitMouseUndo();
+                        backToSelect();
                     }
                 }
                 else if( selectedTool == "splitregion" ) {
@@ -598,13 +595,11 @@ function mouseDown(x,y) {
                         var prevColor = prevRegion.path.fillColor; 
                         //color of the overlaid part
                         var color = region.path.fillColor;
-                        
                         var newPath = region.path.divide(prevRegion.path);
                         
                         removeRegion(prevRegion);
-                        
                         region.path.remove();
-                                                
+
                         region.path = newPath;
                         var newReg;
                         for( i = 0; i < newPath._children.length; i++ )
@@ -616,17 +611,16 @@ function mouseDown(x,y) {
                                 newReg = newRegion({path:newPath._children[i]});
                             }
                         }
-                        
                         region.path.fillColor = color; 
                         if( newReg ) {
                             newReg.path.fillColor = prevColor;
                         }
-
                         updateRegionList();
                         selectRegion(region);
                         paper.view.draw();
 
                         commitMouseUndo();
+                        backToSelect();
                     }
                 }
                 break;
@@ -1030,6 +1024,13 @@ function backToPreviousTool(prevTool) {
     },500);
 }
 
+function backToSelect() {
+    setTimeout(function() {
+        selectedTool = "select";
+        selectTool()
+    },500);
+}
+
 /**
  * This function deletes the currently selected object.
  */
@@ -1087,10 +1088,10 @@ function toolSelection(event) {
 
     switch(selectedTool) {
         case "select":
-        case "addregion":
-        case "delregion":
         case "addpoint":
         case "delpoint":
+        case "addregion":
+        case "delregion":
         case "draw":
         case "rotate":
         case "draw-polygon":
@@ -1123,19 +1124,23 @@ function toolSelection(event) {
             break;
         case "copy":
             cmdCopy();
-            backToPreviousTool(prevTool);
+            //backToPreviousTool(prevTool);
+            backToSelect();
             break;
         case "paste":
             cmdPaste();
-            backToPreviousTool(prevTool);
+            //backToPreviousTool(prevTool);
+            backToSelect();
             break;
         case "simplify":
             simplify(region);
-            backToPreviousTool(prevTool);
+            //backToPreviousTool(prevTool);
+            backToSelect();
             break;
         case "flip":
             flipRegion(region);
-            backToPreviousTool(prevTool);
+            //backToPreviousTool(prevTool);
+            backToSelect();
             break;
         case "closeMenu":
             toggleMenu();
