@@ -570,6 +570,9 @@ function mouseDown(x,y) {
                         removeRegion(prevRegion);
                         region.path.remove();
                         region.path = newPath;
+                        updateRegionList();
+                        selectRegion(region);
+                        paper.view.draw();
                         commitMouseUndo();
                         backToSelect();
                     }
@@ -580,7 +583,9 @@ function mouseDown(x,y) {
                         removeRegion(prevRegion);
                         prevRegion.path.remove();
                         newRegion({path:newPath});
-
+                        updateRegionList();
+                        selectRegion(region);
+                        paper.view.draw();
                         commitMouseUndo();
                         backToSelect();
                     }
