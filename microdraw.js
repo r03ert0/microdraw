@@ -33,7 +33,7 @@ var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
 */
 function newRegion(arg, imageNumber) {
 	if( debug ) console.log("> newRegion");
-	var reg = {};
+    var reg = {};
 	
 	reg.uid = regionUniqueID();
 	if( arg.name ) {
@@ -61,7 +61,7 @@ function newRegion(arg, imageNumber) {
 		// append region tag to regionList
 		var el = $(regionTag(reg.name,reg.uid));
 		$("#regionList").append(el);
-	
+
 		// handle single click on computers
 		el.click(singlePressOnRegion);
 	
@@ -88,7 +88,7 @@ function newRegion(arg, imageNumber) {
 
 	// push the new region to the Regions array
 	ImageInfo[imageNumber]["Regions"].push(reg);
-	return reg;
+    return reg;
 }
 
 function removeRegion(reg, imageNumber) {
@@ -144,10 +144,15 @@ function findRegionByUID(uid) {
     if( debug ) console.log("> findRegionByUID");
 
     var i;
-    console.log( uid );
-    console.log( ImageInfo );
+    if( debug > 2 ) console.log( "look for uid: " + uid);
+    // if( debug > 2 ) console.log( ImageInfo );
+    if( debug > 2 ) console.log( "region array lenght: " + ImageInfo[currentImage]["Regions"].length );
+
     for( i = 0; i < ImageInfo[currentImage]["Regions"].length; i++ ) {
+        
         if( ImageInfo[currentImage]["Regions"][i].uid == uid ) {
+            if( debug > 2 ) console.log( "region " + ImageInfo[currentImage]["Regions"][i].uid + ": " );
+            if( debug > 2 ) console.log( ImageInfo[currentImage]["Regions"][i] );
             return ImageInfo[currentImage]["Regions"][i];
         }
     }
@@ -349,17 +354,30 @@ function updateRegionList() {
     }
 }
 
+function checkRegionSize(reg) {
+    if( reg.path.length > 3 ) {
+        return;
+    }
+    else {
+        removeRegion(region, currentImage);
+    }
+}
+
+
 /***2
     Interaction: mouse and tap
 */
 function clickHandler(event){
-    //if(debug) console.log("> clickHandler");
+    if( debug ) console.log("> clickHandler");
 
-    event.stopHandlers =! navEnabled;
+    event.stopHandlers = !navEnabled;
+    if( selectedTool == "draw" ) {
+        checkRegionSize(region);
+    }
 }
 
 function pressHandler(event){
-    //if(debug) console.log("> pressHandler");
+    if( debug ) console.log("> pressHandler");
 
     if( !navEnabled ) {
         event.stopHandlers = true;
@@ -647,6 +665,7 @@ function mouseDown(x,y) {
             region = newRegion({path:new paper.Path({segments:[point]})});
             // signal that a new region has been created for drawing
             newRegionFlag = true;
+
             commitMouseUndo();
             break;
         }
@@ -731,7 +750,7 @@ function mouseDrag(x,y,dx,dy) {
 function mouseUp() {
     if( debug ) console.log("> mouseUp");
 
-    if( newRegionFlag == true ){
+    if( newRegionFlag == true ) {  
         region.path.closed = true;
         region.path.fullySelected = true;
     }
