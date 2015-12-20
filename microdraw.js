@@ -753,6 +753,11 @@ function mouseUp() {
     if( newRegionFlag == true ) {  
         region.path.closed = true;
         region.path.fullySelected = true;
+        // to delete all unnecessary segments while preserving the form of the region to make it modifiable; & adding handles to the segments
+        var orig_segments = region.path.segments.length;
+        region.path.simplify(0);
+        var final_segments = region.path.segments.length;
+        if( debug > 2 ) console.log( parseInt(final_segments/orig_segments*100) + "% segments conserved" );
     }
     paper.view.draw();
 }
