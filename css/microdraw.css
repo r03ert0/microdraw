@@ -19,7 +19,6 @@ html,body {
 	position:absolute;
 	width:200px;
 	height:150px;
-	/*height:157px; if in configuration.json "useDatabase":false;*/
 	top:0px;
 	left:0px;
 	z-index:10; 
@@ -49,7 +48,6 @@ html,body {
 	height: 100%;
 	top:0;
 	left:0;
-	/*bottom:0px; if you want the left side transparent grey all the way down*/
 	background-color:rgba(200,200,200,0.5);
 	z-index:10;
 	display:block;
@@ -88,6 +86,63 @@ html,body {
 	bottom:0px;
 	overflow-y:scroll;
 }
+
+#colorSelector {
+	position:absolute;
+	width:170px;
+	height:8.5em;
+	top:371px;
+	left:200px;
+	background-color:rgba(200,200,200,0.5);
+	display:none;
+	z-index:10;
+}
+#fillColorPicker {
+	position:absolute;
+	width:4.95em;
+	height:1.5em;
+	right:0px;
+	vertical-align:middle;
+	background-color:rgba(255,255,255,0.7);
+	border:thin solid lightgrey;
+	border-radius:5px;
+    box-shadow: none !important;
+	z-index:10;
+}
+#alphaSlider {
+	width:7.5em;
+	vertical-align:middle;
+}
+#alphaFill {
+	position:absolute;
+	right:0px;
+	width:2.15em;
+	vertical-align:middle;
+	text-align:right;
+	padding-right:5px;
+	border-radius:5px;
+	border:thin solid lightgrey;
+	background-color:rgba(255,255,255,0.7);
+}
+#selectStrokeColor {
+	/*width:4.4em;*/
+	position:absolute;
+	/*left:89px;*/
+	right:0px;
+	border-radius:0px;
+	border:thin solid lightgrey;
+	background-color:rgba(255,255,255,0.7);
+}
+#okStrokeColor {
+	position:absolute;
+	right:0px;
+	width:2.15em;
+	text-align:right;
+	border-radius:5px;
+	border:thin solid lightgrey;
+	background-color:rgba(255,255,255,0.7);
+}
+
 #regionPicker {
 	position:absolute;
 	width:200px;
@@ -109,6 +164,11 @@ html,body {
 	border:thin solid grey;
 	display:inline-block;
 	vertical-align:middle;
+}
+.eye {
+	display:inline-block;
+	vertical-align:middle;
+	z-index:10;
 }
 .region-tag.selected {
 	background-color:rgba(255,255,255,0.75);

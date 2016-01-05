@@ -50,6 +50,7 @@
 				<img class="button" id="delregion"    title="Subtraction of regions" src="img/subtract.svg" />
 				<img class="button" id="splitregion"  title="Split region"           src="img/split.svg" />
 				<img class="button" id="rotate"       title="Rotate region"          src="img/rotate.svg" />
+				<img class="button" id="flip"         title="Flip region"            src="img/flip.svg" />
 			</div>
 			<div class="buttonGroup">
 				<img class="button" id="save"        title="Save annotations"       src="img/save.svg" />
@@ -69,8 +70,27 @@
 	</div>
 </div>
 
+<div id="colorSelector">
+	stroke color
+	<select id="selectStrokeColor" onChange="onSelectStrokeColor();">
+		<option value="0">black</option>
+		<option value="1">white</option>
+		<option value="2">red</option>
+		<option value="3">green</option>
+		<option value="4">blue</option>
+		<option value="5">yellow</option>
+	</select>
+	<br>
+	<br>
+	fill color
+	<input type="color" id="fillColorPicker" value="#ff0000" onChange="onFillColorPicker(this.value);" >
+	<br>
+	<br>
+	&alpha;<input type="range" min="0" max="100" id="alphaSlider" onInput="onAlphaSlider(this.value);" ><input id="alphaFill" onInput="onAlphaInput(this.value);" >
+	<br>
+	<br>
+	<input type="button" id="okStrokeColor" value="ok" onClick="setRegionColor();">
 </div>
-
 
 <!-- Region Picker -->
 <div id="regionPicker">
@@ -78,13 +98,6 @@
 
 <!-- OpenSeadragon viewer -->
 <div id="openseadragon1" style="width:100%">
-<div id="openseadragon" style="margin-left:200px">
-<div id="openseadragonx" style="float:left;width:30%;margin-left:8px">
-</div>
-<div id="openseadragony" style="float:left;width:30%;margin-left:8px">
-</div>
-<div id="openseadragonz" style="float:left;width:30%;margin-left:8px">
-</div>
 </div>
 
 <!-- naat logo -->
@@ -103,6 +116,7 @@
 <script src="base.js"></script>
 <script src="microdraw.js"></script>
 </body>
+
 </html>
 
 

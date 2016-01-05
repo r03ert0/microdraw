@@ -36,7 +36,7 @@ if(isset($_GET["action"]))
 }
 function user_check()
 {
-    if($_SESSION['LoggedIn']==1)
+    if(isset($_SESSION['LoggedIn']) and $_SESSION['LoggedIn']==1)
         echo '{"response":"Yes", "username":"'.$_SESSION['Username'].'"}';
     else
 	    echo '{"response":"No"}';
