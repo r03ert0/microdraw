@@ -34,7 +34,7 @@ html,body {
 	position:absolute;
 	top:2px;
 	width:32px;
-	height:32px;
+	height:2em;
 }
 #openMenu {
 	left:2px;
@@ -53,8 +53,9 @@ html,body {
 	display:block;
 }
 #login {
-	height:1.5em;
+	height:2em;
 	width:100%;
+	vertical-align:middle;
 	background-color:rgba(250,250,250,0.0);
 }
 
@@ -84,7 +85,7 @@ html,body {
 	border:0;
 	margin-bottom:0;
 	bottom:0px;
-	overflow-y:scroll;
+	overflow-y:auto;
 }
 
 #colorSelector {
