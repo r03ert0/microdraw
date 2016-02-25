@@ -91,7 +91,7 @@ html,body {
 #colorSelector {
 	position:absolute;
 	width:170px;
-	height:8.5em;
+    height:11.5em;
 	top:371px;
 	left:200px;
 	background-color:rgba(200,200,200,0.5);

@@ -914,14 +914,27 @@ function onAlphaSlider(value) {
     $('#alphaFill').val(value);
     var reg = currentColorRegion;
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
+    paper.view.draw();
 }
 
 function onAlphaInput(value) {
     $('#alphaSlider').val(value);
     var reg = currentColorRegion;
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
+    paper.view.draw();
 }
 
+function onStrokeWidthDec() {
+    var reg = currentColorRegion;
+    reg.path.strokeWidth = Math.max(region.path.strokeWidth - 1, 1);
+    paper.view.draw();
+}
+
+function onStrokeWidthInc() {
+    var reg = currentColorRegion;
+    reg.path.strokeWidth = Math.min(region.path.strokeWidth + 1, 10);
+    paper.view.draw();
+}
 
 /*** UNDO ***/
 
