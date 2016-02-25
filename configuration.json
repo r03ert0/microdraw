@@ -3,5 +3,6 @@
     "hideToolbar":false,
     "regionOntology":true,
     "drawingEnabled":true,
-    "removeTools":[]
+    "removeTools":[],
+    "multiImageSave":false
 }

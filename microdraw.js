@@ -1208,6 +1208,9 @@ function microdrawDBSave() {
     var savedSlices = "Saving slices: ";
 
     for( var sl in ImageInfo ) {
+        if ((config.multiImageSave == false) && (sl != currentImage)){
+            continue;
+        }
         // configure value to be saved
         var slice = ImageInfo[sl];
         var value = {};
@@ -1434,7 +1437,7 @@ function loadPreviousImage() {
 
 
 function resizeAnnotationOverlay() {
-    //if( debug ) console.log("> resizeAnnotationOverlay");
+    if( debug ) console.log("> resizeAnnotationOverlay");
 
     var width = $("body").width();
     var height = $("body").height();
@@ -1444,14 +1447,14 @@ function resizeAnnotationOverlay() {
 }
 
 function initAnnotationOverlay(data) {
-    //if( debug ) console.log("> initAnnotationOverlay");
+    if( debug ) console.log("> initAnnotationOverlay");
     
     // do not start loading a new annotation if a previous one is still being loaded
     if(annotationLoadingFlag==true) {
         return;
     }
     
-    console.log("new overlay size" + viewer.world.getItemAt(0).getContentSize());
+    //console.log("new overlay size" + viewer.world.getItemAt(0).getContentSize());
 
     /*
        Activate the paper.js project corresponding to this slice. If it does not yet
@@ -1668,9 +1671,13 @@ function initSlider(min_val, max_val, step, default_value) {
             slider_onchange(this.value);
         });
 
-        slider.on("input", function() {
-            slider_onchange(this.value);
-        });
+        // Input event can only be used when not using database, otherwise the annotations will be loaded several times
+        // TODO fix the issue with the annotations for real
+        if (config.useDatabase == false) {
+            slider.on("input", function() {
+                slider_onchange(this.value);
+            });
+        }
     }
 }
 
