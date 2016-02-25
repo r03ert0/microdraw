@@ -466,7 +466,7 @@ function doublePressOnRegion(event) {
                 regionPicker(this);
                 }
                 else {
-                    var name = prompt("Region name");
+                    var name = prompt("Region name", findRegionByUID(this.id).name);
                     if( name != null ) {
                         changeRegionName(findRegionByUID(this.id), name);
                     }
