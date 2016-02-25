@@ -1205,6 +1205,7 @@ function microdrawDBSave() {
 
     // key
     var key = "regionPaths";
+    var savedSlices = "Saving slices: ";
 
     for( var sl in ImageInfo ) {
         // configure value to be saved
@@ -1225,13 +1226,13 @@ function microdrawDBSave() {
             console.log("hash:",h,"original hash:",slice.Hash);
         // if the slice hash is undefined, this slice has not yet been loaded. do not save anything for this slice
         if( slice.Hash == undefined || h==slice.Hash ) {
-        //if( slice.Hash !== undefined && h==slice.Hash ) {
             if( debug > 1 )
                 console.log("No change, no save");
             value.Hash = h;
             continue;
         }
         value.Hash = h;
+        savedSlices += sl.toString() + " ";
 
         // post data to database
         (function(sl, h) {
@@ -1260,6 +1261,10 @@ function microdrawDBSave() {
             }
         });
         })(sl, h);
+        
+        //show dialog box with timeout
+        $('#saveDialog').html(savedSlices).fadeIn();    
+        setTimeout(function() { $("#saveDialog").fadeOut(500);},2000);
     }
 }
 

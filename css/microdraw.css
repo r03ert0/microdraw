@@ -57,6 +57,19 @@ html,body {
 	width:100%;
 	background-color:rgba(250,250,250,0.0);
 }
+#saveDialog {
+    display: none;
+    position:absolute;
+    top:20px;
+    left:50%;
+    background-color:white;
+    color:black;
+    text-align:center;
+	border:thin solid lightgrey;
+    z-index:20;
+    line-height:20px;
+    padding:20px;
+}
 
 .buttonGroup {
 	background-color:rgba(127,127,127,0.0);
