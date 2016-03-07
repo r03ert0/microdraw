@@ -47,10 +47,10 @@ function newRegion(arg, imageNumber) {
 	
 	if( arg.path ) {
 		reg.path = arg.path;
-        reg.path.strokeWidth = arg.path.strokeWidth ? arg.path.strokeWidth : 1;
-        reg.path.strokeColor = arg.path.strokeColor ? arg.path.strokeColor : 'black';
+        reg.path.strokeWidth = arg.path.strokeWidth ? arg.path.strokeWidth : config.defaultStrokeWidth;
+        reg.path.strokeColor = arg.path.strokeColor ? arg.path.strokeColor : config.defaultStrokeColor;
 		reg.path.strokeScaling = false;
-		reg.path.fillColor = arg.path.fillColor ? arg.path.fillColor :'rgba('+color.red+','+color.green+','+color.blue+',0.5)';
+		reg.path.fillColor = arg.path.fillColor ? arg.path.fillColor :'rgba('+color.red+','+color.green+','+color.blue+','+config.defaultFillAlpha+')';
 		reg.path.selected = false;
 	}
 
@@ -662,7 +662,9 @@ function mouseDown(x,y) {
                 region.path.selected = false;
             }
             // start a new region
-            region = newRegion({path:new paper.Path({segments:[point]})});
+            var path = new paper.Path({segments:[point]})
+            path.strokeWidth = config.defaultStrokeWidth;
+            region = newRegion({path:path});
             // signal that a new region has been created for drawing
             newRegionFlag = true;
 
@@ -676,8 +678,11 @@ function mouseDown(x,y) {
                 // deselect previously selected region
                 if( region )
                     region.path.selected = false;
-                // Start a new Region with no fill color
-                region = newRegion({path:new paper.Path({segments:[point]})});
+              
+                // Start a new Region with alpha 0
+                var path = new paper.Path({segments:[point]})
+                path.strokeWidth = config.defaultStrokeWidth;
+                region = newRegion({path:path});
                 region.path.fillColor.alpha = 0;
                 region.path.selected = true;
                 drawingPolygonFlag = true;
@@ -914,14 +919,27 @@ function onAlphaSlider(value) {
     $('#alphaFill').val(value);
     var reg = currentColorRegion;
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
+    paper.view.draw();
 }
 
 function onAlphaInput(value) {
     $('#alphaSlider').val(value);
     var reg = currentColorRegion;
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
+    paper.view.draw();
 }
 
+function onStrokeWidthDec() {
+    var reg = currentColorRegion;
+    reg.path.strokeWidth = Math.max(region.path.strokeWidth - 1, 1);
+    paper.view.draw();
+}
+
+function onStrokeWidthInc() {
+    var reg = currentColorRegion;
+    reg.path.strokeWidth = Math.min(region.path.strokeWidth + 1, 10);
+    paper.view.draw();
+}
 
 /*** UNDO ***/
 
@@ -1039,7 +1057,9 @@ function finishDrawingPolygon(closed){
         // finished the drawing of the polygon
         if( closed == true ) {
             region.path.closed = true;
-            region.path.fillColor.alpha = 0.5;
+            region.path.fillColor.alpha = config.defaultFillAlpha;
+        } else {
+            region.path.fillColor.alpha = 0;
         }
         region.path.fullySelected = true;
         //region.path.smooth();
@@ -1863,6 +1883,17 @@ function initMicrodraw2(obj) {
 			eval("ImageInfo[name]['source'].getTileUrl = " + obj.tileSources[i].getTileUrl);
 		}
 	}
+    
+    // set default values for new regions (general configuration)
+    if (config.defaultStrokeColor == undefined) config.defaultStrokeColor = 'black';
+    if (config.defaultStrokeWidth == undefined) config.defaultStrokeWidth = 1;
+    if (config.defaultFillAlpha == undefined) config.defaultFillAlpha = 0.5;
+    // set default values for new regions (per-brain configuration)
+    if (obj.configuration) {
+        if (obj.configuration.defaultStrokeColor != undefined) config.defaultStrokeColor = obj.configuration.defaultStrokeColor;
+        if (obj.configuration.defaultStrokeWidth != undefined) config.defaultStrokeWidth = obj.configuration.defaultStrokeWidth;
+        if (obj.configuration.defaultFillAlpha != undefined) config.defaultFillAlpha = obj.configuration.defaultFillAlpha;
+    }
 	
 	// init slider that can be used to change between slides
 	initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length / 2));
