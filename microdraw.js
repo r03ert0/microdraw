@@ -466,7 +466,7 @@ function doublePressOnRegion(event) {
                 regionPicker(this);
                 }
                 else {
-                    var name = prompt("Region name");
+                    var name = prompt("Region name", findRegionByUID(this.id).name);
                     if( name != null ) {
                         changeRegionName(findRegionByUID(this.id), name);
                     }
@@ -673,7 +673,6 @@ function mouseDown(x,y) {
         }
         case "draw-polygon": {
             // is already drawing a polygon or not?
-            console.log(drawingPolygonFlag);
             if( drawingPolygonFlag == false ) {
                 // deselect previously selected region
                 if( region )
@@ -686,6 +685,7 @@ function mouseDown(x,y) {
                 region.path.fillColor.alpha = 0;
                 region.path.selected = true;
                 drawingPolygonFlag = true;
+                commitMouseUndo();
             } else {
                 var hitResult = paper.project.hitTest(point, {tolerance:10, segments:true});
                 if( hitResult && hitResult.item == region.path && hitResult.segment.point == region.path.segments[0].point ) {
@@ -695,6 +695,7 @@ function mouseDown(x,y) {
                 } else {
                     // add point to region
                     region.path.add(point);
+                    commitMouseUndo();
                 }
             }
             break;
@@ -973,7 +974,7 @@ function cmdRedo() {
  * Return a complete copy of the current state as an undo object.
  */
 function getUndo() {
-    var undo = { imageNumber: currentImage, regions: [] };
+    var undo = { imageNumber: currentImage, regions: [], drawingPolygonFlag: drawingPolygonFlag };
     var info = ImageInfo[currentImage]["Regions"];
 
     for( var i = 0; i < info.length; i++ ) {
@@ -1026,8 +1027,9 @@ function applyUndo(undo) {
 		project.addChild(path);
 		path.importJSON(el.json);
 		reg = newRegion({name:el.name, path:path}, undo.imageNumber);
-		reg.path.selected = el.selected;
-		reg.path.fullySelected = el.fullySelected;
+        // here order matters. if fully selected is set after selected, partially selected paths will be incorrect
+  		reg.path.fullySelected = el.fullySelected;
+ 		reg.path.selected = el.selected;
 		if( el.selected ) {
 			if( region === null )
 				region = reg;
@@ -1035,6 +1037,7 @@ function applyUndo(undo) {
 				console.log("Should not happen: two regions selected?");
 		}
     }
+    drawingPolygonFlag = undo.drawingPolygonFlag;
 }
 
 /**
@@ -1064,6 +1067,7 @@ function finishDrawingPolygon(closed){
         region.path.fullySelected = true;
         //region.path.smooth();
         drawingPolygonFlag = false;
+        commitMouseUndo();
 }
 
 function backToPreviousTool(prevTool) {
@@ -1225,8 +1229,12 @@ function microdrawDBSave() {
 
     // key
     var key = "regionPaths";
+    var savedSlices = "Saving slices: ";
 
     for( var sl in ImageInfo ) {
+        if ((config.multiImageSave == false) && (sl != currentImage)){
+            continue;
+        }
         // configure value to be saved
         var slice = ImageInfo[sl];
         var value = {};
@@ -1243,15 +1251,19 @@ function microdrawDBSave() {
         var h = hash(JSON.stringify(value.Regions)).toString(16);
         if( debug > 1 )
             console.log("hash:",h,"original hash:",slice.Hash);
-        if( slice.Hash !== undefined && h==slice.Hash ) {
+        // if the slice hash is undefined, this slice has not yet been loaded. do not save anything for this slice
+        if( slice.Hash == undefined || h==slice.Hash ) {
             if( debug > 1 )
                 console.log("No change, no save");
             value.Hash = h;
             continue;
         }
         value.Hash = h;
+        savedSlices += sl.toString() + " ";
 
         // post data to database
+        (function(sl, h) {
+        console.log('saving slice ', sl);
         $.ajax({
             url:dbroot,
             type:"POST",
@@ -1267,12 +1279,19 @@ function microdrawDBSave() {
                 "value":JSON.stringify(value)
             },
             success: function(data) {
-                console.log("< microdrawDBSave resolve: Successfully saved regions:",slice.Regions.length,"slice: " + sl.toString(),"response:",data);
+                console.log("< microdrawDBSave resolve: Successfully saved regions:",ImageInfo[sl].Regions.length,"slice: " + sl.toString(),"response:",data);
+                //update hash
+                ImageInfo[sl].Hash = h;
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.log("< microdrawDBSave resolve: ERROR: " + textStatus + " " + errorThrown,"slice: "+sl.toString());
             }
         });
+        })(sl, h);
+        
+        //show dialog box with timeout
+        $('#saveDialog').html(savedSlices).fadeIn();    
+        setTimeout(function() { $("#saveDialog").fadeOut(500);},2000);
     }
 }
 
@@ -1292,8 +1311,6 @@ function microdrawDBLoad() {
 	}).success(function(data) {
 		var	i,obj,reg;
 		annotationLoadingFlag = false;
-        if( data.length == 0 )
-            return;
 		
 		// if the slice that was just loaded does not correspond to the current slice,
 		// do not display this one and load the current slice.
@@ -1308,6 +1325,13 @@ function microdrawDBLoad() {
 		    return;
 		}
 	
+        // if there is no data on the current slice 
+        // save hash for the image none the less
+        if( data.length == 0 ) {
+            ImageInfo[currentImage]["Hash"] = hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16);
+            return;
+        }
+        
 		// parse the data and add to the current canvas
 		// console.log("[",data,"]");
         obj = JSON.parse(data);
@@ -1437,7 +1461,7 @@ function loadPreviousImage() {
 
 
 function resizeAnnotationOverlay() {
-    //if( debug ) console.log("> resizeAnnotationOverlay");
+    if( debug ) console.log("> resizeAnnotationOverlay");
 
     var width = $("body").width();
     var height = $("body").height();
@@ -1447,14 +1471,14 @@ function resizeAnnotationOverlay() {
 }
 
 function initAnnotationOverlay(data) {
-    //if( debug ) console.log("> initAnnotationOverlay");
+    if( debug ) console.log("> initAnnotationOverlay");
     
     // do not start loading a new annotation if a previous one is still being loaded
     if(annotationLoadingFlag==true) {
         return;
     }
     
-    console.log("new overlay size" + viewer.world.getItemAt(0).getContentSize());
+    //console.log("new overlay size" + viewer.world.getItemAt(0).getContentSize());
 
     /*
        Activate the paper.js project corresponding to this slice. If it does not yet
@@ -1671,9 +1695,13 @@ function initSlider(min_val, max_val, step, default_value) {
             slider_onchange(this.value);
         });
 
-        slider.on("input", function() {
-            slider_onchange(this.value);
-        });
+        // Input event can only be used when not using database, otherwise the annotations will be loaded several times
+        // TODO fix the issue with the annotations for real
+        if (config.useDatabase == false) {
+            slider.on("input", function() {
+                slider_onchange(this.value);
+            });
+        }
     }
 }
 
