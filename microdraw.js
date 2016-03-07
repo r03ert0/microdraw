@@ -798,6 +798,26 @@ function flipRegion(reg) {
     }
 }
 
+function toggleHandles() {
+    console.log("> toggleHandles");
+    if (region != null) {
+        if (region.path.hasHandles()) {
+            if (confirm('Do you really want to remove the handles?')) {
+                var undoInfo = getUndo();
+                region.path.clearHandles();
+                saveUndo(undoInfo);
+            }
+        }
+        else {
+            var undoInfo = getUndo();
+            region.path.smooth();
+            saveUndo(undoInfo);
+        }
+        paper.view.draw();
+    }
+
+}
+
 /*** 
     the following functions serve changing the annotation style
 ***/
@@ -1201,6 +1221,10 @@ function toolSelection(event) {
             break;
         case "openMenu":
             toggleMenu();
+            backToPreviousTool(prevTool);
+            break;
+        case "handle":
+            toggleHandles();
             backToPreviousTool(prevTool);
             break;
     }
