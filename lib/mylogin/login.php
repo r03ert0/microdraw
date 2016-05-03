@@ -8,7 +8,7 @@
 //error_reporting(E_ALL);
 //ini_set('display_errors', 'On');
 
-$rootdir = "/microdraw";
+$rootdir = "/";
 
 include $_SERVER['DOCUMENT_ROOT'].$rootdir."/php/base.php";
 $connection=mysqli_connect($dbhost,$dbuser,$dbpass,$dblogin) or die("ERROR: Can't connect to MySQL DB: " . mysql_error());
