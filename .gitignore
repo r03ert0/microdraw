@@ -3,9 +3,9 @@ _rsrc
 
 bigbrain
 macaque
+vervet
 doc
 
-bigbrain/bigbrain.json
 bigbrain.json
 
 final.zip
@@ -22,7 +22,6 @@ configuration.json
 microdrawNotes.txt
 
 favicon.ico
-.*
-!.gitignore
 
 data
+vervet.zip
