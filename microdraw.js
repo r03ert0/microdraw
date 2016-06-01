@@ -8,6 +8,7 @@ var imageOrder = [];            // names of slices ordered by their openseadrago
 var currentImage = undefined;   // name of the current image
 var prevImage = undefined;      // name of the last image
 var region = null;	            // currently selected region (one element of Regions[])
+var prevColoredRegion = null;   // previous region in annotation style dialog 
 var copyRegion;		            // clone of the currently selected region for copy/paste
 var handle;			            // currently selected control point or handle (if any)
 var selectedTool;	            // currently selected tool
@@ -119,6 +120,7 @@ function selectRegion(reg) {
         if( ImageInfo[currentImage]["Regions"][i] == reg ) {
             reg.path.selected = true;
             reg.path.fullySelected = true;
+            prevColoredRegion = region;
             region = reg;
         } else {
             ImageInfo[currentImage]["Regions"][i].path.selected = false;
@@ -871,6 +873,9 @@ function annotationStyle( reg ) {
     getAnnotationStyle( reg ); 
 
     if( $('#colorSelector').css('display') == 'none' ) {
+        $('#colorSelector').css('display', 'block');
+    }
+    else if( prevColoredRegion !== reg ) {
         $('#colorSelector').css('display', 'block');
     }
     else {
