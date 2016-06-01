@@ -138,6 +138,9 @@ function selectRegion(reg) {
     $(tag).addClass("selected");
 
     if(debug) console.log("< selectRegion");
+
+    // update colorPicker
+    getAnnotationStyle( reg );
 }
 
 function findRegionByUID(uid) {
@@ -831,11 +834,11 @@ function pad(number, length) {
 }
 /*** get current alpha & color values & stroke color values for colorPicker display 
 ***/
-function annotationStyle(reg) {
-    if( debug ) console.log(reg.path.fillColor);
+function getAnnotationStyle( reg ) {
+    if( debug ) console.log( reg.path.fillColor );
 
     if( region !== null ) {
-        if( debug ) console.log("> changing annotation style");
+        if( debug ) console.log( "> changing annotation style" );
         
         currentColorRegion = reg;
         var alpha = reg.path.fillColor.alpha;
@@ -858,14 +861,20 @@ function annotationStyle(reg) {
         else if ( stroke.red == 0 && stroke.green == 0 && stroke.blue == 1 ) $('#selectStrokeColor').val( '4' );
         else if ( stroke.red == 1 && stroke.green == 1 && stroke.blue == 0 ) $('#selectStrokeColor').val( '5' );
         else $('#selectStrokeColor').val( '3' );
+    }
+}
 
 
-        if( $('#colorSelector').css('display') == 'none' ) {
-            $('#colorSelector').css('display', 'block');
-        }
-        else {
-            $('#colorSelector').css('display', 'none');
-        }
+/*** display annotation style dialogue window 
+***/
+function annotationStyle( reg ) {
+    getAnnotationStyle( reg ); 
+
+    if( $('#colorSelector').css('display') == 'none' ) {
+        $('#colorSelector').css('display', 'block');
+    }
+    else {
+        $('#colorSelector').css('display', 'none');
     }
 }
 /*** set picked color & alpha 
