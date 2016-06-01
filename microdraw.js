@@ -829,7 +829,7 @@ function pad(number, length) {
         str = '0' + str; 
     return str; 
 }
-/*** get current alpha & color values for colorPicker display 
+/*** get current alpha & color values & stroke color values for colorPicker display 
 ***/
 function annotationStyle(reg) {
     if( debug ) console.log(reg.path.fillColor);
@@ -846,6 +846,19 @@ function annotationStyle(reg) {
         if( debug ) console.log(hexColor);
         
         $('#fillColorPicker').val( hexColor );
+
+
+        var stroke = reg.path.strokeColor;
+        if( debug ) { 
+            console.log( stroke.red + " " + stroke.green + " " + stroke.blue );
+        }
+        if ( stroke.red == 0 && stroke.green == 0 && stroke.blue == 0 ) $('#selectStrokeColor').val( '0' );
+        else if ( stroke.red == 1 && stroke.green == 1 && stroke.blue == 1 ) $('#selectStrokeColor').val( '1' );
+        else if ( stroke.red == 1 && stroke.green == 0 && stroke.blue == 0 ) $('#selectStrokeColor').val( '2' );
+        else if ( stroke.red == 0 && stroke.green == 0 && stroke.blue == 1 ) $('#selectStrokeColor').val( '4' );
+        else if ( stroke.red == 1 && stroke.green == 1 && stroke.blue == 0 ) $('#selectStrokeColor').val( '5' );
+        else $('#selectStrokeColor').val( '3' );
+
 
         if( $('#colorSelector').css('display') == 'none' ) {
             $('#colorSelector').css('display', 'block');
