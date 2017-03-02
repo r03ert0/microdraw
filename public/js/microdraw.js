@@ -1787,7 +1787,7 @@ function slice_name_onenter(event) {
 function loadConfiguration() {
     var def = $.Deferred();
     // load general microdraw configuration
-    $.getJSON("configuration.json", function(data) {
+    $.getJSON("js/configuration.json", function(data) {
         config = data;
         
         drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint",

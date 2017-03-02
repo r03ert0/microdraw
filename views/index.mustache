@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-	<title>MicroDraw</title>
+	<title>{{title}}</title>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<link rel="stylesheet" href="css/style.css" type="text/css" />
 	<script src="lib/jquery-1.11.0.min.js"></script>
-	<script src="base.js"></script>
+	<script src="js/base.js"></script>
 	<style>input[placeholder]{text-align:center}</style>
 </head>
 <body>
@@ -45,9 +45,9 @@
 				<h2>Datasets</h2>
 				<p>MicroDraw can use ontologies such as <a href="http://neurolex.org">Neurolex</a> to create community curated atlases, but also to annotate staining artefacts. We are currently hosting DeepZoom versions of several macaque brains from the Allen Institute for Brain Research, a 1 micron resolution slice of a human brain from the BigBrain project and a 1 micron resolution slice from a vervet monkey.</p>
  				<ul class="links">
-					<li class="download"><a href="http://{{localhost}}/microdraw.html?source=/bigbrain/bigbrain.json">BigBrain human brain slice</a> (Many thanks to Claude Lepage, Katrin Amunts, Alan Evans)</li>
-					<li class="download"><a href="http://{{localhost}}/microdraw.html?source=/vervet/vervet.json">Vervet monkey brain slice scanned using Polarized Light Imaging</a> (Many thanks to Katrin Amuts, Markus Axer, Roger Woods, Karl Zilles)</li>
-					<li class="download"><a href="http://{{localhost}}/microdraw.html?source=http://umr3571.cnrs.fr/data/macaque/macaque.jsonp">Allen Institute macaque slices</a></li>
+					<li class="download"><a href="%%localhost%%/data?source=/bigbrain/bigbrain.json">BigBrain human brain slice</a> (Many thanks to Claude Lepage, Katrin Amunts, Alan Evans)</li>
+					<li class="download"><a href="%%localhost%%/data?source=/vervet/vervet.json">Vervet monkey brain slice scanned using Polarized Light Imaging</a> (Many thanks to Katrin Amuts, Markus Axer, Roger Woods, Karl Zilles)</li>
+					<li class="download"><a href="%%localhost%%/data?source=http://umr3571.cnrs.fr/data/macaque/macaque.jsonp">Allen Institute macaque slices</a></li>
 				</ul>
 			</section>
 			<section class="column last">
@@ -69,9 +69,12 @@
 	</main>
 	
 	<script>
+
 	$(".download>a").each(function(){
-		$(this).attr('href',$(this).attr('href').replace("{{localhost}}",localhost));	
+		$(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));	
 	})
+
+
 	/*
 	$("#go").click(function(){
 		window.location=localhost+"/microdraw.html?source="+$("input").val();
