@@ -7,6 +7,23 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mustacheExpress = require('mustache-express');
 
+var mongo = require('mongodb');
+var monk = require('monk');
+var MONGO_DB;
+var DOCKER_DB = process.env.DB_PORT;
+var DOCKER_DEVELOP = process.env.DEVELOP;
+if ( DOCKER_DB ) {
+  MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
+} else {
+  MONGO_DB = 'localhost:27017/microdraw'; //process.env.MONGODB;
+}
+var db = monk(MONGO_DB);
+var fs = require('fs');
+db.get('test').insert({that:'other'});
+
+var dirname = __dirname; // local directory
+
+
 var index = require('./routes/index');
 
 var app = express();
@@ -23,6 +40,78 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//{-----passport
+var session = require('express-session');
+var passport = require('passport');
+var GithubStrategy = require('passport-github').Strategy;
+passport.use(new GithubStrategy(
+    JSON.parse(fs.readFileSync(dirname + "/github-keys.json")),
+    function (accessToken, refreshToken, profile, done) {return done(null, profile); }
+));
+app.use(session({
+    secret: "a mi no me gusta la sémola",
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+// add custom serialization/deserialization here (get user from mongo?) null is for errors
+passport.serializeUser(function (user, done) {done(null, user); });
+passport.deserializeUser(function (user, done) {done(null, user); });
+// Simple authentication middleware. Add to routes that need to be protected.
+function ensureAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/');
+}
+app.get('/secure-route-example', ensureAuthenticated, function (req, res) {res.send("access granted"); });
+app.get('/logout', function (req, res) {
+    req.logout();
+    res.redirect(req.session.returnTo || '/');
+    delete req.session.returnTo;
+});
+app.get('/loggedIn', function (req, res) {
+    if (req.isAuthenticated()) {
+        res.send({loggedIn: true, username: req.user.username});
+    } else {
+        res.send({loggedIn: false});
+    }
+});
+// start the GitHub Login process
+app.get('/auth/github',passport.authenticate('github'));
+app.get('/auth/github/callback',
+    passport.authenticate('github', {failureRedirect: '/'}),
+    function (req, res) {
+        // successfully loged in. Check if user is new
+        db.get('user').findOne({nickname: req.user.username}, "-_id")
+            .then(function (json) {
+                if (!json) {
+                    // insert new user
+                    json = {
+                        name: req.user.displayName,
+                        nickname: req.user.username,
+                        url: req.user._json.blog,
+                        brainboxURL: "/user/" + req.user.username,
+                        avatarURL: req.user._json.avatar_url,
+                        joined: (new Date()).toJSON()
+                    };
+                    db.get('user').insert(json);
+                } else {
+                    console.log("Update user data from GitHub");
+                    db.get('user').update({nickname: req.user.username},{$set:{
+                        name: req.user.displayName,
+                        url: req.user._json.blog,
+                        avatarURL: req.user._json.avatar_url
+                    }});
+                }
+            });
+            res.redirect(req.session.returnTo || '/');
+            delete req.session.returnTo;
+    });
+//-----}
+
 
 app.use('/', index);
 app.use('/data', require('./controller/data/'));
@@ -44,5 +133,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 module.exports = app;
