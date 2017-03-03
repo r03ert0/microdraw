@@ -761,7 +761,13 @@ function mouseUp() {
         region.path.fullySelected = true;
         // to delete all unnecessary segments while preserving the form of the region to make it modifiable; & adding handles to the segments
         var orig_segments = region.path.segments.length;
+        
+        var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+        z=3*Math.pow(10,z);
+        region.path.scale(z,z);
         region.path.simplify(0);
+        region.path.scale(1/z,1/z);
+        
         var final_segments = region.path.segments.length;
         if( debug > 2 ) console.log( parseInt(final_segments/orig_segments*100) + "% segments conserved" );
     }
