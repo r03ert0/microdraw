@@ -768,9 +768,11 @@ function mouseUp() {
         var orig_segments = region.path.segments.length;
 				var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
 				var x = 3 * Math.pow(10,z);
+	var previousPosition = region.path.position;
 				region.path.scale(x, x)
         region.path.simplify(0);
 				region.path.scale(1/x, 1/x)
+	region.path.position = previousPosition;
         var final_segments = region.path.segments.length;
         if( debug > 2 ) console.log( parseInt(final_segments/orig_segments*100) + "% segments conserved" );
     }
