@@ -360,8 +360,8 @@ function updateRegionList() {
 }
 
 function checkRegionSize(reg) {
-    if( reg.path.length > 3 ) {
-        return;
+if( reg.path.length > 3 || reg.path.length > 1.2 && viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true)) == 1.1 ) {
+         return;
     }
     else {
         removeRegion(region, currentImage);
@@ -766,7 +766,11 @@ function mouseUp() {
         region.path.fullySelected = true;
         // to delete all unnecessary segments while preserving the form of the region to make it modifiable; & adding handles to the segments
         var orig_segments = region.path.segments.length;
+				var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+				var x = 3 * Math.pow(10,z);
+				region.path.scale(x, x)
         region.path.simplify(0);
+				region.path.scale(1/x, 1/x)
         var final_segments = region.path.segments.length;
         if( debug > 2 ) console.log( parseInt(final_segments/orig_segments*100) + "% segments conserved" );
     }
