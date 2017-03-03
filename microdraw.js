@@ -8,7 +8,7 @@ var imageOrder = [];            // names of slices ordered by their openseadrago
 var currentImage = undefined;   // name of the current image
 var prevImage = undefined;      // name of the last image
 var region = null;	            // currently selected region (one element of Regions[])
-var prevColoredRegion = null;   // previous region in annotation style dialog 
+var prevColoredRegion = null;   // previous region in annotation style dialog
 var copyRegion;		            // clone of the currently selected region for copy/paste
 var handle;			            // currently selected control point or handle (if any)
 var selectedTool;	            // currently selected tool
@@ -35,7 +35,7 @@ var isIOS = navigator.platform.match(/(iPhone|iPod|iPad)/i)?true:false;
 function newRegion(arg, imageNumber) {
 	if( debug ) console.log("> newRegion");
     var reg = {};
-	
+
 	reg.uid = regionUniqueID();
 	if( arg.name ) {
 		reg.name = arg.name;
@@ -45,7 +45,7 @@ function newRegion(arg, imageNumber) {
 	}
 
 	var color = regionHashColor(reg.name);
-	
+
 	if( arg.path ) {
 		reg.path = arg.path;
         reg.path.strokeWidth = arg.path.strokeWidth ? arg.path.strokeWidth : config.defaultStrokeWidth;
@@ -65,10 +65,10 @@ function newRegion(arg, imageNumber) {
 
 		// handle single click on computers
 		el.click(singlePressOnRegion);
-	
+
 		// handle double click on computers
 		el.dblclick(doublePressOnRegion);
-	
+
 		// handle single and double tap on touch devices
 		/*
 		  RT: it seems that a click event is also fired on touch devices,
@@ -94,11 +94,11 @@ function newRegion(arg, imageNumber) {
 
 function removeRegion(reg, imageNumber) {
 	if( debug ) console.log("> removeRegion");
-	
+
 	if( imageNumber === undefined ) {
 		imageNumber = currentImage;
 	}
-	
+
 	// remove from Regions array
 	ImageInfo[imageNumber]["Regions"].splice(ImageInfo[imageNumber]["Regions"].indexOf(reg),1);
 	// remove from paths
@@ -154,7 +154,7 @@ function findRegionByUID(uid) {
     if( debug > 2 ) console.log( "region array lenght: " + ImageInfo[currentImage]["Regions"].length );
 
     for( i = 0; i < ImageInfo[currentImage]["Regions"].length; i++ ) {
-        
+
         if( ImageInfo[currentImage]["Regions"][i].uid == uid ) {
             if( debug > 2 ) console.log( "region " + ImageInfo[currentImage]["Regions"][i].uid + ": " );
             if( debug > 2 ) console.log( ImageInfo[currentImage]["Regions"][i] );
@@ -199,7 +199,7 @@ function regionUniqueID() {
 
 function hash(str) {
     var result = str.split("").reduce(function(a,b) {
-        a = ((a<<5)-a) + b.charCodeAt(0); 
+        a = ((a<<5)-a) + b.charCodeAt(0);
         return a&a;
     },0);
     return result;
@@ -257,7 +257,7 @@ function regionTag(name,uid) {
                 "</div>",
                 ].join(" ");
     }
-    return str; 
+    return str;
 }
 
 function appendRegionTagsFromOntology(o) {
@@ -307,11 +307,11 @@ function changeRegionName(reg,name) {
     $(".region-tag#" + reg.uid + ">.region-color").css('background-color','rgba('+color.red+','+color.green+','+color.blue+',0.67)');
 }
 
-/*** toggle visibility of region 
+/*** toggle visibility of region
 ***/
 function toggleRegion(reg) {
     if( region !== null ) {
-        if( debug ) console.log("> toggle region"); 
+        if( debug ) console.log("> toggle region");
 
         var color = regionHashColor(reg.name);
         if( reg.path.fillColor !== null ) {
@@ -422,7 +422,7 @@ function singlePressOnRegion(event) {
     if( debug ) console.log(event);
     if( event.clientX > 20 ) {
         if( event.clientX > 50 ) {
-    
+
             if( el.hasClass("ontology") ) {
                 // Click on regionPicker (ontology selection list)
                 var newName = el.find(".region-name").text();
@@ -476,7 +476,7 @@ function doublePressOnRegion(event) {
                         changeRegionName(findRegionByUID(this.id), name);
                     }
                 }
-            }   
+            }
         }
         else {
             var reg = findRegionByUID(this.id);
@@ -506,7 +506,7 @@ function handleRegionTap(event) {
     if( !tap ){ //if tap is not set, set up single tap
         tap = setTimeout(function() {
             tap = null
-        },300); 
+        },300);
 
         // call singlePressOnRegion(event) using 'this' as context
         singlePressOnRegion.call(this,event);
@@ -554,7 +554,7 @@ function mouseDown(x,y) {
                     }
                 }
 
-                // select path 
+                // select path
                 if( region && region != re ) {
                     region.path.selected = false;
                     prevRegion = region;
@@ -614,17 +614,17 @@ function mouseDown(x,y) {
                     }
                 }
                 else if( selectedTool == "splitregion" ) {
-                    /*selected region is prevRegion! 
+                    /*selected region is prevRegion!
                     region is the region that should be split based on prevRegion
                     newRegionPath is outlining that part of region which has not been overlaid by prevRegion
                     i.e. newRegion is what was region
                     and prevRegion color should go to the other part*/
                     if( prevRegion ) {
-                        var prevColor = prevRegion.path.fillColor; 
+                        var prevColor = prevRegion.path.fillColor;
                         //color of the overlaid part
                         var color = region.path.fillColor;
                         var newPath = region.path.divide(prevRegion.path);
-                        
+
                         removeRegion(prevRegion);
                         region.path.remove();
 
@@ -639,7 +639,7 @@ function mouseDown(x,y) {
                                 newReg = newRegion({path:newPath._children[i]});
                             }
                         }
-                        region.path.fillColor = color; 
+                        region.path.fillColor = color;
                         if( newReg ) {
                             newReg.path.fillColor = prevColor;
                         }
@@ -682,7 +682,7 @@ function mouseDown(x,y) {
                 // deselect previously selected region
                 if( region )
                     region.path.selected = false;
-              
+
                 // Start a new Region with alpha 0
                 var path = new paper.Path({segments:[point]})
                 path.strokeWidth = config.defaultStrokeWidth;
@@ -761,7 +761,7 @@ function mouseDrag(x,y,dx,dy) {
 function mouseUp() {
     if( debug ) console.log("> mouseUp");
 
-    if( newRegionFlag == true ) {  
+    if( newRegionFlag == true ) {
         region.path.closed = true;
         region.path.fullySelected = true;
         // to delete all unnecessary segments while preserving the form of the region to make it modifiable; & adding handles to the segments
@@ -773,7 +773,7 @@ function mouseUp() {
     paper.view.draw();
 }
 
-/*** simplify the region path 
+/*** simplify the region path
 ***/
 function simplify() {
     if( region !== null ) {
@@ -823,25 +823,25 @@ function toggleHandles() {
 
 }
 
-/*** 
+/***
     the following functions serve changing the annotation style
 ***/
 var currentColorRegion;
 // add leading zeros
-function pad(number, length) { 
-    var str = '' + number; 
-    while( str.length < length ) 
-        str = '0' + str; 
-    return str; 
+function pad(number, length) {
+    var str = '' + number;
+    while( str.length < length )
+        str = '0' + str;
+    return str;
 }
-/*** get current alpha & color values & stroke color values for colorPicker display 
+/*** get current alpha & color values & stroke color values for colorPicker display
 ***/
 function getAnnotationStyle( reg ) {
     if( debug ) console.log( reg.path.fillColor );
 
     if( region !== null ) {
         if( debug ) console.log( "> changing annotation style" );
-        
+
         currentColorRegion = reg;
         var alpha = reg.path.fillColor.alpha;
         $('#alphaSlider').val(alpha*100);
@@ -849,12 +849,12 @@ function getAnnotationStyle( reg ) {
 
         var hexColor = '#' + pad(( parseInt(reg.path.fillColor.red * 255) ).toString(16),2) + pad(( parseInt(reg.path.fillColor.green * 255) ).toString(16),2) + pad(( parseInt(reg.path.fillColor.blue * 255) ).toString(16),2);
         if( debug ) console.log(hexColor);
-        
+
         $('#fillColorPicker').val( hexColor );
 
 
         var stroke = reg.path.strokeColor;
-        if( debug ) { 
+        if( debug ) {
             console.log( stroke.red + " " + stroke.green + " " + stroke.blue );
         }
         if ( stroke.red == 0 && stroke.green == 0 && stroke.blue == 0 ) $('#selectStrokeColor').val( '0' );
@@ -867,10 +867,10 @@ function getAnnotationStyle( reg ) {
 }
 
 
-/*** display annotation style dialogue window 
+/*** display annotation style dialogue window
 ***/
 function annotationStyle( reg ) {
-    getAnnotationStyle( reg ); 
+    getAnnotationStyle( reg );
 
     if( $('#colorSelector').css('display') == 'none' ) {
         $('#colorSelector').css('display', 'block');
@@ -882,7 +882,7 @@ function annotationStyle( reg ) {
         $('#colorSelector').css('display', 'none');
     }
 }
-/*** set picked color & alpha 
+/*** set picked color & alpha
 ***/
 function setRegionColor() {
     var reg = currentColorRegion;
@@ -895,10 +895,10 @@ function setRegionColor() {
     reg.path.fillColor.green = green / 255;
     reg.path.fillColor.blue = blue / 255;
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
-    
+
     // update region tag
     $(".region-tag#" + reg.uid + ">.region-color").css('background-color','rgba('+red+','+green+','+blue+',0.67)');
-  
+
     // update stroke color
     switch( $('#selectStrokeColor')[0].selectedIndex ) {
         case 0:
@@ -922,7 +922,7 @@ function setRegionColor() {
     }
     $('#colorSelector').css('display', 'none');
 }
-/*** update all values on the fly 
+/*** update all values on the fly
 ***/
 function onFillColorPicker(value) {
     $('#fillColorPicker').val(value);
@@ -1297,7 +1297,7 @@ function microdrawDBSave() {
             el.name = slice.Regions[i].name;
             value.Regions.push(el);
         }
-    
+
         // check if the slice annotations have changed since loaded by computing a hash
         var h = hash(JSON.stringify(value.Regions)).toString(16);
         if( debug > 1 )
@@ -1339,9 +1339,9 @@ function microdrawDBSave() {
             }
         });
         })(sl, h);
-        
+
         //show dialog box with timeout
-        $('#saveDialog').html(savedSlices).fadeIn();    
+        $('#saveDialog').html(savedSlices).fadeIn();
         setTimeout(function() { $("#saveDialog").fadeOut(500);},2000);
     }
 }
@@ -1351,7 +1351,7 @@ function microdrawDBLoad() {
     Load SVG overlay from microdrawDB
 */
 	if( debug ) console.log("> microdrawDBLoad promise");
-	
+
 	var	def = $.Deferred();
 	var	key = "regionPaths";
 	var slice = myOrigin.slice;
@@ -1362,7 +1362,7 @@ function microdrawDBLoad() {
 	}).success(function(data) {
 		var	i,obj,reg;
 		annotationLoadingFlag = false;
-		
+
 		// if the slice that was just loaded does not correspond to the current slice,
 		// do not display this one and load the current slice.
 		if( slice != currentImage ) {
@@ -1375,14 +1375,14 @@ function microdrawDBLoad() {
             def.fail();
 		    return;
 		}
-	
-        // if there is no data on the current slice 
+
+        // if there is no data on the current slice
         // save hash for the image none the less
         if( data.length == 0 ) {
             ImageInfo[currentImage]["Hash"] = hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16);
             return;
         }
-        
+
 		// parse the data and add to the current canvas
 		// console.log("[",data,"]");
         obj = JSON.parse(data);
@@ -1401,7 +1401,7 @@ function microdrawDBLoad() {
 			paper.view.draw();
             // if image has no hash, save one
 			ImageInfo[currentImage]["Hash"] = (obj.Hash ? obj.Hash : hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16));
-    
+
 		}
 		if( debug ) console.log("< microdrawDBLoad resolve success. Number of regions:", ImageInfo[currentImage]['Regions'].length);
 		def.resolve();
@@ -1523,12 +1523,12 @@ function resizeAnnotationOverlay() {
 
 function initAnnotationOverlay(data) {
     if( debug ) console.log("> initAnnotationOverlay");
-    
+
     // do not start loading a new annotation if a previous one is still being loaded
     if(annotationLoadingFlag==true) {
         return;
     }
-    
+
     //console.log("new overlay size" + viewer.world.getItemAt(0).getContentSize());
 
     /*
@@ -1635,7 +1635,7 @@ function loginChanged() {
         }
         $("<canvas class='overlay' id='" + currentImage + "'>").remove();
     }
-    
+
     //load new users data
 
     viewer.open(ImageInfo[currentImage]["source"]);
@@ -1726,7 +1726,7 @@ function shortCutHandler(key,callback) {
             arr[i] = arr[i].toUpperCase();
         }
     }
-    key = arr.join(" ");  
+    key = arr.join(" ");
     shortCuts[key] = callback;
 }
 
@@ -1816,7 +1816,7 @@ function loadConfiguration() {
     // load general microdraw configuration
     $.getJSON("configuration.json", function(data) {
         config = data;
-        
+
         drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint",
                         "delpoint", "addregion", "delregion", "splitregion", "rotate",
                         "save", "copy", "paste", "delete"];
@@ -1849,10 +1849,10 @@ function initMicrodraw() {
 
     // Enable click on toolbar buttons
     $("img.button").click(toolSelection);
-    
+
     // set annotation loading flag to false
     annotationLoadingFlag = false;
-    
+
     // Initialize the control key handler and set shortcuts
     initShortCutHandler();
     shortCutHandler({pc:'^ z',mac:'cmd z'},cmdUndo);
@@ -1910,7 +1910,7 @@ function initMicrodraw() {
                 return;
             }
             mouse_position = e.clientX;
-    
+
             if( mouse_position <= 100 ) {
                 //SLIDE IN MENU
                 animating = true;
@@ -1962,7 +1962,7 @@ function initMicrodraw2(obj) {
 			eval("ImageInfo[name]['source'].getTileUrl = " + obj.tileSources[i].getTileUrl);
 		}
 	}
-    
+
     // set default values for new regions (general configuration)
     if (config.defaultStrokeColor == undefined) config.defaultStrokeColor = 'black';
     if (config.defaultStrokeWidth == undefined) config.defaultStrokeWidth = 1;
@@ -1973,7 +1973,7 @@ function initMicrodraw2(obj) {
         if (obj.configuration.defaultStrokeWidth != undefined) config.defaultStrokeWidth = obj.configuration.defaultStrokeWidth;
         if (obj.configuration.defaultFillAlpha != undefined) config.defaultFillAlpha = obj.configuration.defaultFillAlpha;
     }
-	
+
 	// init slider that can be used to change between slides
 	initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length / 2));
 	currentImage = imageOrder[Math.floor(obj.tileSources.length / 2)];
@@ -2036,7 +2036,7 @@ function toggleMenu () {
     if( $('#menuBar').css('display') == 'none' ) {
         $('#menuBar').css('display', 'block');
         $('#menuButton').css('display', 'none');
-    } 
+    }
     else {
         $('#menuBar').css('display', 'none');
         $('#menuButton').css('display', 'block');
