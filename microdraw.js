@@ -360,6 +360,7 @@ function updateRegionList() {
 }
 
 function checkRegionSize(reg) {
+  console.log(region.path.bounds)
 if( reg.path.length > 3 || viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true)) > 1.1 ) {
          return;
     }
@@ -759,25 +760,47 @@ function mouseDrag(x,y,dx,dy) {
 }
 
 function mouseUp() {
-    if( debug ) console.log("> mouseUp");
+    if ( debug ) console.log("> mouseUp");
 
-    if( newRegionFlag == true ) {
+    if ( newRegionFlag == true ) {
         region.path.closed = true;
         region.path.fullySelected = true;
-        // to delete all unnecessary segments while preserving the form of the region to make it modifiable; & adding handles to the segments
-        var orig_segments = region.path.segments.length;
-				var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-				// var x = Math.pow(10 , z);
-				var x = z * 30;
-// console.log('region.path',region.path)
-	      var previousPosition = region.path.position;
-				region.path.scale(x, x)
+        
+        // delete unnecessary segments while preserving the shape of the region to make it modifiable and & adding handles to the segments
+        if (debug) {
+          var orig_segments = region.path.segments.length;
+        }
+
+        // . pixels per dot (dot is a device-independent psuedo-pixel with a resolution of roughly 72 dpi)
+        var ppd = paper.view.pixelRatio
+
+        // . mouse selection accuracy in pixels: about 5 dots, that is 5 ppd pixels
+        var pixelSelectAccuracy = 5.0*ppd
+
+        // . ratio between project coordinates and browser pixels
+        var coordsPerPixel = paper.view.size.width/paper.view.viewSize.width
+
+        // . accuracy by which curves can reasonably be simplified
+        var simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy
+        
+        // . the simplify function looks at the maximum squared distance from curve to original points
+        region.path.simplify(simplifyAccuracy*simplifyAccuracy);
+
+        /*
+        // previous monkey-patched code 
+        var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+        var x = z * 30;
+        var previousPosition = region.path.position;
+        region.path.scale(x, x)
         region.path.simplify(0);
-				region.path.scale(1/x, 1/x)
-	      region.path.position = previousPosition;
-        var final_segments = region.path.segments.length;
-				console.log("x = ", x, "segments = ", final_segments, viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true)));
-        if( debug > 2 ) console.log( parseInt(final_segments/orig_segments*100) + "% segments conserved" );
+        region.path.scale(1/x, 1/x)
+        region.path.position = previousPosition;
+        */ 
+         
+        if (debug) {
+          var final_segments = region.path.segments.length;
+          console.log( final_segments, parseInt(final_segments/orig_segments*100) + "% segments conserved" );
+        }
     }
     paper.view.draw();
 }
@@ -2001,9 +2024,7 @@ function initMicrodraw2(obj) {
 		zoomOutButton:"zoom-out",
 		homeButton:"home",
 		preserveViewport: true,
-    maxZoomPixelRatio: 84
-
-
+    maxZoomPixelRatio: 10
 	});
 
 
