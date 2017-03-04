@@ -360,7 +360,7 @@ function updateRegionList() {
 }
 
 function checkRegionSize(reg) {
-if( reg.path.length > 3 || viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true)) == 1.1 ) {
+if( reg.path.length > 3 || viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true)) > 1.1 ) {
          return;
     }
     else {
@@ -767,14 +767,16 @@ function mouseUp() {
         // to delete all unnecessary segments while preserving the form of the region to make it modifiable; & adding handles to the segments
         var orig_segments = region.path.segments.length;
 				var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-				var x = 7 * Math.pow(10,z);
-console.log('region.path',region.path)        
+				// var x = Math.pow(10 , z);
+				var x = z * 30;
+// console.log('region.path',region.path)
 	      var previousPosition = region.path.position;
 				region.path.scale(x, x)
         region.path.simplify(0);
 				region.path.scale(1/x, 1/x)
 	      region.path.position = previousPosition;
         var final_segments = region.path.segments.length;
+				console.log("x = ", x, "segments = ", final_segments, viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true)));
         if( debug > 2 ) console.log( parseInt(final_segments/orig_segments*100) + "% segments conserved" );
     }
     paper.view.draw();
@@ -1999,9 +2001,11 @@ function initMicrodraw2(obj) {
 		zoomOutButton:"zoom-out",
 		homeButton:"home",
 		preserveViewport: true,
-    maxZoomPixelRatio: 8
+    maxZoomPixelRatio: 84
+
+
 	});
-  
+
 
 	// open the currentImage
 	viewer.open(ImageInfo[currentImage]["source"]);
