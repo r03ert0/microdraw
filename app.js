@@ -1,21 +1,24 @@
 'use strict';
+/*eslint no-console: ["error", { allow: ["warn", "error"] }] */
+
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
+//var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mustacheExpress = require('mustache-express');
 
-var mongo = require('mongodb');
+//var mongo = require('mongodb');
 var monk = require('monk');
 var MONGO_DB;
+
 var DOCKER_DB = process.env.DB_PORT;
-var DOCKER_DEVELOP = process.env.DEVELOP;
+//var DOCKER_DEVELOP = process.env.DEVELOP;
 if ( DOCKER_DB ) {
-  MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
+    MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
 } else {
-  MONGO_DB = 'localhost:27017/microdraw'; //process.env.MONGODB;
+    MONGO_DB = 'localhost:27017/microdraw'; //process.env.MONGODB;
 }
 var db = monk(MONGO_DB);
 var fs = require('fs');
@@ -23,8 +26,7 @@ db.get('test').insert({that:'other'});
 
 var dirname = __dirname; // local directory
 
-
-var index = require('./routes/index');
+//var index = require('./routes/index');
 
 var app = express();
 app.engine('mustache', mustacheExpress());
@@ -99,7 +101,7 @@ app.get('/auth/github/callback',
                     };
                     db.get('user').insert(json);
                 } else {
-                    console.log("Update user data from GitHub");
+                    console.warn("Update user data from GitHub");
                     db.get('user').update({nickname: req.user.username},{$set:{
                         name: req.user.displayName,
                         url: req.user._json.blog,
@@ -132,15 +134,15 @@ app.use('/data', require('./controller/data/'));
 
 // API routes
 app.get('/api', function (req, res) {
-    console.log("call to GET api");
+    console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    console.log(req.query,req.params);
+    console.warn(req.query,req.params,loggedUser);
     res.send({});
 });
 app.post('/api', function (req, res) {
-    console.log("call to POST api");
+    console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    console.log(req.query,req.params,req.body);
+    console.warn(req.query,req.params,req.body,loggedUser);
     switch(req.body.action) {
         case 'save':
             var data = JSON.parse(req.body.value);
@@ -170,7 +172,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
