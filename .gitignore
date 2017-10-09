@@ -5,6 +5,7 @@ _test
 bigbrain
 macaque
 vervet
+ferret
 doc
 
 bigbrain.json
@@ -24,7 +25,7 @@ microdrawNotes.txt
 
 favicon.ico
 
-/data
+data
 vervet.zip
 
 npm-debug.log
