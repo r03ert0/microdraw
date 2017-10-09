@@ -1,5 +1,0 @@
-{
-	"clientID": "c403bd001c3e11ccaec1",
-	"clientSecret": "d4de0c545b6e0cb148c4928c495f89cecec98e8a",
-	"callbackURL": "http://localhost:300/auth/github/callback"
-}
