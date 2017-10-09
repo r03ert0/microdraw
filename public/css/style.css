@@ -114,19 +114,20 @@ ul.links { margin-top: 9px; padding-bottom: 25px; }
 ul.links > li {  margin-bottom: 12px; padding-left: 22px !important; background-size: 16px 16px !important; line-height: 19px; background-position: 0px 2px; background-repeat: no-repeat; }
 
 /* document, file, pdf and guide */
-ul.links > li.document	  { background-image: url('../images/document.svg'); background-position: 0px 2px !important;}
+/*ul.links > li.document	  { background-image: url('../images/document.svg'); background-position: 0px 2px !important;}*/
 /*  download, dmg, zip */
-ul.links > li.download    { background-image: url('../images/download.svg'); }
+/*ul.links > li.download    { background-image: url('../images/download.svg'); }*/
 /*  forum(s) topic */
-ul.links > li.forum-topic { background-image: url('../images/forum-topic.svg'); background-position: 0px 2px !important; }
+/*ul.links > li.forum-topic { background-image: url('../images/forum-topic.svg'); background-position: 0px 2px !important; }*/
 /* miscellaneous */
+/*
 ul.links > li.library 	  { background-image: url('../images/library.svg'); }
 ul.links > li.reference   { background-image: url('../images/reference.svg'); background-position: 0px 2px !important; }
 ul.links > li.sample-code { background-image: url('../images/sample-code.svg'); background-position: 0px 2px !important; }
 ul.links > li.tool 		    { background-image: url('../images/tool.svg'); }
 ul.links > li.video 	    { background-image: url('../images/video.svg'); }
 ul.links > li.video-play  { background-image: url('../images/video-play.svg'); }
-
+*/
 /* shared layout styles */
 .padding-top-0       { padding-top:0 !important; }
 .padding-top-5       { padding-top:5px !important; }
