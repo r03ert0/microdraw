@@ -5,9 +5,13 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width,user-scalable=no" />
 	<link rel="stylesheet" href="css/microdraw.css" type="text/css" />
+	<link rel="stylesheet" href="css/login.css" type="text/css" />
+	</style>
 </head>
 
 <body>
+
+<div id="login">{{{login}}}</div>
 
 <div id="menuButton">
 	<img class="button" id="openMenu" title="Menu" src="img/openMenu.svg" />
@@ -17,7 +21,6 @@
 <div id="menuBar" class="table">
 	
 	<div class="row">
-		<div id="login"></div>
 		<img class="button" id="closeMenu" title="Close Menu" src="img/closeMenu.svg" />
 	</div>
 
@@ -51,7 +54,7 @@
 				<img class="button" id="splitregion"  title="Split region"           src="img/split.svg" />
 				<img class="button" id="rotate"       title="Rotate region"          src="img/rotate.svg" />
 				<img class="button" id="flip"         title="Flip region"            src="img/flip.svg" />
-                <img class="button" id="handle"       title="Toggle handles"          src="img/save.svg" />
+                <img class="button" id="handle"       title="Toggle handles"          src="img/toggleHandles.svg" />
 			</div>
 			<div class="buttonGroup">
 				<img class="button" id="save"        title="Save annotations"       src="img/save.svg" />
@@ -119,7 +122,6 @@
 <script src="lib/openseadragon-viewerinputhook.min.js"></script>
 <script src="lib/OpenSeadragonScalebar/openseadragon-scalebar.js"></script>
 <script src="lib/jquery-1.11.0.min.js"></script>
-<script src="js/mylogin/login.js"></script>
 <script src="js/neurolex-ontology.js"></script>
 <script src="js/base.js"></script>
 <script src="js/microdraw.js"></script>
