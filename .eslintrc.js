@@ -18,7 +18,7 @@ module.exports = {
         "arrow-parens": "error",
         "arrow-spacing": "error",
         "block-scoped-var": "error",
-        "block-spacing": "off",
+        "block-spacing": "error",
         "brace-style": [
             "error",
             "1tbs",
@@ -31,7 +31,7 @@ module.exports = {
         "capitalized-comments": "off",
         "class-methods-use-this": "error",
         "comma-dangle": "error",
-        "comma-spacing": "off",
+        "comma-spacing": "error",
         "comma-style": [
             "error",
             "last"
