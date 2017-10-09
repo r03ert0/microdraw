@@ -1,92 +1,99 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-	<title>{{title}}</title>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<link rel="stylesheet" href="css/style.css" type="text/css" />
-	<script src="lib/jquery-1.11.0.min.js"></script>
-	<script src="js/base.js"></script>
-	<style>input[placeholder]{text-align:center}</style>
+    <title>{{title}}</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="css/style.css" type="text/css" />
+    <link rel="stylesheet" href="css/login.css" type="text/css" />
+    <script src="lib/jquery-1.11.0.min.js"></script>
+    <script src="js/base.js"></script>
+    <style>input[placeholder]{text-align:center}</style>
 </head>
 <body>
-	<header class="header-container">
-		<div class="header">
-			<img src="img/microdraw.svg" style="width:6em" />
-			<h1>MicroDraw</h1>
-		</div>
-	</header>
 
-	<nav class="layout-tabs">
-		<section class="tab-wrapper">
-			<span class="divider"></span>
-			<ul class="grid3col tabs">
-				<li class="column one active"><a href="">Home</a></li>
-				<li class="column two"><a href="blog.html">Blog</a></li>
-			</ul>
-		</section>
-	</nav>
+    <div id="login">{{{login}}}</div>
 
-	<main id="content" class="content">
+    <header class="header-container">
+        <div class="header">
+            <img src="img/microdraw.svg" style="width:6em" />
+            <h1>MicroDraw</h1>
+        </div>
+    </header>
 
-		<section class="title-intro padding-top-40">
-			<h1>Collaborative Annotation</h1>
-			<p class="intro">MicroDraw is a web application by <a href="http://neuroanatomy.github.io">NAAT</a> to visualise and annotate collaboratively high resolution histology data. Annotations are vectorial, and you can use boolean operations to combine, subtract and split regions. Point MicroDraw to your own DeepZoom data, or try the sample data below!</p>
-		</section>
+    <nav class="layout-tabs">
+        <section class="tab-wrapper">
+            <span class="divider"></span>
+            <ul class="grid3col tabs">
+                <li class="column one active"><a href="">Home</a></li>
+                <li class="column two"><a href="blog.html">Blog</a></li>
+            </ul>
+        </section>
+    </nav>
 
-		<section class="title-intro title-intro padding-top-40 padding-bottom-60">
-			<input type="text" style="font-size:1.2rem" size="60" placeholder="Enter a DeepZoom image URL"/>
-			<button style="font-size:1.2rem" id="go">Go</button>
-		</section>
+    <main id="content" class="content">
 
+        <section class="title-intro padding-top-40">
+            <h1>Collaborative Annotation</h1>
+            <p class="intro">MicroDraw is a web application by <a href="http://neuroanatomy.github.io">NAAT</a> to visualise and annotate collaboratively high resolution histology data. Annotations are vectorial, and you can use boolean operations to combine, subtract and split regions. Point MicroDraw to your own DeepZoom data, or try the sample data below!</p>
+        </section>
 
-		<section class="layout-2b grid2col divider-top padding-top-20 padding-bottom-20 divider-bottom">
-			<section class="column first">
-				<h2>Datasets</h2>
-				<p>MicroDraw can use ontologies such as <a href="http://neurolex.org">Neurolex</a> to create community curated atlases, but also to annotate staining artefacts. We are currently hosting DeepZoom versions of several macaque brains from the Allen Institute for Brain Research, a 1 micron resolution slice of a human brain from the BigBrain project and a 1 micron resolution slice from a vervet monkey.</p>
- 				<ul class="links">
-					<li class="download"><a href="%%localhost%%/data?source=/bigbrain/bigbrain.json">BigBrain human brain slice</a> (Many thanks to Claude Lepage, Katrin Amunts, Alan Evans)</li>
-					<li class="download"><a href="%%localhost%%/data?source=/vervet/vervet.json">Vervet monkey brain slice scanned using Polarized Light Imaging</a> (Many thanks to Katrin Amuts, Markus Axer, Roger Woods, Karl Zilles)</li>
-					<li class="download"><a href="%%localhost%%/data?source=http://umr3571.cnrs.fr/data/macaque/macaque.jsonp">Allen Institute macaque slices</a></li>
-				</ul>
-			</section>
-			<section class="column last">
-				<h2>Application</h2>
-				<p>MicroDraw is based on open source frameworks to ensure its maintainability and extensibility. The interactive multi-resolution visualisation is based on <a href="http://openseadragon.github.io">OpenSeadragon</a>. The vectorial annotation is based on <a href="http://paperjs.org">Paper</a>. The concurrent versioning is based on Git</p>
-				<p>MicroDraw is written in JavaScript, using HTML5, CSS3 and jQuery.</p>
-				<ul class="links">
-					<li class="download"><a href="https://github.com/neuroanatomy/microdraw">Get it on GitHub</a></li>
-					<li class="document"><a href="https://github.com/r03ert0/microdraw/wiki">Documentation</a></li>
-					<li class="forum-topic"><a href="https://github.com/r03ert0/microdraw/issues">Forum (GitHub issues)</a></li>
-				</ul>
-			</section>
-		</section>
-
-		<section class="padding-top-30" style="text-align:center">
-			<p>MicroDraw by <img src="img/naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
-		</section>
-
-	</main>
-	
-	<script>
-
-	$(".download>a").each(function(){
-		$(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));	
-	})
+        <section class="title-intro title-intro padding-top-40 padding-bottom-60">
+            <input type="text" style="font-size:1.2rem" size="60" placeholder="Enter a DeepZoom image URL"/>
+            <button style="font-size:1.2rem" id="go">Go</button>
+        </section>
 
 
-	/*
-	$("#go").click(function(){
-		window.location=localhost+"/microdraw.html?source="+$("input").val();
-	});
-	*/
-	/*
-	$("input").keydown(function (e) {
-		if (e.keyCode == 13) {
-			window.location=localhost+"/microdraw.html?source="+$("input").val();
-		}
-	});
-	*/
-	</script>
+        <section class="layout-2b grid2col divider-top padding-top-20 padding-bottom-20 divider-bottom">
+            <section class="column first">
+                <h2>Datasets</h2>
+                <p>MicroDraw can use ontologies such as <a href="http://neurolex.org">Neurolex</a> to create community curated atlases, but also to annotate staining artefacts. We are currently hosting DeepZoom versions of several macaque brains from the Allen Institute for Brain Research, a 1 micron resolution slice of a human brain from the BigBrain project and a 1 micron resolution slice from a vervet monkey.</p>
+                 <ul class="links">
+                    <li class="download"><a href="%%localhost%%/data?source=/bigbrain/bigbrain.json">BigBrain human brain slice</a> (Many thanks to Claude Lepage, Katrin Amunts, Alan Evans)</li>
+                    <li class="download"><a href="%%localhost%%/data?source=/vervet/vervet.json">Vervet monkey brain slice scanned using Polarized Light Imaging</a> (Many thanks to Katrin Amuts, Markus Axer, Roger Woods, Karl Zilles)</li>
+                    <li class="download"><a href="%%localhost%%/data?source=/ferret/sub1.20.json">A slice from a 32 days old ferret from project FIIND</a> (Visit project FIIND by clicking <a href="https://neuroanatomy.github.io/FIIND">here</a>)</li>
+                    <!--
+                    <li class="download"><a href="%%localhost%%/data?source=http://umr3571.cnrs.fr/data/macaque/macaque.jsonp">Allen Institute macaque slices</a></li>
+                    -->
+                </ul>
+            </section>
+            <section class="column last">
+                <h2>Application</h2>
+                <p>MicroDraw is based on open source frameworks to ensure its maintainability and extensibility. The interactive multi-resolution visualisation is based on <a href="http://openseadragon.github.io">OpenSeadragon</a>. The vectorial annotation is based on <a href="http://paperjs.org">Paper</a>. The concurrent versioning is based on Git</p>
+                <p>MicroDraw is written in JavaScript, using HTML5, CSS3 and jQuery.</p>
+                <ul class="links">
+                    <li class="download"><a href="https://github.com/neuroanatomy/microdraw">Get it on GitHub</a></li>
+                    <li class="document"><a href="https://github.com/r03ert0/microdraw/wiki">Documentation</a></li>
+                    <li class="forum-topic"><a href="https://github.com/r03ert0/microdraw/issues">Forum (GitHub issues)</a></li>
+                </ul>
+            </section>
+        </section>
+
+        <section class="padding-top-30" style="text-align:center">
+            <p>MicroDraw by <img src="img/naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
+        </section>
+
+    </main>
+
+    <script>
+
+    $(".download>a").each(function(){
+        $(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));
+    })
+
+
+    /*
+    $("#go").click(function(){
+        window.location=localhost+"/microdraw.html?source="+$("input").val();
+    });
+    */
+    /*
+    $("input").keydown(function (e) {
+        if (e.keyCode == 13) {
+            window.location=localhost+"/microdraw.html?source="+$("input").val();
+        }
+    });
+    */
+    </script>
 </body>
 </html>
