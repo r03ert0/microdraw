@@ -72,7 +72,7 @@ app.get('/logout', function (req, res) {
     res.redirect(req.session.returnTo || '/');
     delete req.session.returnTo;
 });
-app.get('/loggedIn', function (req, res) {
+app.get('/loggedIn', function loggedIn(req, res) {
     if (req.isAuthenticated()) {
         res.send({loggedIn: true, username: req.user.username});
     } else {
@@ -113,8 +113,54 @@ app.get('/auth/github/callback',
 //-----}
 
 
-app.use('/', index);
+// GUI routes
+app.get('/', function (req, res) { // /auth/github
+    var login = (req.isAuthenticated()) ?
+                ("<a href='/user/" + req.user.username + "'>" + req.user.username + "</a> (<a href='/logout'>Log Out</a>)")
+                : ("<a href='/auth/github'>Log in with GitHub</a>");
+
+    // store return path in case of login
+    req.session.returnTo = req.originalUrl;
+
+    res.render('index', {
+        title: 'MicroDraw',
+        login: login
+    });
+});
+
 app.use('/data', require('./controller/data/'));
+
+// API routes
+app.get('/api', function (req, res) {
+    console.log("call to GET api");
+    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
+    console.log(req.query,req.params);
+    res.send({});
+});
+app.post('/api', function (req, res) {
+    console.log("call to POST api");
+    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
+    console.log(req.query,req.params,req.body);
+    switch(req.body.action) {
+        case 'save':
+            var data = JSON.parse(req.body.value);
+            // mark previous version as backup
+            req.db.get('data').update({
+                source: req.body.source,
+                backup: {$exists: false}
+            }, {
+                $set:{backup: true}
+            },{
+                multi:true
+            })
+            .then(function() {
+                // insert new version
+                req.db.get('data').insert(data);
+            });
+            break;
+    }
+    res.send({});
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
