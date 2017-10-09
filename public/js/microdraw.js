@@ -1302,7 +1302,6 @@ function microdrawDBSave() {
                    key: key,
                  value: JSON.stringify(value)
         };
-        console.log('data',data)
         $.ajax({
             url:dbroot,
             type:"POST",
@@ -1341,6 +1340,7 @@ function microdrawDBLoad() {
     }).success(function (data) {
         var    i,obj,reg;
         
+        console.log("INSIDE!!!");
         annotationLoadingFlag = false;
 
         // Because of asynchrony, the slice that just loaded may not be the one that the user
@@ -1365,27 +1365,25 @@ function microdrawDBLoad() {
         }
 
         // parse the data and add to the current canvas
-        // console.log("[",data,"]");
+        console.log("[",data,"]");
         //obj = JSON.parse(data);
         //obj = data;
         //if( obj ) {
-        if(data.myValue) {
-            obj = data.myValue; // JSON.parse(obj.myValue);
-            for( i = 0; i < obj.Regions.length; i++ ) {
-                var reg = {};
-                var    json;
-                reg.name = obj.Regions[i].name;
-                reg.page = obj.Regions[i].page;
-                json = obj.Regions[i].path;
-                reg.path = new paper.Path();
-                reg.path.importJSON(json);
-                newRegion({name:reg.name,path:reg.path});
-            }
-            paper.view.draw();
-            // if image has no hash, save one
-            ImageInfo[currentImage]["Hash"] = (obj.Hash ? obj.Hash : hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16));
-
+        for( i = 0; i < data.Regions.length; i++ ) {
+            var reg = {};
+            var    json;
+            reg.name = data.Regions[i].name;
+            reg.page = data.Regions[i].page;
+            json = data.Regions[i].path;
+            reg.path = new paper.Path();
+            reg.path.importJSON(json);
+            newRegion({name:reg.name,path:reg.path});
         }
+        paper.view.draw();
+        // if image has no hash, save one
+        ImageInfo[currentImage]["Hash"] = (data.Hash ? data.Hash : hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16));
+
+
         if( debug ) console.log("< microdrawDBLoad resolve success. Number of regions:", ImageInfo[currentImage]['Regions'].length);
         def.resolve();
     }).error(function(jqXHR, textStatus, errorThrown) {

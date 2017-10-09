@@ -22,7 +22,6 @@ if ( DOCKER_DB ) {
 }
 var db = monk(MONGO_DB);
 var fs = require('fs');
-db.get('test').insert({that:'other'});
 
 var dirname = __dirname; // local directory
 
@@ -49,7 +48,7 @@ var passport = require('passport');
 var GithubStrategy = require('passport-github').Strategy;
 passport.use(new GithubStrategy(
     JSON.parse(fs.readFileSync(dirname + "/github-keys.json")),
-    function (accessToken, refreshToken, profile, done) {return done(null, profile); }
+    function (accessToken, refreshToken, profile, done) { return done(null, profile); }
 ));
 app.use(session({
     secret: "a mi no me gusta la sémola",
@@ -59,8 +58,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 // add custom serialization/deserialization here (get user from mongo?) null is for errors
-passport.serializeUser(function (user, done) {done(null, user); });
-passport.deserializeUser(function (user, done) {done(null, user); });
+passport.serializeUser(function (user, done) { done(null, user); });
+passport.deserializeUser(function (user, done) { done(null, user); });
 // Simple authentication middleware. Add to routes that need to be protected.
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -68,7 +67,7 @@ function ensureAuthenticated(req, res, next) {
     }
     res.redirect('/');
 }
-app.get('/secure-route-example', ensureAuthenticated, function (req, res) {res.send("access granted"); });
+app.get('/secure-route-example', ensureAuthenticated, function (req, res) { res.send("access granted"); });
 app.get('/logout', function (req, res) {
     req.logout();
     res.redirect(req.session.returnTo || '/');
@@ -82,7 +81,7 @@ app.get('/loggedIn', function loggedIn(req, res) {
     }
 });
 // start the GitHub Login process
-app.get('/auth/github',passport.authenticate('github'));
+app.get('/auth/github', passport.authenticate('github'));
 app.get('/auth/github/callback',
     passport.authenticate('github', {failureRedirect: '/'}),
     function (req, res) {
@@ -102,7 +101,7 @@ app.get('/auth/github/callback',
                     db.get('user').insert(json);
                 } else {
                     console.warn("Update user data from GitHub");
-                    db.get('user').update({nickname: req.user.username},{$set:{
+                    db.get('user').update({nickname: req.user.username}, {$set:{
                         name: req.user.displayName,
                         url: req.user._json.blog,
                         avatarURL: req.user._json.avatar_url
@@ -136,28 +135,49 @@ app.use('/data', require('./controller/data/'));
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    console.warn(req.query,req.params,loggedUser);
-    res.send({});
+    console.warn(req.query);
+    db.get('data').findOne({
+        source: req.query.source,
+        slice: req.query.slice,
+        key: req.query.key,
+        backup: {$exists: false}
+    })
+    .then(function(obj) {
+        res.send(obj.value);
+    })
+    .catch(function(err) {
+        console.error("ERROR",err);
+        res.send({error:JSON.stringify(err)});
+    });
 });
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    console.warn(req.query,req.params,req.body,loggedUser);
-    switch(req.body.action) {
+    var body = req.body;
+    switch(body.action) {
         case 'save':
-            var data = JSON.parse(req.body.value);
+            var source = body.source;
+            var slice = body.slice;
+            var key = body.key;
+            var value = JSON.parse(body.value);
             // mark previous version as backup
-            req.db.get('data').update({
-                source: req.body.source,
+            db.get('data').update({
+                source: source,
                 backup: {$exists: false}
             }, {
                 $set:{backup: true}
-            },{
+            }, {
                 multi:true
             })
             .then(function() {
                 // insert new version
-                req.db.get('data').insert(data);
+                db.get('data').insert({
+                    user: loggedUser,
+                    source: source,
+                    slice: slice,
+                    key: key,
+                    value: value
+                });
             });
             break;
     }
