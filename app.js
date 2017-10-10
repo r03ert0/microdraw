@@ -143,7 +143,10 @@ app.get('/api', function (req, res) {
         backup: {$exists: false}
     })
     .then(function(obj) {
-        res.send(obj.value);
+        if(obj)
+            res.send(obj.value);
+        else
+            res.send();
     })
     .catch(function(err) {
         console.error("ERROR",err);
