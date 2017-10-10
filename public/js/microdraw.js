@@ -809,7 +809,7 @@ function toggleHandles() {
     console.log("> toggleHandles");
     if (region != null) {
         if (region.path.hasHandles()) {
-            if (confirm('Do you really want to remove the handles?')) {
+            if (confirm('Convert bezier curve into polygon?')) {
                 var undoInfo = getUndo();
                 region.path.clearHandles();
                 saveUndo(undoInfo);
