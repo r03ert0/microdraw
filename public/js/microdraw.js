@@ -576,9 +576,16 @@ function mouseDown(x,y) {
                     }
                 }
                 else if( hitResult.type == 'stroke' && selectedTool == "addpoint" ) {
+                    //var apath = region.path.curves[hitResult.location.index];
+                    /*
                     region.path
                     .curves[hitResult.location.index]
-                    .divide(hitResult.location);
+                    .divideAt(hitResult.location);
+                    */
+//                    apath.divideAt(hitResult.location);
+                    apath = region.path;
+                    apath.divideAt(hitResult.location);
+                    
                     region.path.fullySelected = true;
                     commitMouseUndo();
                     paper.view.draw();
@@ -1052,7 +1059,13 @@ function applyUndo(undo) {
          */
         var path = new paper.Path();
         project.addLayer(path);
+
+        /* Workaround issue #1392 of paperjs */
+        var insert = path.insert;
         path.importJSON(el.json);
+        path.insert = insert;
+        /*-----------------------------------*/
+
         reg = newRegion({name:el.name, path:path}, undo.imageNumber);
         // here order matters. if fully selected is set after selected, partially selected paths will be incorrect
           reg.path.fullySelected = el.fullySelected;
@@ -1853,7 +1866,10 @@ function initMicrodraw() {
             jsonpCallback: 'f',
             dataType: 'jsonp',
             contentType: "application/json",
-            success: function(obj){initMicrodraw2(obj);def.resolve()}
+            success: function(obj){
+                initMicrodraw2(obj);
+                def.resolve()
+            }
         });
     } else
     if( ext == "json" ) {
@@ -1864,7 +1880,10 @@ function initMicrodraw() {
             url: params.source,
             dataType: "json",
             contentType: "application/json",
-            success: function(obj){initMicrodraw2(obj);def.resolve()}
+            success: function(obj){
+                initMicrodraw2(obj);
+                def.resolve()
+            }
         });
     }
 
@@ -1934,14 +1953,20 @@ function initMicrodraw2(obj) {
     }
 
     // set default values for new regions (general configuration)
-    if (config.defaultStrokeColor == undefined) config.defaultStrokeColor = 'black';
-    if (config.defaultStrokeWidth == undefined) config.defaultStrokeWidth = 1;
-    if (config.defaultFillAlpha == undefined) config.defaultFillAlpha = 0.5;
+    if (config.defaultStrokeColor == undefined)
+        config.defaultStrokeColor = 'black';
+    if (config.defaultStrokeWidth == undefined)
+        config.defaultStrokeWidth = 1;
+    if (config.defaultFillAlpha == undefined)
+        config.defaultFillAlpha = 0.5;
     // set default values for new regions (per-brain configuration)
     if (obj.configuration) {
-        if (obj.configuration.defaultStrokeColor != undefined) config.defaultStrokeColor = obj.configuration.defaultStrokeColor;
-        if (obj.configuration.defaultStrokeWidth != undefined) config.defaultStrokeWidth = obj.configuration.defaultStrokeWidth;
-        if (obj.configuration.defaultFillAlpha != undefined) config.defaultFillAlpha = obj.configuration.defaultFillAlpha;
+        if (obj.configuration.defaultStrokeColor != undefined)
+            config.defaultStrokeColor = obj.configuration.defaultStrokeColor;
+        if (obj.configuration.defaultStrokeWidth != undefined)
+            config.defaultStrokeWidth = obj.configuration.defaultStrokeWidth;
+        if (obj.configuration.defaultFillAlpha != undefined)
+            config.defaultFillAlpha = obj.configuration.defaultFillAlpha;
     }
 
     // init slider that can be used to change between slides
