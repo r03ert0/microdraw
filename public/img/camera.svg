@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="37.312"
+   height="37.312"
+   id="svg23517"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="camera.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1044"
+     inkscape:window-height="644"
+     id="namedview14"
+     showgrid="false"
+     inkscape:zoom="5.5961805"
+     inkscape:cx="18.477307"
+     inkscape:cy="18.656"
+     inkscape:window-x="333"
+     inkscape:window-y="314"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg23517" />
+  <defs
+     id="defs23519">
+    <linearGradient
+       x1="-313.01569"
+       y1="184.71365"
+       x2="-312.36646"
+       y2="112.46646"
+       id="linearGradient23497"
+       xlink:href="#linearGradient22494"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(331.34707,-150.96124)" />
+    <linearGradient
+       id="linearGradient22494">
+      <stop
+         id="stop22496"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop22498"
+         style="stop-color:#ffffff;stop-opacity:0"
+         offset="1" />
+    </linearGradient>
+  </defs>
+  <metadata
+     id="metadata23522">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     d="M 18.656,0 C 8.351,0 0,8.353 0,18.656 0,28.959 8.352,37.312 18.656,37.312 28.959,37.312 37.312,28.959 37.312,18.656 37.312,8.353 28.958,0 18.656,0"
+     id="path21404"
+     style="opacity:0.4;fill:none"
+     inkscape:connector-curvature="0" />
+  <path
+     d="M 18.656,0 C 8.351,0 0,8.353 0,18.656 0,28.959 8.352,37.312 18.656,37.312 28.959,37.312 37.312,28.959 37.312,18.656 37.312,8.353 28.958,0 18.656,0"
+     id="path21406"
+     style="fill:url(#linearGradient23497);fill-opacity:1;stroke:none"
+     inkscape:connector-curvature="0" />
+  <g
+     id="g4165"
+     transform="matrix(0.20537284,0,0,0.20537284,15.13292,17.176868)">
+    <g
+       transform="matrix(1.25,0,0,-1.25,79.029558,-29.516572)"
+       id="g62">
+      <path
+         inkscape:connector-curvature="0"
+         id="path64"
+         style="fill:#858585;fill-opacity:1;fill-rule:nonzero;stroke:none"
+         d="m 0,0 c -2.965,2.964 -13.742,4.952 -27.184,5.963 -1.08,2.955 -2.514,5.486 -4.316,7.287 -9,9 -27,9 -36,0 -1.802,-1.801 -3.236,-4.332 -4.316,-7.287 C -85.258,4.952 -96.035,2.964 -99,0 c -9,-9 -9,-63 0,-72 9,-9 90,-9 99,0 9,9 9,63 0,72" />
+    </g>
+    <g
+       transform="matrix(1.25,0,0,-1.25,79.029558,-29.516572)"
+       id="g66">
+      <path
+         inkscape:connector-curvature="0"
+         id="path68"
+         style="fill:none;stroke:#858585;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 0,0 c -2.965,2.964 -13.742,4.952 -27.184,5.963 -1.08,2.955 -2.514,5.486 -4.316,7.287 -9,9 -27,9 -36,0 -1.802,-1.801 -3.236,-4.332 -4.316,-7.287 C -85.258,4.952 -96.035,2.964 -99,0 c -9,-9 -9,-63 0,-72 9,-9 90,-9 99,0 9,9 9,63 0,72 z" />
+    </g>
+    <g
+       transform="matrix(1.25,0,0,-1.25,51.424578,15.972298)"
+       id="g70">
+      <path
+         inkscape:connector-curvature="0"
+         id="path72"
+         style="fill:none;stroke:#ffffff;stroke-width:5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         d="m 0,0 c 0,-15.14 -12.275,-27.417 -27.416,-27.417 -15.14,0 -27.416,12.277 -27.416,27.417 0,15.142 12.276,27.416 27.416,27.416 C -12.275,27.416 0,15.142 0,0 Z" />
+    </g>
+  </g>
+</svg>
