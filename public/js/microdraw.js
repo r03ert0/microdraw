@@ -70,9 +70,8 @@ function newRegion(arg, imageNumber) {
         el.dblclick(doublePressOnRegion);
 
         // handle single and double tap on touch devices
-        /*
-          RT: it seems that a click event is also fired on touch devices,
-          making this one redundant
+        /**
+         * @todo it seems that a click event is also fired on touch devices, making this one redundant
         */
         el.on("touchstart",handleRegionTap);
     }
@@ -972,7 +971,8 @@ function onStrokeWidthInc() {
 /*** UNDO ***/
 
 /**
- * Command to actually perform an undo.
+ * @function cmdUndo
+ * @desc Command to actually perform an undo.
  */
 function cmdUndo() {
     if( UndoStack.length > 0 ) {
@@ -985,7 +985,8 @@ function cmdUndo() {
 }
 
 /**
- * Command to actually perform a redo.
+ * @function cmdRedo
+ * @desc Command to actually perform a redo.
  */
 function cmdRedo() {
     if( RedoStack.length > 0 ) {
@@ -998,7 +999,8 @@ function cmdRedo() {
 }
 
 /**
- * Return a complete copy of the current state as an undo object.
+ * @function getUndo
+ * @desc Return a complete copy of the current state as an undo object.
  */
 function getUndo() {
     var undo = { imageNumber: currentImage, regions: [], drawingPolygonFlag: drawingPolygonFlag };
@@ -1017,8 +1019,8 @@ function getUndo() {
 }
 
 /**
- * Save an undo object. This has the side-effect of initializing the
- * redo stack.
+ * @function setImage
+ * @desc Save an undo object. This has the side-effect of initializing the redo stack.
  */
 function saveUndo(undoInfo) {
     UndoStack.push(undoInfo);
@@ -1036,7 +1038,8 @@ function setImage(imageNumber) {
 }
 
 /**
- * Restore the current state from an undo object.
+ * @function applyUndo
+ * @desc Restore the current state from an undo object.
  */
 function applyUndo(undo) {
     if( undo.imageNumber !== currentImage )
@@ -1068,8 +1071,8 @@ function applyUndo(undo) {
 }
 
 /**
- * If we have actually made a change with a mouse operation, commit
- * the undo information.
+ * @function commitMouseUndo
+ * @desc If we have actually made a change with a mouse operation, commit the undo information.
  */
 function commitMouseUndo() {
     if( mouseUndo !== undefined ) {
@@ -1079,9 +1082,10 @@ function commitMouseUndo() {
 }
 
 
-/***3
-    Tool selection
-*/
+/**
+ * @function finishDrawingPolygon
+ * @desc Tool selection
+ */
 
 function finishDrawingPolygon(closed){
         // finished the drawing of the polygon
@@ -1112,7 +1116,8 @@ function backToSelect() {
 }
 
 /**
- * This function deletes the currently selected object.
+ * @function cmdDeleteSelected
+ * @desc This function deletes the currently selected object.
  */
 function cmdDeleteSelected() {
     var undoInfo = getUndo();
@@ -1247,8 +1252,8 @@ function selectTool() {
 }
 
 
-/***4
-    Annotation storage
+/*
+ Annotation storage
 */
 
 /* microdrawDB push/pull */
@@ -1567,8 +1572,9 @@ function initAnnotationOverlay(data) {
     updateRegionList();
     paper.view.draw();
 
-    /* RT: commenting this line out solves the image size issues */
-       // set size of the current overlay to match the size of the current image
+    /**
+     * @todo Commenting this line out solves the image size issues set size of the current overlay to match the size of the current image
+     */
        magicV = viewer.world.getItemAt(0).getContentSize().x / 100;
 
     transform();
@@ -1605,7 +1611,9 @@ function loginChanged() {
     // updateUser();
 
     // remove all annotations and paper projects from old user
-    // TODO maybe save to db??
+    /*
+     * @todo Maybe save to db??
+     */
     paper.projects[ImageInfo[currentImage]["projectID"]].activeLayer.visible = false;
     $(paper.projects[ImageInfo[currentImage]["projectID"]].view.element).hide();
     for( var i = 0; i < imageOrder.length; i++ ){
@@ -1717,7 +1725,9 @@ function initSlider(min_val, max_val, step, default_value) {
         });
 
         // Input event can only be used when not using database, otherwise the annotations will be loaded several times
-        // TODO fix the issue with the annotations for real
+        /**
+         * @todo Fix the issue with the annotations for real
+         */
         if (config.useDatabase == false) {
             slider.on("input", function() {
                 slider_onchange(this.value);

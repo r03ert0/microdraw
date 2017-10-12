@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500" media="all">
+    <style>
+    body {
+        margin: 0 auto;
+        margin-left: 310px;
+        max-width: 50em;
+        font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+        line-height: 1.5;
+        color: #555;
+        padding: 4em 1em;
+    }
+    #wrapperToc {
+    	position: fixed;
+    	height: 100%;
+    	top: 0px;
+    	left: 3px;
+    	width: 305px;
+    	overflow-y: auto;
+    }
+    
+    #toc {
+    	height: 100%;
+    	padding-top: 40px;
+    	overflow-y: scroll;
+    }
+    
+    .a {
+    	color: #000000;
+    	text-decoration: none;
+    }
+    
+    .link {
+    	color: #000000;
+    	text-decoration: none;
+    }
+
+    h1,h2,strong {
+        color: #333;
+    }
+
+    h2 {
+        margin-top: 1em;
+        padding-top: 1em;
+    }
+    code,
+    pre {
+      background: #eee;
+    }
+
+    code {
+      padding: 2px 4px;
+      vertical-align: text-bottom;
+    }
+
+    pre {
+      padding: 1em;
+    }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdn.rawgit.com/showdownjs/showdown/1.4.3/dist/showdown.min.js"></script>
+    <script>
+    var req = new XMLHttpRequest();
+    req.open('GET', 'brainbox.md');
+    req.onreadystatechange = function() {
+        var converter = new showdown.Converter();
+        var text      = this.responseText;
+    
+        showdown.setOption('tables', true);
+        var html      = converter.makeHtml(text);
+        document.body.innerHTML=html;
+    }
+    req.overrideMimeType("text/plain; charset=UTF-8");
+    req.send();
+    </script>
+</body>
+
+</html>
