@@ -892,11 +892,14 @@ function flipRegion(reg) {
     }
 }
 
+
 /**
- * @function toggleHandles
+ * @function bezierToPolygon
+ * @desc converts bezier curve into polygon
  */
-function toggleHandles() {
-    console.log("> toggleHandles");
+ 
+function bezierToPolygon() {
+    console.log("> bezierToPolygon");
     if (region != null) {
         if (region.path.hasHandles()) {
             if (confirm('Convert bezier curve into polygon?')) {
@@ -906,14 +909,32 @@ function toggleHandles() {
             }
         }
         else {
+            return;
+        }
+        paper.view.draw();
+    }
+}
+
+/**
+ * @function polygonToBezier
+ * @desc converts polygon into bezier curve
+ */
+
+function polygonToBezier() {
+    console.log("> polygonToBezier");
+    if (region != null) {
+        if (region.path.hasHandles()) {
+            return;
+        }
+        else {
             var undoInfo = getUndo();
             region.path.smooth();
             saveUndo(undoInfo);
         }
         paper.view.draw();
     }
-
 }
+
 
 /***
     the following functions serve changing the annotation style
@@ -1380,8 +1401,12 @@ function toolSelection(event) {
             toggleMenu();
             backToPreviousTool(prevTool);
             break;
-        case "handle":
-            toggleHandles();
+        case "toPolygon":
+            bezierToPolygon();
+            backToPreviousTool(prevTool);
+            break;
+        case "toBezier":
+            polygonToBezier();
             backToPreviousTool(prevTool);
             break;
         case "screenshot":
