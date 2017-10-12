@@ -2258,7 +2258,7 @@ function initMicrodraw2(obj) {
 /**
  * @function toggleMenu
  */
-function toggleMenu() {
+function toggleMenu () {
     if( $('#menuBar').css('display') == 'none' ) {
         $('#menuBar').css('display', 'block');
         $('#menuButton').css('display', 'none');
