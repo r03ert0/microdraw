@@ -1027,7 +1027,10 @@ function setRegionColor() {
     reg.path.fillColor.alpha = $('#alphaSlider').val() / 100;
 
     // update region tag
-    $(".region-tag#" + reg.uid + ">.region-color").css('background-color', 'rgba(' + red + ',' + green + ',' + blue + ',0.67)');
+    $(".region-tag#" + reg.uid + ">.region-color").css(
+        'background-color',
+        'rgba(' + red + ',' + green + ',' + blue + ',0.67)'
+    );
 
     // update stroke color
     switch( $('#selectStrokeColor')[0].selectedIndex ) {
