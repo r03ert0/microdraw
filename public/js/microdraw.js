@@ -43,7 +43,7 @@ function newRegion(arg, imageNumber) {
     if( debug ) console.log("> newRegion");
       var reg = {};
 
-    reg.uid = regionUniqueID();
+    reg.uid = regionUID();
     if( arg.name ) {
         reg.name = arg.name;
     }
@@ -200,10 +200,10 @@ function findRegionByName(name) {
 
 var counter = 1;
 /**
- * @function regionUniqueID
+ * @function regionUID
  */
-function regionUniqueID() {
-    if( debug ) console.log("> regionUniqueID");
+function regionUID() {
+    if( debug ) console.log("> regionUID");
 
     var i;
     var found = false;
@@ -1141,7 +1141,7 @@ function getUndo() {
 }
 
 /**
- * @function setImage
+ * @function saveUndo
  * @desc Save an undo object. This has the side-effect of initializing the redo stack.
  */
 
@@ -1158,7 +1158,7 @@ function setImage(imageNumber) {
     var index = imageOrder.indexOf(imageNumber);
 
     // update image slider
-    update_slider_value(index);
+    updateSliderValue(index);
 
     loadImage(imageOrder[index]);
 }
@@ -1648,7 +1648,7 @@ function loadNextImage() {
     var nextIndex = (index + 1) % imageOrder.length;
 
     // update image slider
-    update_slider_value(nextIndex);
+    updateSliderValue(nextIndex);
 
     loadImage(imageOrder[nextIndex]);
 }
@@ -1662,7 +1662,7 @@ function loadPreviousImage() {
     var previousIndex = ((index - 1 >= 0)? index - 1 : imageOrder.length - 1 );
 
     // update image slider
-    update_slider_value(previousIndex);
+    updateSliderValue(previousIndex);
 
     loadImage(imageOrder[previousIndex]);
 }
@@ -1923,7 +1923,7 @@ function initSlider(min_val, max_val, step, default_value) {
         slider.val(default_value);
 
         slider.on("change", function() {
-            slider_onchange(this.value);
+            sliderOnChange(this.value);
         });
 
         // Input event can only be used when not using database, otherwise the annotations will be loaded several times
@@ -1933,32 +1933,32 @@ function initSlider(min_val, max_val, step, default_value) {
 
         if (config.useDatabase == false) {
             slider.on("input", function() {
-                slider_onchange(this.value);
+                sliderOnChange(this.value);
             });
         }
     }
 }
 
 /**
- * @function slider_onchange
+ * @function sliderOnChange
  */
-function slider_onchange(newImageIndex) {
+function sliderOnChange(newImageIndex) {
 /*
     Called when the slider value is changed to load a new slice
 */
-    if( debug ) console.log("> slider_onchange promise");
+    if( debug ) console.log("> sliderOnChange promise");
     var imageNumber = imageOrder[newImageIndex];
     loadImage(imageNumber);
 }
 
 /**
- * @function update_slider_value
+ * @function updateSliderValue
  */
-function update_slider_value(newIndex) {
+function updateSliderValue(newIndex) {
 /*
     Used to update the slider value if the slice was changed by another control
 */
-    if( debug ) console.log("> update_slider_value promise");
+    if( debug ) console.log("> updateSliderValue promise");
     var slider = $("#slider");
     if( slider.length > 0 ) { // only if slider could be found
         slider.val(newIndex);
@@ -1966,9 +1966,9 @@ function update_slider_value(newIndex) {
 }
 
 /**
- * @function find_slice_number
+ * @function findSliceNumber
  */
-function find_slice_number(number_str) {
+function findSliceNumber(number_str) {
 /*
     Searches for the given slice-number.
     If the number could be found its index will be returned. Otherwise -1
@@ -1988,18 +1988,18 @@ function find_slice_number(number_str) {
 }
 
 /**
- * @function slice_name_onenter
+ * @function sliceNameOnEnter
  */
-function slice_name_onenter(event) {
+function sliceNameOnEnter(event) {
 /*
     Eventhandler to open a specific slice by the enter key
 */
-    if( debug ) console.log("> slice_name_onenter promise");
+    if( debug ) console.log("> sliceNameOnEnter promise");
     if( event.keyCode == 13 ) { // enter key
         var slice_number = $(this).val();
-        var index = find_slice_number(slice_number);
+        var index = findSliceNumber(slice_number);
         if( index > -1 ) { // if slice number exists
-            update_slider_value(index);
+            updateSliderValue(index);
             loadImage(imageOrder[index]);
         }
     }
@@ -2100,7 +2100,7 @@ function initMicrodraw() {
     }
 
     // Change current slice by typing in the slice number and pessing the enter key
-    $("#slice-name").keyup(slice_name_onenter);
+    $("#slice-name").keyup(sliceNameOnEnter);
 
     // Show and hide menu
     if( config.hideToolbar ) {
