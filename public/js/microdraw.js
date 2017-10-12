@@ -1384,6 +1384,10 @@ function toolSelection(event) {
             toggleHandles();
             backToPreviousTool(prevTool);
             break;
+        case "screenshot":
+            viewer.screenshotInstance.toggleScreenshotMenu();
+            backToPreviousTool(prevTool);
+            break;
     }
 }
 
@@ -2168,14 +2172,20 @@ function initMicrodraw2(obj) {
     }
 
     // set default values for new regions (general configuration)
-    if (config.defaultStrokeColor == undefined) config.defaultStrokeColor = 'black';
-    if (config.defaultStrokeWidth == undefined) config.defaultStrokeWidth = 1;
-    if (config.defaultFillAlpha == undefined) config.defaultFillAlpha = 0.5;
+    if (config.defaultStrokeColor == undefined)
+        config.defaultStrokeColor = 'black';
+    if (config.defaultStrokeWidth == undefined)
+        config.defaultStrokeWidth = 1;
+    if (config.defaultFillAlpha == undefined)
+        config.defaultFillAlpha = 0.5;
     // set default values for new regions (per-brain configuration)
     if (obj.configuration) {
-        if (obj.configuration.defaultStrokeColor != undefined) config.defaultStrokeColor = obj.configuration.defaultStrokeColor;
-        if (obj.configuration.defaultStrokeWidth != undefined) config.defaultStrokeWidth = obj.configuration.defaultStrokeWidth;
-        if (obj.configuration.defaultFillAlpha != undefined) config.defaultFillAlpha = obj.configuration.defaultFillAlpha;
+        if (obj.configuration.defaultStrokeColor != undefined)
+            config.defaultStrokeColor = obj.configuration.defaultStrokeColor;
+        if (obj.configuration.defaultStrokeWidth != undefined)
+            config.defaultStrokeWidth = obj.configuration.defaultStrokeWidth;
+        if (obj.configuration.defaultFillAlpha != undefined)
+            config.defaultFillAlpha = obj.configuration.defaultFillAlpha;
     }
 
     // init slider that can be used to change between slides
@@ -2196,7 +2206,8 @@ function initMicrodraw2(obj) {
         zoomOutButton:"zoom-out",
         homeButton:"home",
         maxZoomPixelRatio:10,
-        preserveViewport: true
+        preserveViewport: true,
+        crossOriginPolicy: 'Anonymous'
     });
 
     // open the currentImage
@@ -2214,6 +2225,13 @@ function initMicrodraw2(obj) {
         location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
         xOffset:5,
         yOffset:5
+    });
+
+    // add screenshot
+    viewer.screenshot({
+        showOptions: true, // Default is false
+        keyboardShortcut: 'p', // Default is null
+        showScreenshotControl: true // Default is true
     });
 
     // add handlers: update slice name, animation, page change, mouse actions
