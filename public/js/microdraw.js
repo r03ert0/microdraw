@@ -43,6 +43,7 @@ var counter = 1;
 
 /**
  * @function regionUID
+ * @returns {number} counter Number of regions in the current slice.
  */
 function regionUID() {
     if( debug ) {
@@ -62,11 +63,12 @@ function regionUID() {
         }
     }
 
-return counter;
+    return counter;
 }
 
 /**
  * @function hash
+ * @param {string} str
  */
 function hash(str) {
     var result = str.split("").reduce(function(a, b) {
@@ -81,7 +83,8 @@ function hash(str) {
 /**
  * @function regionHashColor
  * @desc Produces a color based on a region name.
- * @param String name Name of the region.
+ * @param {string} name Name of the region.
+ * @returns {number} color Default color of the region based on its name.
  */
 function regionHashColor(name) {
     //if(debug) console.log("> regionHashColor");
@@ -102,6 +105,7 @@ function regionHashColor(name) {
 
 /**
  * @function findRegionByUID
+ * @ param {number} uid Unique ID of a regiron.
  */
 function findRegionByUID(uid) {
     if( debug ) { console.log("> findRegionByUID"); }
@@ -126,8 +130,8 @@ function findRegionByUID(uid) {
 
 /**
  * @function regionTag
- * @param String name
- * @param Number uid
+ * @param {string} name
+ * @param {number} uid
  */
 function regionTag(name, uid) {
     //if( debug ) console.log("> regionTag");
