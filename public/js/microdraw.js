@@ -629,7 +629,7 @@ var Microdraw = (function () {
          * @param {object} reg The selected region
          */
         checkRegionSize: function checkRegionSize(reg) {
-            if( reg.path.length > 3 ) {
+            if( reg.path.segments.length > 3 ) {
 
             } else {
                 me.removeRegion(me.region, me.currentImage);
@@ -934,15 +934,42 @@ var Microdraw = (function () {
                 // to delete all unnecessary segments while preserving the form of the region to make it modifiable; & adding handles to the segments
                 var orig_segments = me.region.path.segments.length;
 
-                var z = me.viewer.viewport.viewportToImageZoom(me.viewer.viewport.getZoom(true));
-                z = 3*Math.pow(10, z);
-                me.region.path.scale(z, z);
-                me.region.path.simplify(0);
-                me.region.path.scale(1/z, 1/z);
-
-                var final_segments = me.region.path.segments.length;
-                if( me.debug > 2 ) { console.log( parseInt(final_segments/orig_segments*100, 10) + "% segments conserved" ); }
+                // delete unnecessary segments while preserving the shape of the region to make it modifiable and & adding handles to the segments
+                if (me.debug) {
+                  var orig_segments = me.region.path.segments.length;
+                }
+                // . pixels per dot (dot is a device-independent psuedo-pixel with a resolution of roughly 72 dpi)
+                var ppd = paper.view.pixelRatio
+         
+                // . mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
+                var pixelSelectAccuracy = 4.0*ppd
+         
+                // . ratio between project coordinates and browser pixels
+                var coordsPerPixel = paper.view.size.width/paper.view.viewSize.width
+         
+                // . accuracy by which curves can reasonably be simplified
+                var simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy
+                 
+                // . the simplify function looks at the maximum squared distance from curve to original points
+                me.region.path.simplify(simplifyAccuracy*simplifyAccuracy);
+                
+                /*
+                  // previous monkey-patched code 
+                  var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
+                  var x = z * 30;
+                  var previousPosition = region.path.position;
+                  region.path.scale(x, x)
+                  region.path.simplify(0);    }
+                  region.path.scale(1/x, 1/x)
+                  region.path.position = previousPosition;
+                */ 
+         
+                if (me.debug) {
+                    var final_segments = me.region.path.segments.length;
+                    console.log( final_segments, parseInt(final_segments/orig_segments*100, 10) + "% segments conserved" );
+                }
             }
+
             paper.view.draw();
         },
 
