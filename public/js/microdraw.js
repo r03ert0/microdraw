@@ -55,7 +55,7 @@ function regionUID() {
     while( found === false ) {
         found = true;
         for( i = 0; i < ImageInfo[currentImage].Regions.length; i += 1 ) {
-            if( ImageInfo[currentImage].Regions[i].uid === counter ) {
+            if( parseInt(ImageInfo[currentImage].Regions[i].uid, 10) === counter ) {
                 counter += 1;
                 found = false;
                 break;
@@ -108,15 +108,21 @@ function regionHashColor(name) {
  * @ param {number} uid Unique ID of a regiron.
  */
 function findRegionByUID(uid) {
-    if( debug ) { console.log("> findRegionByUID"); }
+    if( debug ) {
+        console.log("> findRegionByUID");
+    }
 
     var i;
-    if( debug > 2 ) { console.log( "look for uid: " + uid); }
+    if( debug > 2 ) {
+        console.log( "look for uid: " + uid);
+    }
     // if( debug > 2 ) console.log( ImageInfo );
-    if( debug > 2 ) { console.log( "region array lenght: " + ImageInfo[currentImage].Regions.length ); }
+    if( debug > 2 ) {
+        console.log( "region array lenght: " + ImageInfo[currentImage].Regions.length );
+    }
 
     for( i = 0; i < ImageInfo[currentImage].Regions.length; i += 1 ) {
-        if( ImageInfo[currentImage].Regions[i].uid === uid ) {
+        if( parseInt(ImageInfo[currentImage].Regions[i].uid, 10) === parseInt(uid) ) {
             if( debug > 2 ) { console.log( "region " + ImageInfo[currentImage].Regions[i].uid + ": " ); }
             if( debug > 2 ) { console.log( ImageInfo[currentImage].Regions[i] ); }
 
@@ -125,7 +131,7 @@ function findRegionByUID(uid) {
     }
     console.log("Region with unique ID " + uid + " not found");
 
-    return null;
+    return;
 }
 
 /**
@@ -194,7 +200,7 @@ function selectRegion(reg) {
 
     // Select path
     for( i = 0; i < ImageInfo[currentImage].Regions.length; i += 1 ) {
-        if( ImageInfo[currentImage].Regions[i] == reg ) {
+        if( ImageInfo[currentImage].Regions[i] === reg ) {
             reg.path.selected = true;
             reg.path.fullySelected = true;
             region = reg;
@@ -267,8 +273,20 @@ function toggleRegion(reg) {
     }
 }
 
-var currentColorRegion;
 
+/**
+ * @function pad
+ * @desc Add leading zeros
+ */
+
+function pad(number, length) {
+    var str = String(number);
+    while( str.length < length ) { str = '0' + str; }
+
+    return str;
+}
+
+var currentColorRegion;
 
 /**
  * @function annotationStyle
@@ -296,7 +314,7 @@ function annotationStyle(reg) {
 
         $('#fillColorPicker').val( hexColor );
 
-        if( $('#colorSelector').css('display') == 'none' ) {
+        if( $('#colorSelector').css('display') === 'none' ) {
             $('#colorSelector').css('display', 'block');
         } else {
             $('#colorSelector').css('display', 'none');
@@ -341,8 +359,10 @@ function singlePressOnRegion(event) {
                 var newName = el.find(".region-name").text();
                 uid = $(".region-tag.selected").attr('id');
                 reg = findRegionByUID(uid);
-                changeRegionName(reg, newName);
-                $("div#regionPicker").appendTo($("body")).hide();
+                if( reg ) {
+                    changeRegionName(reg, newName);
+                    $("div#regionPicker").appendTo($("body")).hide();
+                }
             } else {
                 // Click on regionList (list or annotated regions)
                 uid = $(this).attr('id');
@@ -353,8 +373,8 @@ function singlePressOnRegion(event) {
             }
         } else {
             reg = findRegionByUID(this.id);
-            if( reg.path.fillColor !== null ) {
-                if( reg ) {
+            if( reg ) {
+                if( reg.path.fillColor !== null ) {
                     selectRegion(reg);
                 }
                 annotationStyle(reg);
@@ -362,7 +382,9 @@ function singlePressOnRegion(event) {
         }
     } else {
         reg = findRegionByUID(this.id);
-        toggleRegion(reg);
+        if( reg ) {
+            toggleRegion(reg);
+        }
     }
 }
 
@@ -384,19 +406,19 @@ function doublePressOnRegion(event) {
     if( event.clientX > 20 ) {
         if( event.clientX > 50 )    {
             if( config.drawingEnabled ) {
-                if( config.regionOntology == true ) {
+                if( config.regionOntology === true ) {
                     regionPicker(this);
                 } else {
                     name = prompt("Region name", findRegionByUID(this.id).name);
-                    if( name != null ) {
+                    if( name !== null ) {
                         changeRegionName(findRegionByUID(this.id), name);
                     }
                 }
             }
         } else {
             reg = findRegionByUID(this.id);
-            if( reg.path.fillColor != null ) {
-                if( reg ) {
+            if( reg ) {
+                if( reg.path.fillColor !== null ) {
                     selectRegion(reg);
                 }
                 annotationStyle(reg);
@@ -410,6 +432,7 @@ function doublePressOnRegion(event) {
 
 /**
  * @function handleRegionTap
+ * @this
  */
 function handleRegionTap(event) {
 
@@ -441,8 +464,9 @@ function handleRegionTap(event) {
 /**
  * @function newRegion
  * @desc  Create a new region
- * @param Object arg An object containing the name of the region (arg.name) and the path data (arg.path)
- * @param Integer imageNumber The number of the image where the region will be created
+ * @param {object} arg An object containing the name of the region (arg.name) and the path data (arg.path)
+ * @param {number} imageNumber The number of the image where the region will be created
+ * @this
  */
 function newRegion(arg, imageNumber) {
     if( debug ) {
@@ -509,8 +533,8 @@ function newRegion(arg, imageNumber) {
 /**
  * @function removeRegion
  * @desc Remove region from current image
- * @param Object reg The region is going to be removed by this function
- * @param Integer imageNumber The number of the image where the region will be removed
+ * @param {object} reg The region is going to be removed by this function
+ * @param {number} imageNumber The number of the image where the region will be removed
  */
 function removeRegion(reg, imageNumber) {
     if( debug ) { console.log("> removeRegion"); }
@@ -523,7 +547,7 @@ function removeRegion(reg, imageNumber) {
     ImageInfo[imageNumber].Regions.splice(ImageInfo[imageNumber].Regions.indexOf(reg), 1);
     // remove from paths
     reg.path.remove();
-    if( imageNumber == currentImage ) {
+    if( imageNumber === currentImage ) {
         // remove from regionList
         var tag = $("#regionList > .region-tag#" + reg.uid);
         $(tag).remove();
@@ -538,7 +562,7 @@ function findRegionByName(name) {
 
     var i;
     for( i = 0; i < ImageInfo[currentImage].Regions.length; i += 1 ) {
-        if( ImageInfo[currentImage].Regions[i].name == name ) {
+        if( ImageInfo[currentImage].Regions[i].name === name ) {
             return ImageInfo[currentImage].Regions[i];
         }
     }
@@ -576,6 +600,7 @@ function appendRegionTagsFromOntology(o) {
 
 /**
  * @function updateRegionList
+ * @this
  */
 function updateRegionList() {
     if( debug ) { console.log("> updateRegionList"); }
@@ -603,6 +628,7 @@ function updateRegionList() {
 
 /**
  * @function checkRegionSize
+ * @param {object} reg The selected region
  */
 function checkRegionSize(reg) {
     if( reg.path.length > 3 ) {
@@ -1710,13 +1736,13 @@ function load() {
 /**
  * @function loadImage
  */
-function loadImage(name) {
-    if( debug ) { console.log("> loadImage(" + name + ")"); }
+function loadImage(imageIndex) {
+    if( debug ) { console.log("> loadImage(" + imageIndex + ")"); }
     // save previous image for some (later) cleanup
     prevImage = currentImage;
 
     // set current image to new image
-    currentImage = name;
+    currentImage = imageIndex;
 
     viewer.open(ImageInfo[currentImage].source);
 }
