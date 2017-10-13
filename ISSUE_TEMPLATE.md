@@ -1,6 +1,7 @@
 ## Hi! Thank you for getting back to us! <3
 
-### Is this a feature request or a bug report? Please tag :)
+### Is this a feature request or a bug report? 
+* Please choose one of the labels on the right side and tag your issue :)
 
 ### What is the current behavior?
 
@@ -18,8 +19,7 @@
 * **Browser + version**:
 * **Your OS and version**:
 * Paste the output of these commands:
-``
+```
 node --version && npm --version
 ```
-
 
