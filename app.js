@@ -134,7 +134,7 @@ app.use('/data', require('./controller/data/'));
 // API routes
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
-    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
+    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
     console.warn(req.query);
     db.get('data').findOne({
         source: req.query.source,
@@ -143,25 +143,26 @@ app.get('/api', function (req, res) {
         backup: {$exists: false}
     })
     .then(function(obj) {
-        if(obj)
+        if(obj) {
             res.send(obj.value);
-        else
+        } else {
             res.send();
+        }
     })
     .catch(function(err) {
-        console.error("ERROR",err);
+        console.error("ERROR", err);
         res.send({error:JSON.stringify(err)});
     });
 });
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    var body = req.body;
+    var { body } = req.body;
     switch(body.action) {
         case 'save':
-            var source = body.source;
-            var slice = body.slice;
-            var key = body.key;
+            var { source } = body.source;
+            var { slice } = body.slice;
+            var { key } = body.key;
             var value = JSON.parse(body.value);
             // mark previous version as backup
             db.get('data').update({

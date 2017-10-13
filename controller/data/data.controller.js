@@ -1,11 +1,11 @@
 "use strict";
 
-var data = function data(req, res) {
-    var source = req.query.source;
+function data(req, res) {
+    var { source } = req.query.source; // eslint-disable-line no-unused-vars
     var login = (req.isAuthenticated()) ?
                 ("<a href='/user/" + req.user.username + "'>" + req.user.username + "</a> (<a href='/logout'>Log Out</a>)")
                 : ("<a href='/auth/github'>Log in with GitHub</a>");
-    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
+    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
 
     // store return path in case of login
     req.session.returnTo = req.originalUrl;
@@ -15,10 +15,10 @@ var data = function data(req, res) {
         params: JSON.stringify(req.query),
         login: login
     });
-};
+}
 
-var dataController = function () {
+function DataController() {
     this.data = data;
-};
+}
 
-module.exports = new dataController();
+module.exports = new DataController();
