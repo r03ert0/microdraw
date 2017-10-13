@@ -18,7 +18,7 @@ var DOCKER_DB = process.env.DB_PORT;
 if ( DOCKER_DB ) {
     MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
 } else {
-    MONGO_DB = 'localhost:27017/microdraw_database'; //process.env.MONGODB;
+    MONGO_DB = process.env.MONGODB || 'localhost:27017/microdraw';
 }
 var db = monk(MONGO_DB);
 var fs = require('fs');
