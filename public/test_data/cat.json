@@ -1,0 +1,6 @@
+{
+    "tileSources": [
+        "test_data/cat.dzi"
+    ],
+    "pixelsPerMeter": 10000
+}
