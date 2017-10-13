@@ -1,0 +1,4 @@
+{
+  "MONGO_DB": "medpc129.ime.kfa-juelich.de:27017/microdraw_database",
+  "PORT": "3000"
+}

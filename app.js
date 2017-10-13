@@ -9,6 +9,12 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mustacheExpress = require('mustache-express');
 
+
+var fs = require('fs');
+
+var dirname = __dirname; // local directory
+var server_config = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
+
 //var mongo = require('mongodb');
 var monk = require('monk');
 var MONGO_DB;
@@ -18,12 +24,10 @@ var DOCKER_DB = process.env.DB_PORT;
 if ( DOCKER_DB ) {
     MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
 } else {
-    MONGO_DB = process.env.MONGODB || 'localhost:27017/microdraw';
+    MONGO_DB = server_config.MONGO_DB || 'localhost:27017/microdraw';
 }
 var db = monk(MONGO_DB);
-var fs = require('fs');
 
-var dirname = __dirname; // local directory
 
 //var index = require('./routes/index');
 
