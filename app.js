@@ -18,7 +18,7 @@ var DOCKER_DB = process.env.DB_PORT;
 if ( DOCKER_DB ) {
     MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
 } else {
-    MONGO_DB = 'localhost:27017/microdraw'; //process.env.MONGODB;
+    MONGO_DB = 'localhost:27017/microdraw_database'; //process.env.MONGODB;
 }
 var db = monk(MONGO_DB);
 var fs = require('fs');
@@ -136,17 +136,22 @@ app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
     console.warn(req.query);
-    db.get('data').findOne({
-        source: req.query.source,
-        slice: req.query.slice,
-        key: req.query.key,
+    db.get('annotations').find({
+        file_id: req.query.file_id,
+        user_id: req.query.user_id,
         backup: {$exists: false}
     })
     .then(function(obj) {
-        if(obj)
-            res.send(obj.value);
-        else
+        if(obj) {
+            var data = [];
+            for (var i = 0; i < obj.length; i++){
+              data.push(obj[i].annotation);
+            }
+            res.send(data);
+          }
+        else {
             res.send();
+          }
     })
     .catch(function(err) {
         console.error("ERROR",err);
