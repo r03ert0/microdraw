@@ -23,6 +23,7 @@ Data visualisation uses OpenSeadragon, and data annotation uses Paper.js.
 * install the project: `npm install`
 * run it: `npm run start`
 * open http://localhost:3000
+* test data can be viewed at http://localhost:3000/data?source=/test_data/cat.json
 
 ### Enable Github Login
 
