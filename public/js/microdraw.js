@@ -130,8 +130,8 @@ function findRegionByUID(uid) {
 
 /**
  * @function regionTag
- * @param {string} name
- * @param {number} uid
+ * @param {string} name Name of the region.
+ * @param {number} uid Unique ID of the region.
  */
 function regionTag(name, uid) {
     //if( debug ) console.log("> regionTag");
@@ -184,7 +184,7 @@ function regionTag(name, uid) {
 /**
  * @function selectRegion
  * @desc Make the region selected
- * @param Object reg The region to select.
+ * @param {object} reg The region to select.
  * @this
  */
 function selectRegion(reg) {
@@ -219,7 +219,91 @@ function selectRegion(reg) {
 }
 
 /**
+ * @function changeRegionName
+ */
+function changeRegionName(reg, name) {
+    if( debug ) { console.log("> changeRegionName"); }
+
+    var i;
+    var color = regionHashColor(name);
+
+    // Update path
+    reg.name = name;
+    reg.path.fillColor = 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.5)';
+    paper.view.draw();
+
+    // Update region tag
+    $(".region-tag#" + reg.uid + ">.region-name").text(name);
+    $(".region-tag#" + reg.uid + ">.region-color").css('background-color', 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.67)');
+}
+
+/**
+ * @function toggleRegion
+ * @desc Toggle the visibility of a region
+ */
+function toggleRegion(reg) {
+    if( region !== null ) {
+        if( debug ) { console.log("> toggle region"); }
+
+        var color = regionHashColor(reg.name);
+        if( reg.path.fillColor !== null ) {
+            reg.path.storeColor = reg.path.fillColor;
+            reg.path.fillColor = null;
+
+            reg.path.strokeWidth = 0;
+            reg.path.fullySelected = false;
+            reg.storeName = reg.name;
+            //reg.name=reg.name + '*';
+            $('#eye_' + reg.uid).attr('src', 'img/eyeClosed.svg');
+        } else {
+            reg.path.fillColor = reg.path.storeColor;
+            reg.path.strokeWidth = 1;
+            reg.name = reg.storeName;
+            $('#eye_' + reg.uid).attr('src', 'img/eyeOpened.svg');
+        }
+        paper.view.draw();
+        $(".region-tag#" + reg.uid + ">.region-name").text(reg.name);
+    }
+}
+
+
+/**
+ * @function annotationStyle
+ * @desc Get current alpha & color values for colorPicker display
+ */
+
+function annotationStyle(reg) {
+    if( debug ) { console.log(reg.path.fillColor); }
+
+    if( region !== null ) {
+        if( debug ) { console.log("> changing annotation style"); }
+
+        currentColorRegion = reg;
+        var alpha = reg.path.fillColor.alpha;
+        $('#alphaSlider').val(alpha*100);
+        $('#alphaFill').val(parseInt(alpha*100), 10);
+
+        var hexColor = '#'
+            + pad(( parseInt(reg.path.fillColor.red * 255, 10) ).toString(16), 2)
+            + pad(( parseInt(reg.path.fillColor.green * 255, 10) ).toString(16), 2)
+            + pad(( parseInt(reg.path.fillColor.blue * 255, 10) ).toString(16), 2);
+        if( debug ) {
+            console.log(hexColor);
+        }
+
+        $('#fillColorPicker').val( hexColor );
+
+        if( $('#colorSelector').css('display') == 'none' ) {
+            $('#colorSelector').css('display', 'block');
+        } else {
+            $('#colorSelector').css('display', 'none');
+        }
+    }
+}
+
+/**
  * @function singlePressOnRegion
+ * @this
  */
 function singlePressOnRegion(event) {
     if( debug ) {
@@ -453,54 +537,6 @@ function regionPicker(parent) {
 
     $("div#regionPicker").appendTo("body");
     $("div#regionPicker").show();
-}
-
-/**
- * @function changeRegionName
- */
-function changeRegionName(reg, name) {
-    if( debug ) { console.log("> changeRegionName"); }
-
-    var i;
-    var color = regionHashColor(name);
-
-    // Update path
-    reg.name = name;
-    reg.path.fillColor = 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.5)';
-    paper.view.draw();
-
-    // Update region tag
-    $(".region-tag#" + reg.uid + ">.region-name").text(name);
-    $(".region-tag#" + reg.uid + ">.region-color").css('background-color', 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.67)');
-}
-
-/**
- * @function toggleRegion
- * @desc Toggle the visibility of a region
- */
-function toggleRegion(reg) {
-    if( region !== null ) {
-        if( debug ) { console.log("> toggle region"); }
-
-        var color = regionHashColor(reg.name);
-        if( reg.path.fillColor !== null ) {
-            reg.path.storeColor = reg.path.fillColor;
-            reg.path.fillColor = null;
-
-            reg.path.strokeWidth = 0;
-            reg.path.fullySelected = false;
-            reg.storeName = reg.name;
-            //reg.name=reg.name + '*';
-            $('#eye_' + reg.uid).attr('src', 'img/eyeClosed.svg');
-        } else {
-            reg.path.fillColor = reg.path.storeColor;
-            reg.path.strokeWidth = 1;
-            reg.name = reg.storeName;
-            $('#eye_' + reg.uid).attr('src', 'img/eyeOpened.svg');
-        }
-        paper.view.draw();
-        $(".region-tag#" + reg.uid + ">.region-name").text(reg.name);
-    }
 }
 
 /**
@@ -977,40 +1013,6 @@ function pad(number, length) {
     while( str.length < length ) { str = '0' + str; }
 
     return str;
-}
-
-/**
- * @function annotationStyle
- * @desc Get current alpha & color values for colorPicker display
- */
-
-function annotationStyle(reg) {
-    if( debug ) { console.log(reg.path.fillColor); }
-
-    if( region !== null ) {
-        if( debug ) { console.log("> changing annotation style"); }
-
-        currentColorRegion = reg;
-        var alpha = reg.path.fillColor.alpha;
-        $('#alphaSlider').val(alpha*100);
-        $('#alphaFill').val(parseInt(alpha*100), 10);
-
-        var hexColor = '#'
-            + pad(( parseInt(reg.path.fillColor.red * 255, 10) ).toString(16), 2)
-            + pad(( parseInt(reg.path.fillColor.green * 255, 10) ).toString(16), 2)
-            + pad(( parseInt(reg.path.fillColor.blue * 255, 10) ).toString(16), 2);
-        if( debug ) {
-            console.log(hexColor);
-        }
-
-        $('#fillColorPicker').val( hexColor );
-
-        if( $('#colorSelector').css('display') == 'none' ) {
-            $('#colorSelector').css('display', 'block');
-        } else {
-            $('#colorSelector').css('display', 'none');
-        }
-    }
 }
 
 /**
