@@ -305,6 +305,16 @@ function annotationStyle(reg) {
 }
 
 /**
+ * @function regionPicker
+ */
+function regionPicker(parent) {
+    if( debug ) { console.log("> regionPicker"); }
+
+    $("div#regionPicker").appendTo("body");
+    $("div#regionPicker").show();
+}
+
+/**
  * @function singlePressOnRegion
  * @this
  */
@@ -358,6 +368,7 @@ function singlePressOnRegion(event) {
 
 /**
  * @function doublePressOnRegion
+ * @this
  */
 function doublePressOnRegion(event) {
     if( debug ) {
@@ -396,6 +407,36 @@ function doublePressOnRegion(event) {
         toggleRegion(reg);
     }
 }
+
+/**
+ * @function handleRegionTap
+ */
+function handleRegionTap(event) {
+
+/*
+    Handles single and double tap in touch devices
+*/
+    if( debug ) { console.log("> handleRegionTap"); }
+
+    var caller = this;
+
+    if( !tap ) { //if tap is not set, set up single tap
+        tap = setTimeout(function() {
+            tap = null;
+        }, 300);
+
+        // call singlePressOnRegion(event) using 'this' as context
+        singlePressOnRegion.call(this, event);
+    } else {
+        clearTimeout(tap);
+        tap = null;
+
+        // call doublePressOnRegion(event) using 'this' as context
+        doublePressOnRegion.call(this, event);
+    }
+    if( debug ) { console.log("< handleRegionTap"); }
+}
+
 
 /**
  * @function newRegion
@@ -532,15 +573,6 @@ function appendRegionTagsFromOntology(o) {
     }
 }
 
-/**
- * @function regionPicker
- */
-function regionPicker(parent) {
-    if( debug ) { console.log("> regionPicker"); }
-
-    $("div#regionPicker").appendTo("body");
-    $("div#regionPicker").show();
-}
 
 /**
  * @function updateRegionList
@@ -631,35 +663,6 @@ function dragEndHandler(event) {
 }
 
 var tap = false;
-
-/**
- * @function handleRegionTap
- */
-function handleRegionTap(event) {
-
-/*
-    Handles single and double tap in touch devices
-*/
-    if( debug ) { console.log("> handleRegionTap"); }
-
-    var caller = this;
-
-    if( !tap ) { //if tap is not set, set up single tap
-        tap = setTimeout(function() {
-            tap = null;
-        }, 300);
-
-        // call singlePressOnRegion(event) using 'this' as context
-        singlePressOnRegion.call(this, event);
-    } else {
-        clearTimeout(tap);
-        tap = null;
-
-        // call doublePressOnRegion(event) using 'this' as context
-        doublePressOnRegion.call(this, event);
-    }
-    if( debug ) { console.log("< handleRegionTap"); }
-}
 
 /**
  * @function mouseDown
