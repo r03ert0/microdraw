@@ -1572,8 +1572,7 @@ var Microdraw = (function () {
                 }(sl, h));
 
                 //show dialog box with timeout
-                $('#saveDialog').html(savedSlices)
-        .fadeIn();
+                $('#saveDialog').html(savedSlices).fadeIn();
                 setTimeout(function() { $("#saveDialog").fadeOut(500); }, 2000);
             }
         },
@@ -1614,7 +1613,7 @@ var Microdraw = (function () {
                     });
                     def.fail();
 
-        return;
+                    return;
                 }
 
                 // if there is no data on the current slice
@@ -1622,7 +1621,7 @@ var Microdraw = (function () {
                 if( $.isEmptyObject(data) ) {
                     me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
 
-        return;
+                    return;
                 }
 
                 // parse the data and add to the current canvas
@@ -1648,7 +1647,7 @@ var Microdraw = (function () {
                 if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
                 def.resolve();
             })
-        .error(function(jqXHR, textStatus, errorThrown) {
+            .error(function(jqXHR, textStatus, errorThrown) {
                 console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
                 me.annotationLoadingFlag = false;
             });
@@ -2363,8 +2362,7 @@ var Microdraw = (function () {
                 zoomOutButton:"zoom-out",
                 homeButton:"home",
                 maxZoomPixelRatio:10,
-                preserveViewport: true,
-                crossOriginPolicy: 'Anonymous'
+                preserveViewport: true
             });
 
             // open the currentImage
