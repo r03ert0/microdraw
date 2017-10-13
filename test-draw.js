@@ -28,10 +28,10 @@ puppeteer.launch({headless: true})
         .then(function() {console.log('go to home page');})
 
         // OPEN DATA
-        .then(function() {return page.goto('http://localhost:3000/data?source=/ferret/sub1.20.json')})
+        .then(function() {return page.goto('http://localhost:3000/data?source=/test_data/cat.json')})
         .then(function() {return delay(2000);})
-        .then(function() {return page.screenshot({path:'test/02.ferret.png'});})
-        .then(function() {console.log('go to ferret');})
+        .then(function() {return page.screenshot({path:'test/02.cat.png'});})
+        .then(function() {console.log('go to cat');})
 
         // DELETE TRIANGLE
         // select tool
@@ -40,7 +40,7 @@ puppeteer.launch({headless: true})
         .then(function() {return page.mouse.click(450, 250)})
         // delete tool
         .then(function() {return page.mouse.click(160, 400)})
-        .then(function() {return page.screenshot({path:'test/03.ferret-delete.png'});})
+        .then(function() {return page.screenshot({path:'test/03.cat-delete.png'});})
         .then(function() {console.log('delete');})
 
         // DRAW SQUARE
@@ -52,7 +52,7 @@ puppeteer.launch({headless: true})
         .then(function() {return page.mouse.click(500, 500)})
         .then(function() {return page.mouse.click(400, 500)})
         .then(function() {return page.mouse.click(400, 400)})
-        .then(function() {return page.screenshot({path:'test/04.ferret-square-A.png'});})
+        .then(function() {return page.screenshot({path:'test/04.cat-square-A.png'});})
         .then(function() {console.log('draw square A');})
 
         // DRAW SQUARE B
@@ -62,7 +62,7 @@ puppeteer.launch({headless: true})
         .then(function() {return page.mouse.click(550, 550)})
         .then(function() {return page.mouse.click(450, 550)})
         .then(function() {return page.mouse.click(450, 450)})
-        .then(function() {return page.screenshot({path:'test/05.ferret-square-B.png'});})
+        .then(function() {return page.screenshot({path:'test/05.cat-square-B.png'});})
         .then(function() {console.log('draw square B');})
 
         // UNION OF SQUARES A AND B
@@ -74,7 +74,7 @@ puppeteer.launch({headless: true})
         
         // click on square B (square A is already selected)
         .then(function() {return page.mouse.click(540, 540)})
-        .then(function() {return page.screenshot({path:'test/06.ferret-union.png'});})
+        .then(function() {return page.screenshot({path:'test/06.cat-union.png'});})
         .then(function() {console.log('union');})
 
         // DELETE A+B
@@ -82,7 +82,7 @@ puppeteer.launch({headless: true})
         .then(function() {return page.mouse.click(160, 400)})
         // select the A+B object
         .then(function() {return page.mouse.click(405, 405)})
-        .then(function() {return page.screenshot({path:'test/07.ferret-delete.png'});})
+        .then(function() {return page.screenshot({path:'test/07.cat-delete.png'});})
         .then(function() {console.log('delete');})
 
         // DRAW AGAIN THE INITIAL TRIANGLE
@@ -93,13 +93,13 @@ puppeteer.launch({headless: true})
         .then(function() {return page.mouse.click(500, 200)})
         .then(function() {return page.mouse.click(450, 300)})
         .then(function() {return page.mouse.click(400, 200)})
-        .then(function() {return page.screenshot({path:'test/08.ferret-triangle.png'});})
+        .then(function() {return page.screenshot({path:'test/08.cat-triangle.png'});})
         .then(function() {console.log('draw triangle');})
 
         // SAVE TO DB
         // select the save tool
         .then(function() {return page.mouse.click(35, 400)})
-        .then(function() {return page.screenshot({path:'test/09.ferret-save.png'});})
+        .then(function() {return page.screenshot({path:'test/09.cat-save.png'});})
         .then(function() {console.log('save');})
 
         // CLOSE
