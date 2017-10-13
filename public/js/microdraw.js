@@ -220,11 +220,12 @@ function selectRegion(reg) {
 
 /**
  * @function changeRegionName
+ *@param {object} reg The entry in the region's array.
+ *@param {string} name Name of the region.
  */
 function changeRegionName(reg, name) {
     if( debug ) { console.log("> changeRegionName"); }
 
-    var i;
     var color = regionHashColor(name);
 
     // Update path
@@ -265,6 +266,8 @@ function toggleRegion(reg) {
         $(".region-tag#" + reg.uid + ">.region-name").text(reg.name);
     }
 }
+
+var currentColorRegion;
 
 
 /**
@@ -1001,7 +1004,7 @@ function polygonToBezier() {
 /***
     the following functions serve changing the annotation style
 ***/
-var currentColorRegion;
+
 
 /**
  * @function pad
