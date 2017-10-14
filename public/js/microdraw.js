@@ -929,27 +929,6 @@ var Microdraw = (function () {
             }
         },
 
-        /**
-         * @function bezierToPolygon
-         * @desc converts bezier curve into polygon
-         * @returns {void}
-         */
-
-        bezierToPolygon: function bezierToPolygon() {
-            console.log("> bezierToPolygon");
-            if (me.region !== null) {
-                if (me.region.path.hasHandles()) {
-                    if (confirm('Convert bezier curve into polygon?')) {
-                        var undoInfo = me.getUndo();
-                        me.region.path.clearHandles();
-                        me.saveUndo(undoInfo);
-                    }
-                } else {
-                    return;
-                }
-                paper.view.draw();
-            }
-        },
 
         /**
          * @function setRegionColor
@@ -1408,8 +1387,7 @@ var Microdraw = (function () {
                     me.backToPreviousTool(prevTool);
                     break;
                 case "toPolygon":
-                    me.bezierToPolygon();
-                    me.backToPreviousTool(prevTool);
+                    me.tools[me.selectedTool].click(prevTool);
                     break;
                 /**
                  * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
@@ -2195,13 +2173,16 @@ var Microdraw = (function () {
                 me.loadScript('/js/tools/draw.js'),
                 me.loadScript('/js/tools/drawPolygon.js'),
                 me.loadScript('/js/tools/screenshot.js'),
-                me.loadScript('/js/tools/toBezier.js')
+                me.loadScript('/js/tools/toBezier.js'),
+                me.loadScript('/js/tools/toPolygon.js')
             ).then(function () {
                 me.tools = {};
                 $.extend(me.tools, ToolDraw);
                 $.extend(me.tools, ToolDrawPolygon);
                 $.extend(me.tools, ToolScreenshot);
                 $.extend(me.tools, ToolToBezier);
+                $.extend(me.tools, ToolToPolygon);
+
             });
 
             // Enable click on toolbar buttons
