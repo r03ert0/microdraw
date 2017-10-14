@@ -8,33 +8,33 @@ var Microdraw = (function () {
     var me = {
         debug: 1,
         dbroot: localhost + "/api",
-        ImageInfo: {},              // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. me.ImageInfo[me.imageOrder[viewer.currentPage()]])
-                                    // regions contain a paper.js path, a unique ID and a name
-        imageOrder: [],             // names of slices ordered by their openseadragon page numbers
-        currentImage: null,         // name of the current image
-        prevImage: null,            // name of the last image
-        region: null,               // currently selected region (one element of Regions[])
-        copyRegion: null,           // clone of the currently selected region for copy/paste
-        handle: null,               // currently selected control point or handle (if any)
-        selectedTool: null,         // currently selected tool
-        viewer: null,               // open seadragon viewer
-        navEnabled: true,           // flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
-        magicV: 1000,               // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
-        params: null,               // URL parameters
-        source: null,               // data source
-        slice: null,                // slice index in a multi-slice dataset
-        //    myIP,                 // user's IP
+        ImageInfo: {},               // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
+                                     // regions contain a paper.js path, a unique ID and a name
+        imageOrder: [],              // names of slices ordered by their openseadragon page numbers
+        currentImage: null,          // name of the current image
+        prevImage: null,             // name of the last image
+        region: null,                // currently selected region (one element of Regions[])
+        copyRegion: null,            // clone of the currently selected region for copy/paste
+        handle: null,                // currently selected control point or handle (if any)
+        selectedTool: null,          // currently selected tool
+        viewer: null,                // open seadragon viewer
+        navEnabled: true,            // flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
+        magicV: 1000,                // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
+        params: null,                // URL parameters
+        source: null,                // data source
+        slice: null,                 // slice index in a multi-slice dataset
+        //    myIP,                  // user's IP
         UndoStack: [],
         RedoStack: [],
-        mouseUndo: null,            // tentative undo information.
-        shortCuts: [],              // List of shortcuts
-        newRegionFlag: null,        // true when a region is being drawn
-        drawingPolygonFlag: false,  // true when drawing a polygon
-        annotationLoadingFlag: null,// true when an annotation is being loaded
-        config: {},                 // App configuration object
+        mouseUndo: null,             // tentative undo information.
+        shortCuts: [],               // List of shortcuts
+        newRegionFlag: null,         // true when a region is being drawn
+        drawingPolygonFlag: false,   // true when drawing a polygon
+        annotationLoadingFlag: null, // true when an annotation is being loaded
+        config: {},                  // App configuration object
         isMac: navigator.platform.match(/Mac/i),
         isIOS: navigator.platform.match(/(iPhone|iPod|iPad)/i),
-        tolerance: 10,
+        tolerance: 1,
         counter: 1,
         tap: false,
         currentColorRegion: null,
@@ -124,7 +124,7 @@ var Microdraw = (function () {
             }
 
             for( i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-                if( parseInt(me.ImageInfo[me.currentImage].Regions[i].uid, 10) === parseInt(uid) ) {
+                if( parseInt(me.ImageInfo[me.currentImage].Regions[i].uid, 10) === parseInt(uid, 10) ) {
                     if( me.debug > 2 ) { console.log( "region " + me.ImageInfo[me.currentImage].Regions[i].uid + ": " ); }
                     if( me.debug > 2 ) { console.log( me.ImageInfo[me.currentImage].Regions[i] ); }
 
@@ -140,6 +140,7 @@ var Microdraw = (function () {
          * @function regionTag
          * @param {string} name Name of the region.
          * @param {number} uid Unique ID of the region.
+         * @returns {string} str The color of the region.
          */
         regionTag: function regionTag(name, uid) {
             //if( me.debug ) console.log("> regionTag");
@@ -205,7 +206,7 @@ var Microdraw = (function () {
                 if( me.ImageInfo[me.currentImage].Regions[i] === reg ) {
                     reg.path.selected = true;
                     reg.path.fullySelected = true;
-                    region = reg;
+                    me.region = reg;
                 } else {
                     me.ImageInfo[me.currentImage].Regions[i].path.selected = false;
                     me.ImageInfo[me.currentImage].Regions[i].path.fullySelected = false;
@@ -290,6 +291,7 @@ var Microdraw = (function () {
         /**
          * @function annotationStyle
          * @desc Get current alpha & color values for colorPicker display
+         * @param {object} reg The selected region.
          */
         annotationStyle: function annotationStyle(reg) {
             if( me.debug ) { console.log(reg.path.fillColor); }
@@ -300,7 +302,7 @@ var Microdraw = (function () {
                 me.currentColorRegion = reg;
                 var {alpha} = reg.path.fillColor.alpha;
                 $('#alphaSlider').val(alpha*100);
-                $('#alphaFill').val(parseInt(alpha*100), 10);
+                $('#alphaFill').val(parseInt(alpha*100, 10));
 
                 var hexColor = '#'
                     + me.pad(( parseInt(reg.path.fillColor.red * 255, 10) ).toString(16), 2)
@@ -322,6 +324,7 @@ var Microdraw = (function () {
 
         /**
          * @function regionPicker
+         * @desc The ontology window to select a region from the ontology list.
          */
         regionPicker: function regionPicker(parent) {
             if( me.debug ) { console.log("> regionPicker"); }
@@ -332,6 +335,7 @@ var Microdraw = (function () {
 
         /**
          * @function singlePressOnRegion
+         * @desc Selects the region in the region list (left) as well as the path in the viewer.
          * @this
          */
         singlePressOnRegion: function singlePressOnRegion(event) {
@@ -388,6 +392,7 @@ var Microdraw = (function () {
 
         /**
          * @function doublePressOnRegion
+         * @desc Opens the ontology window to select a region from the ontology list.
          * @this
          */
         doublePressOnRegion: function doublePressOnRegion(event) {
@@ -402,14 +407,14 @@ var Microdraw = (function () {
             event.preventDefault();
 
             if( event.clientX > 20 ) {
-                if( event.clientX > 50 )    {
+                if( event.clientX > 50 ) {
                     if( me.config.drawingEnabled ) {
                         if( me.config.regionOntology === true ) {
                             me.regionPicker(this);
                         } else {
                             name = prompt("Region name", me.findRegionByUID(this.id).name);
                             if( name !== null ) {
-                                me.changeRegionName(findRegionByUID(this.id), name);
+                                me.changeRegionName(me.findRegionByUID(this.id), name);
                             }
                         }
                     }
@@ -430,13 +435,10 @@ var Microdraw = (function () {
 
         /**
          * @function handleRegionTap
+         * @desc Handles single and double tap in touch devices.
          * @this
          */
         handleRegionTap: function handleRegionTap(event) {
-
-        /*
-            Handles single and double tap in touch devices
-        */
             if( me.debug ) { console.log("> handleRegionTap"); }
 
             var caller = this;
@@ -461,9 +463,9 @@ var Microdraw = (function () {
 
         /**
          * @function newRegion
-         * @desc  Create a new region
-         * @param {object} arg An object containing the name of the region (arg.name) and the path data (arg.path)
-         * @param {number} imageNumber The number of the image where the region will be created
+         * @desc  Create a new region.
+         * @param {object} arg An object containing the name of the region (arg.name) and the path of the data (arg.path)
+         * @param {number} imageNumber The number of the image slice where the region will be created
          * @this
          */
         newRegion: function newRegion(arg, imageNumber) {
@@ -512,7 +514,10 @@ var Microdraw = (function () {
                 el.on("touchstart", me.handleRegionTap);
             }
 
-            // Select region name in list
+            /** Select region name in list
+             * @returns The new region.
+             * @this
+             */
             $("#regionList > .region-tag").each(function (i) {
                 $(this).addClass("deselected");
                 $(this).removeClass("selected");
@@ -554,6 +559,9 @@ var Microdraw = (function () {
 
         /**
          * @function findRegionByName
+         * @desc Find region by its name
+         * @param {string} name Name of the region from the ontology list
+         * @returns {object} The region
          */
         findRegionByName: function findRegionByName(name) {
             if( me.debug ) { console.log("> findRegionByName"); }
