@@ -909,27 +909,6 @@ var Microdraw = (function () {
                 paper.view.draw();
             }
         },
-
-        /**
-         * @function flipRegion
-         * @desc Flip region along y-axis around its center point
-         * @returns {void}
-         */
-        flipRegion: function flipRegion() {
-            if( me.region !== null ) {
-                if( me.debug ) { console.log("> flipping region"); }
-
-                var i;
-                for( i in me.ImageInfo[me.currentImage].Regions ) {
-                    if( me.ImageInfo[me.currentImage].Regions[i].path.selected ) {
-                        me.ImageInfo[me.currentImage].Regions[i].path.scale(-1, 1);
-                    }
-                }
-                paper.view.draw();
-            }
-        },
-
-
         /**
          * @function setRegionColor
          * @desc Set picked color & alpha
@@ -1373,11 +1352,6 @@ var Microdraw = (function () {
                     //me.backToPreviousTool(prevTool);
                     me.backToSelect();
                     break;
-                case "flip":
-                    me.flipRegion(me.region);
-                    //backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
                 case "closeMenu":
                     me.toggleMenu();
                     me.backToPreviousTool(prevTool);
@@ -1392,7 +1366,8 @@ var Microdraw = (function () {
                 /**
                  * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
                  */
-                 
+
+                case "flip":
                 case "draw":
                 case "drawPolygon":
                 case "toBezier":
@@ -2172,6 +2147,7 @@ var Microdraw = (function () {
             $.when(
                 me.loadScript('/js/tools/draw.js'),
                 me.loadScript('/js/tools/drawPolygon.js'),
+                me.loadScript('/js/tools/flipRegion.js'),
                 me.loadScript('/js/tools/screenshot.js'),
                 me.loadScript('/js/tools/toBezier.js'),
                 me.loadScript('/js/tools/toPolygon.js')
@@ -2179,6 +2155,7 @@ var Microdraw = (function () {
                 me.tools = {};
                 $.extend(me.tools, ToolDraw);
                 $.extend(me.tools, ToolDrawPolygon);
+                $.extend(me.tools, ToolFlipRegion);
                 $.extend(me.tools, ToolScreenshot);
                 $.extend(me.tools, ToolToBezier);
                 $.extend(me.tools, ToolToPolygon);
