@@ -680,7 +680,7 @@ function mouseDown(x, y) {
             commitMouseUndo();
             break;
         }
-        case "draw-polygon": {
+        case "drawPolygon": {
             // is already drawing a polygon or not?
             console.log(drawingPolygonFlag);
             if( drawingPolygonFlag == false ) {
@@ -1136,7 +1136,7 @@ function toolSelection(event) {
         case "delregion":
         case "draw":
         case "rotate":
-        case "draw-polygon":
+        case "drawPolygon":
             navEnabled = false;
             break;
         case "zoom":
@@ -1739,7 +1739,7 @@ function loadConfiguration() {
     $.getJSON("configuration.json", function(data) {
         config = data;
         
-        drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint",
+        drawingTools = ["select", "draw", "drawPolygon", "simplify", "addpoint",
                         "delpoint", "addregion", "delregion", "splitregion", "rotate",
                         "save", "copy", "paste", "delete"];
         if( config.drawingEnabled == false ) {

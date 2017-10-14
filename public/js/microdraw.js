@@ -636,19 +636,6 @@ var Microdraw = (function () {
         },
 
         /**
-         * @function checkRegionSize
-         * @param {object} reg The selected region
-         * @returns {void}
-         */
-        checkRegionSize: function checkRegionSize(reg) {
-            if( reg.path.segments.length > 3 ) {
-
-            } else {
-                me.removeRegion(me.region, me.currentImage);
-            }
-        },
-
-        /**
          * @function clickHandler
          * @desc Interaction: mouse and tap
          * @returns {void}
@@ -657,9 +644,6 @@ var Microdraw = (function () {
             if( me.debug ) { console.log("> clickHandler"); }
 
             event.stopHandlers = !me.navEnabled;
-            if( me.selectedTool == "draw" ) {
-                me.checkRegionSize(me.region);
-            }
         },
 
         /**
@@ -839,50 +823,10 @@ var Microdraw = (function () {
                     }
                     break;
                 }
-                case "draw": {
-                    // Start a new region
-                    // if there was an older region selected, unselect it
-                    if( me.region ) {
-                        me.region.path.selected = false;
-                    }
-                    // start a new region
-                    var path = new paper.Path({segments:[point]});
-                    path.strokeWidth = me.config.defaultStrokeWidth;
-                    me.region = me.newRegion({path:path});
-                    // signal that a new region has been created for drawing
-                    me.newRegionFlag = true;
-
-                    me.commitMouseUndo();
+                case "drawPolygon":
+                case "draw":
+                    me.tools[me.selectedTool].mouseDown(point);
                     break;
-                }
-                case "draw-polygon": {
-                    // is already drawing a polygon or not?
-                    if( me.drawingPolygonFlag == false ) {
-                        // deselect previously selected region
-                        if( me.region ) { me.region.path.selected = false; }
-
-                        // Start a new Region with alpha 0
-                        var path = new paper.Path({segments:[point]});
-                        path.strokeWidth = me.config.defaultStrokeWidth;
-                        me.region = me.newRegion({path:path});
-                        me.region.path.fillColor.alpha = 0;
-                        me.region.path.selected = true;
-                        me.drawingPolygonFlag = true;
-                        me.commitMouseUndo();
-                    } else {
-                        hitResult = paper.project.hitTest(point, {tolerance:me.tolerance, segments:true});
-                        if( hitResult && hitResult.item === me.region.path && hitResult.segment.point === me.region.path.segments[0].point ) {
-                            // clicked on first point of current path
-                            // --> close path and remove drawing flag
-                            me.finishDrawingPolygon(true);
-                        } else {
-                            // add point to region
-                            me.region.path.add(point);
-                            me.commitMouseUndo();
-                        }
-                    }
-                    break;
-                }
                 case "rotate":
                     me.region.origin = point;
                     break;
@@ -946,52 +890,7 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> mouseUp");
             }
-
-            if( me.newRegionFlag === true ) {
-                me.region.path.closed = true;
-                me.region.path.fullySelected = true;
-                // to delete all unnecessary segments while preserving the form of the
-                // region to make it modifiable; & adding handles to the segments
-                var origSegments = me.region.path.segments.length;
-
-                // delete unnecessary segments while preserving the shape of the region to
-                // make it modifiable and & adding handles to the segments
-                if (me.debug) {
-                    origSegments = me.region.path.segments.length;
-                }
-                // pixels per dot (dot is a device-independent psuedo-pixel with a
-                // resolution of roughly 72 dpi)
-                var ppd = paper.view.pixelRatio;
-         
-                // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
-                var pixelSelectAccuracy = 4.0*ppd;
-         
-                // ratio between project coordinates and browser pixels
-                var coordsPerPixel = paper.view.size.width/paper.view.viewSize.width;
-
-                // accuracy by which curves can reasonably be simplified
-                var simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy;
-
-                // the simplify function looks at the maximum squared distance from curve to original points
-                me.region.path.simplify(simplifyAccuracy*simplifyAccuracy);
-
-                /*
-                  // previous monkey-patched code 
-                  var z = viewer.viewport.viewportToImageZoom(viewer.viewport.getZoom(true));
-                  var x = z * 30;
-                  var previousPosition = region.path.position;
-                  region.path.scale(x, x)
-                  region.path.simplify(0);    }
-                  region.path.scale(1/x, 1/x)
-                  region.path.position = previousPosition;
-                */ 
-
-                if (me.debug) {
-                    var finalSegments = me.region.path.segments.length;
-                    console.log( finalSegments, parseInt(finalSegments/origSegments*100, 10) + "% segments conserved" );
-                }
-            }
-            paper.view.draw();
+            me.tools[me.selectedTool].mouseUp();
         },
 
         /**
@@ -1454,11 +1353,7 @@ var Microdraw = (function () {
                 case "delpoint":
                 case "addregion":
                 case "delregion":
-                case "draw":
                 case "rotate":
-                case "draw-polygon":
-                    me.navEnabled = false;
-                    break;
                 case "zoom":
                     me.navEnabled = true;
                     me.handle = null;
@@ -1516,9 +1411,13 @@ var Microdraw = (function () {
                     me.bezierToPolygon();
                     me.backToPreviousTool(prevTool);
                     break;
+                /**
+                 * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
+                 */
+                 
+                case "draw":
+                case "drawPolygon":
                 case "toBezier":
-                    me.tools[me.selectedTool].click(prevTool);
-                    break;
                 case "screenshot":
                     me.tools[me.selectedTool].click(prevTool);
                     break;
@@ -2220,7 +2119,7 @@ var Microdraw = (function () {
                 var drawingTools = [
                                 "select",
                                 "draw",
-                                "draw-polygon",
+                                "drawPolygon",
                                 "simplify",
                                 "addpoint",
                                 "delpoint",
@@ -2293,10 +2192,14 @@ var Microdraw = (function () {
 
             // extend Microdraw with tools
             $.when(
+                me.loadScript('/js/tools/draw.js'),
+                me.loadScript('/js/tools/drawPolygon.js'),
                 me.loadScript('/js/tools/screenshot.js'),
                 me.loadScript('/js/tools/toBezier.js')
             ).then(function () {
                 me.tools = {};
+                $.extend(me.tools, ToolDraw);
+                $.extend(me.tools, ToolDrawPolygon);
                 $.extend(me.tools, ToolScreenshot);
                 $.extend(me.tools, ToolToBezier);
             });
