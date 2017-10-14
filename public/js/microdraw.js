@@ -1053,24 +1053,6 @@ var Microdraw = (function () {
         },
 
         /**
-         * @function polygonToBezier
-         * @desc converts polygon into bezier curve
-         * @returns {void}
-         */
-        polygonToBezier: function polygonToBezier() {
-            console.log("> polygonToBezier");
-            if (me.region !== null) {
-                if (me.region.path.hasHandles()) {
-                    return;
-                }
-                var undoInfo = me.getUndo();
-                me.region.path.smooth();
-                me.saveUndo(undoInfo);
-                paper.view.draw();
-            }
-        },
-
-        /**
          * @function setRegionColor
          * @desc Set picked color & alpha
          * @returns {void}
@@ -1535,12 +1517,10 @@ var Microdraw = (function () {
                     me.backToPreviousTool(prevTool);
                     break;
                 case "toBezier":
-                    me.polygonToBezier();
-                    me.backToPreviousTool(prevTool);
+                    me.tools[me.selectedTool].click(prevTool);
                     break;
                 case "screenshot":
-                    me.viewer.screenshotInstance.toggleScreenshotMenu();
-                    me.backToPreviousTool(prevTool);
+                    me.tools[me.selectedTool].click(prevTool);
                     break;
             }
         },
@@ -2273,6 +2253,31 @@ var Microdraw = (function () {
         },
 
         /**
+         * @function loadScript
+         * @desc Loads script from path if test is not fulfilled
+         * @param String path Path to script, either a local path or a url
+         * @param function testScriptPresent Function to test if the script is already present.
+         *        If undefined, the script will be loaded.
+         * @returns {object} A promise fulfilled when the script is loaded
+         */
+        loadScript: function loadScript(path, testScriptPresent) {
+            var def = new $.Deferred();
+    
+            if(testScriptPresent && testScriptPresent()) {
+                console.log("[loadScript] Script",path,"already present, not loading it again");
+                return def.resolve().promise();
+            }
+            var s = document.createElement("script");
+            s.src = path;
+            s.onload=function () {
+                console.log("Loaded",path);
+                def.resolve();
+            };
+            document.body.appendChild(s);
+            return def.promise();
+        },
+
+        /**
          * @function initMicrodraw
          * @returns {void}
          */
@@ -2285,6 +2290,16 @@ var Microdraw = (function () {
 
             // Subscribe to login changes
             //MyLoginWidget.subscribe(loginChanged);
+
+            // extend Microdraw with tools
+            $.when(
+                me.loadScript('/js/tools/screenshot.js'),
+                me.loadScript('/js/tools/toBezier.js')
+            ).then(function () {
+                me.tools = {};
+                $.extend(me.tools, ToolScreenshot);
+                $.extend(me.tools, ToolToBezier);
+            });
 
             // Enable click on toolbar buttons
             $("img.button").click(me.toolSelection);
