@@ -87,6 +87,7 @@ var ToolSelect = {select: (function() {
             
             
             // Select path outline
+            var reg;
             for( i = 0; i < Microdraw.ImageInfo[Microdraw.currentImage].Regions.length; i += 1 ) {
                 if( Microdraw.ImageInfo[Microdraw.currentImage].Regions[i] === re ) {
                     reg = Microdraw.ImageInfo[Microdraw.currentImage].Regions[i];
