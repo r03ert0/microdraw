@@ -157,12 +157,10 @@ app.get('/api', function (req, res) {
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    var { body } = req.body;
+    var {body: body} = req;
     switch(body.action) {
         case 'save':
-            var { source } = body.source;
-            var { slice } = body.slice;
-            var { key } = body.key;
+            var { source: source, slice: slice, key: key } = body;
             var value = JSON.parse(body.value);
             // mark previous version as backup
             db.get('data').update({
