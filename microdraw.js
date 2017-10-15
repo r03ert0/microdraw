@@ -1379,70 +1379,76 @@ function microdrawDBSave() {
 }
 
 function microdrawDBLoad() {
-/*
-    Load SVG overlay from microdrawDB
-*/
-	if( debug ) console.log("> microdrawDBLoad promise");
+    /*
+        Load SVG overlay from microdrawDB
+    */
+    return new Promise(function(reject, resolve) {
+        if (debug) console.log("> microdrawDBLoad promise");
 
-	var	def = $.Deferred();
-	var	key = "regionPaths";
-	var slice = myOrigin.slice;
-    $.get(dbroot,{
-		"action":"load_last",
-		"origin":JSON.stringify(myOrigin),
-		"key":key
-	}).success(function(data) {
-		var	i,obj,reg;
-		annotationLoadingFlag = false;
+        var key = "regionPaths";
+        var slice = myOrigin.slice;
 
-		// if the slice that was just loaded does not correspond to the current slice,
-		// do not display this one and load the current slice.
-		if( slice != currentImage ) {
-            microdrawDBLoad()
-            .then(function() {
-                $("#regionList").height($(window).height()-$("#regionList").offset().top);
-                updateRegionList();
+        return $.get(dbroot, {
+            "action": "load_last",
+            "origin": JSON.stringify(myOrigin),
+            "key": key
+        }).success(function(data) {
+            var i, obj, reg;
+            annotationLoadingFlag = false;
+
+            // if the slice that was just loaded does not correspond to the current slice,
+            // do not display this one and load the current slice.
+            if (slice != currentImage) {
+                microdrawDBLoad()
+                .then(function() {
+                    $("#regionList").height($(window).height() - $("#regionList").offset().top);
+                    updateRegionList();
+                    paper.view.draw();
+                });
+                reject("Loaded slice does not correspond with the current slice.");
+            }
+
+            // if there is no data on the current slice
+            // save hash for the image none the less
+            if (data.length == 0) {
+                ImageInfo[currentImage]["Hash"] = hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16);
+                reject("No Data for the current slice");
+            }
+
+            // parse the data and add to the current canvas
+            // console.log("[",data,"]");
+            obj = JSON.parse(data);
+            if (obj) {
+                obj = JSON.parse(obj.myValue);
+                for (i = 0; i < obj.Regions.length; i++) {
+                var reg = {};
+                var json;
+                reg.name = obj.Regions[i].name;
+                reg.page = obj.Regions[i].page;
+                json = obj.Regions[i].path;
+                reg.path = new paper.Path();
+                reg.path.importJSON(json);
+                newRegion({
+                    name: reg.name,
+                    path: reg.path
+                });
+                }
                 paper.view.draw();
-            });
-            def.fail();
-		    return;
-		}
+                // if image has no hash, save one
+                ImageInfo[currentImage]["Hash"] = (obj.Hash ? obj.Hash : hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16));
 
-        // if there is no data on the current slice
-        // save hash for the image none the less
-        if( data.length == 0 ) {
-            ImageInfo[currentImage]["Hash"] = hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16);
-            return;
-        }
+            }
+            if (debug) console.log("< microdrawDBLoad resolve success. Number of regions:", ImageInfo[currentImage]['Regions'].length);
+            resolve();
+        }).error(function(jqXHR, textStatus, errorThrown) {
+            console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
+            annotationLoadingFlag = false;
+            reject(textStatus);
+        });
 
-		// parse the data and add to the current canvas
-		// console.log("[",data,"]");
-        obj = JSON.parse(data);
-		if( obj ) {
-			obj = JSON.parse(obj.myValue);
-			for( i = 0; i < obj.Regions.length; i++ ) {
-				var reg = {};
-				var	json;
-				reg.name = obj.Regions[i].name;
-				reg.page = obj.Regions[i].page;
-				json = obj.Regions[i].path;
-				reg.path = new paper.Path();
-				reg.path.importJSON(json);
-				newRegion({name:reg.name,path:reg.path});
-			}
-			paper.view.draw();
-            // if image has no hash, save one
-			ImageInfo[currentImage]["Hash"] = (obj.Hash ? obj.Hash : hash(JSON.stringify(ImageInfo[currentImage]["Regions"])).toString(16));
-
-		}
-		if( debug ) console.log("< microdrawDBLoad resolve success. Number of regions:", ImageInfo[currentImage]['Regions'].length);
-		def.resolve();
-	}).error(function(jqXHR, textStatus, errorThrown) {
-        console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
-		annotationLoadingFlag = false;
     });
-    return def.promise();
 }
+  
 
 function microdrawDBIP() {
 /*
@@ -1687,40 +1693,39 @@ function updateUser() {
 }
 
 function makeSVGInline() {
-    if( debug ) console.log("> makeSVGInline promise");
+    return new Promise(function(reject, resolve) {
+        if( debug ) console.log("> makeSVGInline promise");
 
-    var def = $.Deferred();
-    $('img.button').each(function() {
-        var $img = $(this);
-        var imgID = $img.attr('id');
-        var imgClass = $img.attr('class');
-        var imgURL = $img.attr('src');
-
-        $.get(imgURL, function(data) {
-            // Get the SVG tag, ignore the rest
-            var $svg = $(data).find('svg');
-
-            // Add replaced image's ID to the new SVG
-            if( typeof imgID !== 'undefined' ) {
-                $svg = $svg.attr('id', imgID);
-            }
-            // Add replaced image's classes to the new SVG
-            if( typeof imgClass !== 'undefined' ) {
-                $svg = $svg.attr('class', imgClass + ' replaced-svg');
-            }
-
-            // Remove any invalid XML tags as per http://validator.w3.org
-            $svg = $svg.removeAttr('xmlns:a');
-
-            // Replace image with new SVG
-            $img.replaceWith($svg);
-
-            if( debug ) console.log("< makeSVGInline resolve: success");
-            def.resolve();
-        }, 'xml');
+        $('img.button').each(function() {
+            var $img = $(this);
+            var imgID = $img.attr('id');
+            var imgClass = $img.attr('class');
+            var imgURL = $img.attr('src');
+    
+            $.get(imgURL, function(data) {
+                // Get the SVG tag, ignore the rest
+                var $svg = $(data).find('svg');
+    
+                // Add replaced image's ID to the new SVG
+                if( typeof imgID !== 'undefined' ) {
+                    $svg = $svg.attr('id', imgID);
+                }
+                // Add replaced image's classes to the new SVG
+                if( typeof imgClass !== 'undefined' ) {
+                    $svg = $svg.attr('class', imgClass + ' replaced-svg');
+                }
+    
+                // Remove any invalid XML tags as per http://validator.w3.org
+                $svg = $svg.removeAttr('xmlns:a');
+    
+                // Replace image with new SVG
+                $img.replaceWith($svg);
+    
+                if( debug ) console.log("< makeSVGInline resolve: success");
+                resolve();
+            }, 'xml');
+        });
     });
-
-    return def.promise();
 }
 
 function updateSliceName() {
@@ -1844,134 +1849,130 @@ function slice_name_onenter(event) {
 }
 
 function loadConfiguration() {
-    var def = $.Deferred();
-    // load general microdraw configuration
-    $.getJSON("configuration.json", function(data) {
-        config = data;
-
-        drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint",
-                        "delpoint", "addregion", "delregion", "splitregion", "rotate",
-                        "save", "copy", "paste", "delete"];
-        if( config.drawingEnabled == false ) {
-            // remove drawing tools from ui
-            for( var i = 0; i < drawingTools.length; i++ ){
-                $("#" + drawingTools[i]).remove();
+    return new Promise(function(reject, resolve) {
+        return $.getJSON("configuration.json", function(data) {
+            config = data;
+    
+            drawingTools = ["select", "draw", "draw-polygon", "simplify", "addpoint",
+                            "delpoint", "addregion", "delregion", "splitregion", "rotate",
+                            "save", "copy", "paste", "delete"];
+            if( config.drawingEnabled == false ) {
+                // remove drawing tools from ui
+                for( var i = 0; i < drawingTools.length; i++ ){
+                    $("#" + drawingTools[i]).remove();
+                }
+    
             }
-
-        }
-        for( var i = 0; i < config.removeTools.length; i++ ) {
-            $("#" + config.removeTools[i]).remove();
-        }
-        if( config.useDatabase == false ) {
-            $("#save").remove();
-        }
-        def.resolve();
+            for( var i = 0; i < config.removeTools.length; i++ ) {
+                $("#" + config.removeTools[i]).remove();
+            }
+            if( config.useDatabase == false ) {
+                $("#save").remove();
+            }
+            resolve();
+        });
     });
-
-    return def.promise();
 }
 
 function initMicrodraw() {
-    if( debug ) console.log("> initMicrodraw promise");
+    return new Promise(function(reject, resolve) {
+        if( debug ) console.log("> initMicrodraw promise");
 
-    var def = $.Deferred();
-
-    // Subscribe to login changes
-    MyLoginWidget.subscribe(loginChanged);
-
-    // Enable click on toolbar buttons
-    $("img.button").click(toolSelection);
-
-    // set annotation loading flag to false
-    annotationLoadingFlag = false;
-
-    // Initialize the control key handler and set shortcuts
-    initShortCutHandler();
-    shortCutHandler({pc:'^ z',mac:'cmd z'},cmdUndo);
-    shortCutHandler({pc:'^ y',mac:'cmd y'},cmdRedo);
-    if( config.drawingEnabled ) {
-        shortCutHandler({pc:'^ x',mac:'cmd x'},function() { console.log("cut!")});
-        shortCutHandler({pc:'^ v',mac:'cmd v'},cmdPaste);
-        shortCutHandler({pc:'^ a',mac:'cmd a'},function() { console.log("select all!")});
-        shortCutHandler({pc:'^ c',mac:'cmd c'},cmdCopy);
-        shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);  // delete key
-    }
-    shortCutHandler({pc:'#37',mac:'#37'},loadPreviousImage); // left-arrow key
-    shortCutHandler({pc:'#39',mac:'#39'},loadNextImage);     // right-arrow key
-
-    // Configure currently selected tool
-    selectedTool = "zoom";
-    selectTool();
-
-	// decide between json (local) and jsonp (cross-origin)
-	var ext = params.source.split(".");
-	ext = ext[ext.length - 1];
-	if( ext == "jsonp" ) {
-		if( debug )
-			console.log("Reading cross-origin jsonp file");
-		$.ajax({
-			type: 'GET',
-			url: params.source+"?callback=?",
-			jsonpCallback: 'f',
-			dataType: 'jsonp',
-			contentType: "application/json",
-			success: function(obj){initMicrodraw2(obj);def.resolve()}
-		});
-	} else
-	if( ext == "json" ) {
-		if( debug )
-			console.log("Reading local json file");
-		$.ajax({
-			type: 'GET',
-			url: params.source,
-			dataType: "json",
-            contentType: "application/json",
-			success: function(obj){initMicrodraw2(obj);def.resolve()}
-		});
-	}
-
-    // Change current slice by typing in the slice number and pessing the enter key
-    $("#slice-name").keyup(slice_name_onenter);
-
-    // Show and hide menu
-    if( config.hideToolbar ) {
-        var mouse_position;
-        var animating = false;
-        $(document).mousemove(function (e) {
-            if( animating ) {
-                return;
-            }
-            mouse_position = e.clientX;
-
-            if( mouse_position <= 100 ) {
-                //SLIDE IN MENU
-                animating = true;
-                $('#menuBar').animate({
-                    left: 0,
-                    opacity: 1
-                }, 200, function () {
-                    animating = false;
-                });
-            } else if( mouse_position > 200 ) {
-                animating = true;
-                $('#menuBar').animate({
-                    left: -100,
-                    opacity: 0
-                }, 500, function () {
-                    animating = false;
-                });
-            }
+        // Subscribe to login changes
+        MyLoginWidget.subscribe(loginChanged);
+    
+        // Enable click on toolbar buttons
+        $("img.button").click(toolSelection);
+    
+        // set annotation loading flag to false
+        annotationLoadingFlag = false;
+    
+        // Initialize the control key handler and set shortcuts
+        initShortCutHandler();
+        shortCutHandler({pc:'^ z',mac:'cmd z'},cmdUndo);
+        shortCutHandler({pc:'^ y',mac:'cmd y'},cmdRedo);
+        if( config.drawingEnabled ) {
+            shortCutHandler({pc:'^ x',mac:'cmd x'},function() { console.log("cut!")});
+            shortCutHandler({pc:'^ v',mac:'cmd v'},cmdPaste);
+            shortCutHandler({pc:'^ a',mac:'cmd a'},function() { console.log("select all!")});
+            shortCutHandler({pc:'^ c',mac:'cmd c'},cmdCopy);
+            shortCutHandler({pc:'#46',mac:'#8'},cmdDeleteSelected);  // delete key
+        }
+        shortCutHandler({pc:'#37',mac:'#37'},loadPreviousImage); // left-arrow key
+        shortCutHandler({pc:'#39',mac:'#39'},loadNextImage);     // right-arrow key
+    
+        // Configure currently selected tool
+        selectedTool = "zoom";
+        selectTool();
+    
+        // decide between json (local) and jsonp (cross-origin)
+        var ext = params.source.split(".");
+        ext = ext[ext.length - 1];
+        if( ext == "jsonp" ) {
+            if( debug )
+                console.log("Reading cross-origin jsonp file");
+            $.ajax({
+                type: 'GET',
+                url: params.source+"?callback=?",
+                jsonpCallback: 'f',
+                dataType: 'jsonp',
+                contentType: "application/json",
+                success: function(obj){initMicrodraw2(obj);resolve(obj)}
+            });
+        } else
+        if( ext == "json" ) {
+            if( debug )
+                console.log("Reading local json file");
+            $.ajax({
+                type: 'GET',
+                url: params.source,
+                dataType: "json",
+                contentType: "application/json",
+                success: function(obj){initMicrodraw2(obj);resolve(obj)}
+            });
+        }
+    
+        // Change current slice by typing in the slice number and pessing the enter key
+        $("#slice-name").keyup(slice_name_onenter);
+    
+        // Show and hide menu
+        if( config.hideToolbar ) {
+            var mouse_position;
+            var animating = false;
+            $(document).mousemove(function (e) {
+                if( animating ) {
+                    return;
+                }
+                mouse_position = e.clientX;
+    
+                if( mouse_position <= 100 ) {
+                    //SLIDE IN MENU
+                    animating = true;
+                    $('#menuBar').animate({
+                        left: 0,
+                        opacity: 1
+                    }, 200, function () {
+                        animating = false;
+                    });
+                } else if( mouse_position > 200 ) {
+                    animating = true;
+                    $('#menuBar').animate({
+                        left: -100,
+                        opacity: 0
+                    }, 500, function () {
+                        animating = false;
+                    });
+                }
+            });
+        }
+    
+        $(window).resize(function() {
+            $("#regionList").height($(window).height() - $("#regionList").offset().top);
+            resizeAnnotationOverlay();
         });
-    }
-
-    $(window).resize(function() {
-        $("#regionList").height($(window).height() - $("#regionList").offset().top);
-        resizeAnnotationOverlay();
+    
+        appendRegionTagsFromOntology(Ontology);
     });
-
-    appendRegionTagsFromOntology(Ontology);
-
-    return def.promise();
 }
 
 function initMicrodraw2(obj) {
