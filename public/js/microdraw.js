@@ -1459,7 +1459,7 @@ var Microdraw = (function () {
                                 );
                                 //update hash
                                 me.ImageInfo[sl2].Hash = h2;
-                                resolve();
+                                resolve("slice " + sl2);
                             },
                             error: function(jqXHR, textStatus, err) {
                                 console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "slice: " + sl2.toString());
