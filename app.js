@@ -138,7 +138,7 @@ app.use('/data', require('./controller/data/'));
 // API routes
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
-    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
+    var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
     console.warn(req.query);
     db.get('annotations').find({
         fileID: req.query.fileID,
@@ -153,9 +153,8 @@ app.get('/api', function (req, res) {
               data.push(obj[i].annotation);
             }
             res.send(data);
-          }
-        else {
-            res.send();
+          } else {
+            res.send({});
           }
     })
     .catch(function(err) {
@@ -166,8 +165,7 @@ app.get('/api', function (req, res) {
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    var body = req.body;
-    console.log(body)
+    var { body: body } = req;
     switch(body.action) {
         case 'save':
             var fileID = body.fileID;
@@ -178,7 +176,7 @@ app.post('/api', function (req, res) {
             var annotationHash = body.annotationHash;
             var value = JSON.parse(body.annotation);
             // mark previous version as backup
-            db.get('data').update({
+            db.get('annotations').update({
                 fileID: fileID,
                 userID: userID,
                 backup: {$exists: false}
