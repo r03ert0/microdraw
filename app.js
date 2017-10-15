@@ -13,7 +13,7 @@ var mustacheExpress = require('mustache-express');
 var fs = require('fs');
 
 var dirname = __dirname; // local directory
-var server_config = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
+var serverConfig = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
 
 //var mongo = require('mongodb');
 var monk = require('monk');
@@ -24,7 +24,7 @@ var DOCKER_DB = process.env.DB_PORT;
 if ( DOCKER_DB ) {
     MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
 } else {
-    MONGO_DB = server_config.MONGO_DB || 'localhost:27017/microdraw';
+    MONGO_DB = serverConfig.MONGO_DB || 'localhost:27017/microdraw';
 }
 var db = monk(MONGO_DB);
 
@@ -141,14 +141,15 @@ app.get('/api', function (req, res) {
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
     console.warn(req.query);
     db.get('annotations').find({
-        file_id: req.query.file_id,
-        user_id: req.query.user_id,
+        fileID: req.query.fileID,
+        userID: req.query.userID,
         backup: {$exists: false}
     })
     .then(function(obj) {
         if(obj) {
             var data = [];
-            for (var i = 0; i < obj.length; i++){
+            var i;
+            for (i = 0; i < obj.length; i+=1) {
               data.push(obj[i].annotation);
             }
             res.send(data);
@@ -158,7 +159,7 @@ app.get('/api', function (req, res) {
           }
     })
     .catch(function(err) {
-        console.error("ERROR",err);
+        console.error("ERROR", err);
         res.send({error:JSON.stringify(err)});
     });
 });
@@ -166,15 +167,20 @@ app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
     var body = req.body;
+    console.log(body)
     switch(body.action) {
         case 'save':
-            var source = body.source;
-            var slice = body.slice;
-            var key = body.key;
-            var value = JSON.parse(body.value);
+            var fileID = body.fileID;
+            var userID = loggedUser;
+            var sectionNumber = body.sectionNumber;
+            var brainID = body.brainID;
+            var visibility = body.visibility;
+            var annotationHash = body.annotationHash;
+            var value = JSON.parse(body.annotation);
             // mark previous version as backup
             db.get('data').update({
-                source: source,
+                fileID: fileID,
+                userID: userID,
                 backup: {$exists: false}
             }, {
                 $set:{backup: true}
@@ -183,13 +189,16 @@ app.post('/api', function (req, res) {
             })
             .then(function() {
                 // insert new version
-                db.get('data').insert({
-                    user: loggedUser,
-                    source: source,
-                    slice: slice,
-                    key: key,
-                    value: value
+                var result = db.get('annotations').insert({
+                    fileID: fileID,
+                    userID: userID,
+                    sectionNumber: sectionNumber,
+                    brainID: brainID,
+                    visibility: visibility,
+                    annotationHash: annotationHash,
+                    annotation: value
                 });
+                console.log(result)
             });
             break;
     }
