@@ -1,7 +1,7 @@
 "use strict";
 
 function data(req, res) {
-    var { source } = req.query.source; // eslint-disable-line no-unused-vars
+    var { source: source } = req.query; // eslint-disable-line no-unused-vars, no-useless-rename
     var login = (req.isAuthenticated()) ?
                 ("<a href='/user/" + req.user.username + "'>" + req.user.username + "</a> (<a href='/logout'>Log Out</a>)")
                 : ("<a href='/auth/github'>Log in with GitHub</a>");
