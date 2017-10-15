@@ -34,7 +34,7 @@ var Microdraw = (function () {
         config: {},                  // App configuration object
         isMac: navigator.platform.match(/Mac/i),
         isIOS: navigator.platform.match(/(iPhone|iPod|iPad)/i),
-        tolerance: 1,
+        tolerance: 3,
         counter: 1,
         tap: false,
         currentColorRegion: null,
@@ -718,7 +718,7 @@ var Microdraw = (function () {
                     if( hitResult ) {
                         var i, re;
                         for( i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-                            if( me.ImageInfo[me.currentImage].Regions[i].path == hitResult.item ) {
+                            if( me.ImageInfo[me.currentImage].Regions[i].path === hitResult.item ) {
                                 re = me.ImageInfo[me.currentImage].Regions[i];
                                 break;
                             }
@@ -799,7 +799,7 @@ var Microdraw = (function () {
                                     if( i == 0 ) {
                                         me.region.path = newPath._children[i];
                                     } else {
-                                        newReg = newRegion({path:newPath._children[i]});
+                                        newReg = me.newRegion({path:newPath._children[i]});
                                     }
                                 }
                                 me.region.path.fillColor = color;
@@ -890,7 +890,9 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> mouseUp");
             }
-            me.tools[me.selectedTool].mouseUp();
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) {
+                me.tools[me.selectedTool].mouseUp();
+            }
         },
 
         /**
@@ -1311,6 +1313,9 @@ var Microdraw = (function () {
                 case "deletePoint":
                 case "addRegion":
                 case "rotate":
+                    me.navEnabled = false;
+                    me.handle = null;
+                    break;
                 case "navigate":
                     me.navEnabled = true;
                     me.handle = null;
@@ -1404,12 +1409,12 @@ var Microdraw = (function () {
                 console.log("> save promise");
             }
 
-            // key
-            var key = "regionPaths";
-            var savedSlices = "Saving slices: ";
             var i;
-
-            for( var sl in me.ImageInfo ) {
+            var sl;
+            var promiseArray = [];
+            var savedSlices = "Saving slices: ";
+            
+            for( sl in me.ImageInfo ) {
                 if ((me.config.multiImageSave === false) && (sl !== me.currentImage)) {
                     continue;
                 }
@@ -1437,39 +1442,50 @@ var Microdraw = (function () {
                 savedSlices += sl.toString() + " ";
 
                 // post data to database
-                (function(sl2, h2) {
-                    console.log('saving slice ', sl2);
-                    var data = {
-                            action: "save",
-                            source: me.source,
-                             slice: sl2,
-                               key: key,
-                             value: JSON.stringify(value)
-                    };
-                    $.ajax({
-                        url:me.dbroot,
-                        type:"POST",
-                        data: data,
-                        success: function(result) {
-                            console.log("< microdrawDBSave resolve: Successfully saved regions:", me.ImageInfo[sl2].Regions.length, "slice: " + sl2.toString(), "response:", result);
-                            //update hash
-                            me.ImageInfo[sl2].Hash = h2;
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            console.log("< microdrawDBSave resolve: ERROR: " + textStatus + " " + errorThrown, "slice: " + sl2.toString());
-                        }
-                    });
-                }(sl, h));
-
-                //show dialog box with timeout
-                $('#saveDialog')
-                    .html(savedSlices)
-                    .fadeIn();
-                setTimeout(function() {
-                    $("#saveDialog")
-                    .fadeOut(500);
-                }, 2000);
+                var pr = new Promise(function(resolve, reject) {
+                    (function(sl2,h2) {
+                        $.ajax({
+                            url:me.dbroot,
+                            type:"POST",
+                            data: {
+                                action: "save",
+                                source: me.source,
+                                slice: sl2,
+                                key: "regionPaths",
+                                value: JSON.stringify(value)
+                            },
+                            success: function(result) {
+                                console.log("< microdrawDBSave. Successfully saved regions:",
+                                    me.ImageInfo[sl2].Regions.length,
+                                    "slice: " + sl2.toString(),
+                                    "response:",
+                                    result
+                                );
+                                //update hash
+                                me.ImageInfo[sl2].Hash = h2;
+                                resolve();
+                            },
+                            error: function(jqXHR, textStatus, err) {
+                                console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "slice: " + sl2.toString());
+                                reject();
+                            }
+                        });
+                    })(sl, h);
+                });
+                promiseArray.push(pr);
             }
+            Promise.all(promiseArray).then(function(values) {
+                console.log(values);
+            });
+
+            //show dialog box with timeout
+            $('#saveDialog')
+                .html(savedSlices)
+                .fadeIn();
+            setTimeout(function() {
+                $("#saveDialog")
+                .fadeOut(500);
+            }, 2000);
         },
 
         /**
@@ -1769,7 +1785,7 @@ var Microdraw = (function () {
              * @todo Commenting this line out solves the image size issues set size of the current overlay to match the size of the current image
              */
 
-            me.magicV = me.viewer.world.getItemAt(0).getContentSize().x / 100;
+            //me.magicV = me.viewer.world.getItemAt(0).getContentSize().x / 100;
 
             me.transform();
         },
