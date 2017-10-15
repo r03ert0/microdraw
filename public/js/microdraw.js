@@ -1497,7 +1497,7 @@ var Microdraw = (function () {
 
                 var key = "regionPaths";
 
-                $.get(me.dbroot, {
+                $.getJSON(me.dbroot, {
                     action: "load_last",
                     source: me.source,
                     slice: me.slice,
@@ -1526,6 +1526,8 @@ var Microdraw = (function () {
                     if( $.isEmptyObject(data) ) {
                         me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
                         resolve("No data for the current slice");
+                        
+                        return;
                     }
 
                     // parse the data and add to the current canvas

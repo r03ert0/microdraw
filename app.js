@@ -146,7 +146,7 @@ app.get('/api', function (req, res) {
         if(obj) {
             res.send(obj.value);
         } else {
-            res.send();
+            res.send({});
         }
     })
     .catch(function(err) {
