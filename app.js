@@ -161,7 +161,6 @@ app.post('/api', function (req, res) {
     switch(body.action) {
         case 'save':
             var { source: source, slice: slice, key: key } = body;
-            console.log("blib",source, slice, key);
             var value = JSON.parse(body.value);
             // mark previous version as backup
             db.get('data').update({
