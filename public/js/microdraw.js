@@ -191,43 +191,6 @@ var Microdraw = (function () {
         },
 
         /**
-         * @function selectRegion
-         * @desc Make the region selected
-         * @param {object} reg The region to select.
-         * @this
-         */
-        selectRegion: function selectRegion(reg) {
-            if( me.debug ) { console.log("> selectRegion"); }
-
-            var i;
-
-            // Select path
-            for( i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-                if( me.ImageInfo[me.currentImage].Regions[i] === reg ) {
-                    reg.path.selected = true;
-                    reg.path.fullySelected = true;
-                    me.region = reg;
-                } else {
-                    me.ImageInfo[me.currentImage].Regions[i].path.selected = false;
-                    me.ImageInfo[me.currentImage].Regions[i].path.fullySelected = false;
-                }
-            }
-            paper.view.draw();
-
-            // Select region name in list
-            $("#regionList > .region-tag").each(function () {
-                $(this).addClass("deselected");
-                $(this).removeClass("selected");
-            });
-
-            var tag = $("#regionList > .region-tag#" + reg.uid);
-            $(tag).removeClass("deselected");
-            $(tag).addClass("selected");
-
-            if(me.debug) { console.log("< selectRegion"); }
-        },
-
-        /**
          * @function changeRegionName
          *@param {object} reg The entry in the region's array.
          *@param {string} name Name of the region.
@@ -700,7 +663,6 @@ var Microdraw = (function () {
             me.handle = null;
 
             switch( me.selectedTool ) {
-                case "select":
                 case "addPoint":
                 case "deletePoint":
                 case "addRegion":
@@ -795,6 +757,7 @@ var Microdraw = (function () {
                 case "splitRegion":
                 case "drawPolygon":
                 case "draw":
+                case "select":
                     me.tools[me.selectedTool].mouseDown(point);
                     break;
             }
@@ -1275,7 +1238,6 @@ var Microdraw = (function () {
             me.selectTool();
 
             switch(me.selectedTool) {
-                case "select":
                 case "addPoint":
                 case "deletePoint":
                 case "addRegion":
@@ -1341,6 +1303,7 @@ var Microdraw = (function () {
                 case "flip":
                 case "draw":
                 case "drawPolygon":
+                case "select":
                 case "toBezier":
                 case "screenshot":
                     me.tools[me.selectedTool].click(prevTool);
@@ -2132,7 +2095,8 @@ var Microdraw = (function () {
                 me.loadScript('/js/tools/screenshot.js'),
                 me.loadScript('/js/tools/toBezier.js'),
                 me.loadScript('/js/tools/toPolygon.js'),
-                me.loadScript('/js/tools/splitRegion.js')
+                me.loadScript('/js/tools/splitRegion.js'),
+                me.loadScript('/js/tools/select.js')
             ).then(function () {
                 me.tools = {};
                 $.extend(me.tools, ToolDraw);
@@ -2142,6 +2106,7 @@ var Microdraw = (function () {
                 $.extend(me.tools, ToolToBezier);
                 $.extend(me.tools, ToolToPolygon);
                 $.extend(me.tools, ToolSplitRegion);
+                $.extend(me.tools, ToolSelect);
             });
 
             // Enable click on toolbar buttons
