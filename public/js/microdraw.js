@@ -1312,7 +1312,7 @@ var Microdraw = (function () {
                 case "addregion":
                 case "delregion":
                 case "rotate":
-                case "zoom":
+                case "navigate":
                     me.navEnabled = true;
                     me.handle = null;
                     break;
@@ -2187,7 +2187,7 @@ var Microdraw = (function () {
             me.shortCutHandler({pc:'#39', mac:'#39'}, me.loadNextImage); // right-arrow key
 
             // Configure currently selected tool
-            me.selectedTool = "zoom";
+            me.selectedTool = "navigate";
             me.selectTool();
 
             // decide between json (local) and jsonp (cross-origin)
