@@ -2198,6 +2198,7 @@ var Microdraw = (function () {
                 me.selectedTool = "navigate";
                 me.selectTool();
 
+<<<<<<< ec576397d7f1d4204e9eebd0bf27451d147c648f
                 // decide between json (local) and jsonp (cross-origin)
                 var ext = me.params.source.split(".");
                 ext = ext[ext.length - 1];
@@ -2232,6 +2233,18 @@ var Microdraw = (function () {
                         }
                     });
                 }
+=======
+            //fetch json
+            console.log('fetchJson')
+            fetch('/getJson?source='+me.params.source)
+                .then(data=>data.json())
+                .then(json=>{
+                    console.log('getjson success',json)
+                    me.initMicrodraw2(json);
+                    def.resolve();
+                })
+                .catch(e=>console.log(e));
+>>>>>>> init commit for overcoming cors header
 
                 // Change current section by typing in the section number and pessing the enter key
                 $("#section-name").keyup(me.sectionNameOnEnter);
