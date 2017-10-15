@@ -1457,85 +1457,82 @@ var Microdraw = (function () {
 
         /**
          * @function microdrawDBLoad
+         * @desc Load SVG overlay from microdrawDB
          * @returns {Promise}
          */
         microdrawDBLoad: function microdrawDBLoad() {
-
-        /*
-            Load SVG overlay from microdrawDB
-        */
-            if( me.debug ) { console.log("> microdrawDBLoad promise"); }
-
-            var def = new $.Deferred();
-            var key = "regionPaths";
-
-            $.get(me.dbroot, {
-                action: "load_last",
-                source: me.source,
-                slice: me.slice,
-                key: key
-            }).success(function (data) {
-                var i, json, reg;
-
-                console.log("INSIDE!!!");
-                me.annotationLoadingFlag = false;
-
-                // Because of asynchrony, the slice that just loaded may not be the one that the user
-                // intended to get. If the slice that was just loaded does not correspond to the current slice,
-                // do not display this one and load the current slice.
-                if( me.slice !== me.currentImage ) {
-                    me.microdrawDBLoad()
-                    .then(function() {
-                        $("#regionList").height($(window).height()-$("#regionList").offset().top);
-                        me.updateRegionList();
-                        paper.view.draw();
-                    });
-                    def.fail();
-
-                    return;
+            return new Promise(function(resolve, reject) {
+                if( me.debug ) {
+                    console.log("> microdrawDBLoad promise");
                 }
 
-                // if there is no data on the current slice
-                // save hash for the image none the less
-                if( $.isEmptyObject(data) ) {
-                    me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
+                var key = "regionPaths";
 
-                    return;
-                }
+                $.get(me.dbroot, {
+                    action: "load_last",
+                    source: me.source,
+                    slice: me.slice,
+                    key: key
+                }).success(function (data) {
+                    var i, json, reg;
+                    me.annotationLoadingFlag = false;
 
-                // parse the data and add to the current canvas
-                console.log("[", data, "]");
-                //obj = JSON.parse(data);
-                //obj = data;
-                //if( obj ) {
-                for( i = 0; i < data.Regions.length; i += 1 ) {
-                    reg = {};
-                    reg.name = data.Regions[i].name;
-                    reg.page = data.Regions[i].page;
-                    json = data.Regions[i].path;
-                    reg.path = new paper.Path();
+                    // Because of asynchrony, the slice that just loaded may not be the one that the user
+                    // intended to get. If the slice that was just loaded does not correspond to the current slice,
+                    // do not display this one and load the current slice.
+                    if( me.slice !== me.currentImage ) {
+                        me.microdrawDBLoad()
+                        .then(function() {
+                            $("#regionList").height($(window).height()-$("#regionList").offset().top);
+                            me.updateRegionList();
+                            paper.view.draw();
+                        });
+                        reject("Loaded slice does not correspond with the current slice.");
 
-                    /** @todo Remove workaround once paperjs will be fixed */
-                    var {insert} = reg.path.insert;
-                    reg.path.importJSON(json);
-                    reg.path.insert = insert;
+                        return;
+                    }
 
-                    me.newRegion({name:reg.name, path:reg.path});
-                }
-                paper.view.draw();
-                // if image has no hash, save one
-                me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
+                    // if there is no data on the current slice
+                    // save hash for the image none the less
+                    if( $.isEmptyObject(data) ) {
+                        me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
+
+                        reject("No data for the current slice");
+                    }
+
+                    // parse the data and add to the current canvas
+                    // console.log("[", data, "]");
+                    //obj = JSON.parse(data);
+                    //obj = data;
+                    //if( obj ) {
+                    for( i = 0; i < data.Regions.length; i += 1 ) {
+                        reg = {};
+                        reg.name = data.Regions[i].name;
+                        reg.page = data.Regions[i].page;
+                        json = data.Regions[i].path;
+                        reg.path = new paper.Path();
+
+                        /** @todo Remove workaround once paperjs will be fixed */
+                        var {insert} = reg.path.insert;
+                        reg.path.importJSON(json);
+                        reg.path.insert = insert;
+
+                        me.newRegion({name:reg.name, path:reg.path});
+                    }
+                    paper.view.draw();
+                    // if image has no hash, save one
+                    me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
 
 
-                if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
-                def.resolve();
-            })
-            .error(function(jqXHR, textStatus, errorThrown) {
-                console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
-                me.annotationLoadingFlag = false;
+                    if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
+                    resolve();
+                })
+                .error(function(jqXHR, textStatus, errorThrown) {
+                    console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + errorThrown);
+                    me.annotationLoadingFlag = false;
+                    reject(textStatus);
+                });
             });
-
-            return def.promise();
         },
 
         /*
@@ -1835,42 +1832,43 @@ var Microdraw = (function () {
          * @returns {Promise} Returns a promise that is fulfilled when the SVG data is loaded
          */
         makeSVGInline: function makeSVGInline() {
-            if( me.debug ) { console.log("> makeSVGInline promise"); }
+            return new Promise(function(resolve, reject) {
+                if( me.debug ) {
+                    console.log("> makeSVGInline promise");
+                }
 
-            var def = new $.Deferred();
-            $('img.button').each(function() {
-                var $img = $(this);
-                var imgID = $img.attr('id');
-                var imgClass = $img.attr('class');
-                var imgURL = $img.attr('src');
+                $('img.button').each(function() {
+                    var $img = $(this);
+                    var imgID = $img.attr('id');
+                    var imgClass = $img.attr('class');
+                    var imgURL = $img.attr('src');
 
-                $.get(imgURL, function(data) {
-                    // Get the SVG tag, ignore the rest
-                    var $svg = $(data).find('svg');
+                    $.get(imgURL, function(data) {
+                        // Get the SVG tag, ignore the rest
+                        var $svg = $(data).find('svg');
 
-                    // Add replaced image's ID to the new SVG
-                    if( typeof imgID !== 'undefined' ) {
-                        $svg = $svg.attr('id', imgID);
-                    }
-                    // Add replaced image's classes to the new SVG
-                    if( typeof imgClass !== 'undefined' ) {
-                        $svg = $svg.attr('class', imgClass + ' replaced-svg');
-                    }
+                        // Add replaced image's ID to the new SVG
+                        if( typeof imgID !== 'undefined' ) {
+                            $svg = $svg.attr('id', imgID);
+                        }
+                        // Add replaced image's classes to the new SVG
+                        if( typeof imgClass !== 'undefined' ) {
+                            $svg = $svg.attr('class', imgClass + ' replaced-svg');
+                        }
 
-                    // Remove any invalid XML tags as per http://validator.w3.org
-                    $svg = $svg.removeAttr('xmlns:a');
+                        // Remove any invalid XML tags as per http://validator.w3.org
+                        $svg = $svg.removeAttr('xmlns:a');
 
-                    // Replace image with new SVG
-                    $img.replaceWith($svg);
+                        // Replace image with new SVG
+                        $img.replaceWith($svg);
 
-                    if( me.debug ) {
-                        console.log("< makeSVGInline resolve: success");
-                    }
-                    def.resolve();
-                }, 'xml');
+                        if( me.debug ) {
+                            console.log("< makeSVGInline resolve: success");
+                        }
+                        resolve();
+                    }, 'xml');
+                });
             });
-
-            return def.promise();
         },
 
         /**
@@ -2042,47 +2040,46 @@ var Microdraw = (function () {
 
         /**
          * @function loadConfiguration
+         * @desc Load general microdraw configuration
          * @returns {void}
          */
         loadConfiguration: function loadConfiguration() {
-            var def = new $.Deferred();
-            var i;
-            // load general microdraw configuration
-            $.getJSON("js/configuration.json", function(data) {
-                me.config = data;
+            return new Promise(function(resolve, reject) {
+                $.getJSON("js/configuration.json", function(data) {
+                    var i;
+                    me.config = data;
 
-                var drawingTools = [
-                                "select",
-                                "draw",
-                                "drawPolygon",
-                                "simplify",
-                                "addPoint",
-                                "deletePoint",
-                                "addRegion",
-                                "splitRegion",
-                                "rotate",
-                                "save",
-                                "copy",
-                                "paste",
-                                "delete"
-                ];
-                if( me.config.drawingEnabled === false ) {
-                    // remove drawing tools from ui
-                    for( i = 0; i < drawingTools.length; i += 1 ) {
-                        $("#" + drawingTools[i]).remove();
+                    var drawingTools = [
+                                    "select",
+                                    "draw",
+                                    "drawPolygon",
+                                    "simplify",
+                                    "addPoint",
+                                    "deletePoint",
+                                    "addRegion",
+                                    "splitRegion",
+                                    "rotate",
+                                    "save",
+                                    "copy",
+                                    "paste",
+                                    "delete"
+                    ];
+                    if( me.config.drawingEnabled === false ) {
+                        // remove drawing tools from ui
+                        for( i = 0; i < drawingTools.length; i += 1 ) {
+                            $("#" + drawingTools[i]).remove();
+                        }
+
                     }
-
-                }
-                for( i = 0; i < me.config.removeTools.length; i += 1 ) {
-                    $("#" + me.config.removeTools[i]).remove();
-                }
-                if( me.config.useDatabase === false ) {
-                    $("#save").remove();
-                }
-                def.resolve();
+                    for( i = 0; i < me.config.removeTools.length; i += 1 ) {
+                        $("#" + me.config.removeTools[i]).remove();
+                    }
+                    if( me.config.useDatabase === false ) {
+                        $("#save").remove();
+                    }
+                    resolve();
+                });
             });
-
-            return def.promise();
         },
 
         /**
@@ -2094,20 +2091,19 @@ var Microdraw = (function () {
          * @returns {object} A promise fulfilled when the script is loaded
          */
         loadScript: function loadScript(path, testScriptPresent) {
-            var def = new $.Deferred();
-    
-            if(testScriptPresent && testScriptPresent()) {
-                console.log("[loadScript] Script",path,"already present, not loading it again");
-                return def.resolve().promise();
-            }
-            var s = document.createElement("script");
-            s.src = path;
-            s.onload=function () {
-                console.log("Loaded",path);
-                def.resolve();
-            };
-            document.body.appendChild(s);
-            return def.promise();
+            return new Promise(function (resolve, reject) {
+                if(testScriptPresent && testScriptPresent()) {
+                    console.log("[loadScript] Script",path,"already present, not loading it again");
+                    resolve();
+                }
+                var s = document.createElement("script");
+                s.src = path;
+                s.onload=function () {
+                    console.log("Loaded",path);
+                    resolve();
+                };
+                document.body.appendChild(s);
+            });
         },
 
         /**
@@ -2115,140 +2111,138 @@ var Microdraw = (function () {
          * @returns {void}
          */
         initMicrodraw: function initMicrodraw() {
-            if( me.debug ) {
-                console.log("> initMicrodraw promise");
-            }
-
-            var def = new $.Deferred();
-
-            // Subscribe to login changes
-            //MyLoginWidget.subscribe(loginChanged);
-
-            // extend Microdraw with tools
-            $.when(
-                me.loadScript('/js/tools/draw.js'),
-                me.loadScript('/js/tools/drawPolygon.js'),
-                me.loadScript('/js/tools/flipRegion.js'),
-                me.loadScript('/js/tools/screenshot.js'),
-                me.loadScript('/js/tools/toBezier.js'),
-                me.loadScript('/js/tools/toPolygon.js'),
-                me.loadScript('/js/tools/splitRegion.js')
-            ).then(function () {
-                me.tools = {};
-                $.extend(me.tools, ToolDraw);
-                $.extend(me.tools, ToolDrawPolygon);
-                $.extend(me.tools, ToolFlipRegion);
-                $.extend(me.tools, ToolScreenshot);
-                $.extend(me.tools, ToolToBezier);
-                $.extend(me.tools, ToolToPolygon);
-                $.extend(me.tools, ToolSplitRegion);
-            });
-
-            // Enable click on toolbar buttons
-            $("img.button").click(me.toolSelection);
-
-            // set annotation loading flag to false
-            me.annotationLoadingFlag = false;
-
-            // Initialize the control key handler and set shortcuts
-            me.initShortCutHandler();
-            me.shortCutHandler({pc:'^ z', mac:'cmd z'}, me.cmdUndo);
-            me.shortCutHandler({pc:'^ y', mac:'cmd y'}, me.cmdRedo);
-            if( me.config.drawingEnabled ) {
-                me.shortCutHandler({pc:'^ x', mac:'cmd x'}, function () {
-                    console.log("cut!");
-                });
-                me.shortCutHandler({pc:'^ v', mac:'cmd v'}, me.cmdPaste);
-                me.shortCutHandler({pc:'^ a', mac:'cmd a'}, function () {
-                    console.log("select all!");
-                });
-                me.shortCutHandler({pc:'^ c', mac:'cmd c'}, me.cmdCopy);
-                me.shortCutHandler({pc:'#46', mac:'#8'}, me.cmdDeleteSelected); // delete key
-            }
-            me.shortCutHandler({pc:'#37', mac:'#37'}, me.loadPreviousImage); // left-arrow key
-            me.shortCutHandler({pc:'#39', mac:'#39'}, me.loadNextImage); // right-arrow key
-
-            // Configure currently selected tool
-            me.selectedTool = "navigate";
-            me.selectTool();
-
-            // decide between json (local) and jsonp (cross-origin)
-            var ext = me.params.source.split(".");
-            ext = ext[ext.length - 1];
-            if( ext === "jsonp" ) {
+            return new Promise(function(resolve, reject) {
                 if( me.debug ) {
-                    console.log("Reading cross-origin jsonp file");
+                    console.log("> initMicrodraw promise");
                 }
-                $.ajax({
-                    type: 'GET',
-                    url: me.params.source + "?callback=?",
-                    jsonpCallback: 'f',
-                    dataType: 'jsonp',
-                    contentType: "application/json",
-                    success: function(obj) {
-                        me.initMicrodraw2(obj);
-                        def.resolve();
-                    }
+
+                // Subscribe to login changes
+                //MyLoginWidget.subscribe(loginChanged);
+
+                // extend Microdraw with tools
+                Promise.all([
+                    me.loadScript('/js/tools/draw.js'),
+                    me.loadScript('/js/tools/drawPolygon.js'),
+                    me.loadScript('/js/tools/flipRegion.js'),
+                    me.loadScript('/js/tools/screenshot.js'),
+                    me.loadScript('/js/tools/toBezier.js'),
+                    me.loadScript('/js/tools/toPolygon.js'),
+                    me.loadScript('/js/tools/splitRegion.js')
+                ]).then(function () {
+                    me.tools = {};
+                    $.extend(me.tools, ToolDraw);
+                    $.extend(me.tools, ToolDrawPolygon);
+                    $.extend(me.tools, ToolFlipRegion);
+                    $.extend(me.tools, ToolScreenshot);
+                    $.extend(me.tools, ToolToBezier);
+                    $.extend(me.tools, ToolToPolygon);
+                    $.extend(me.tools, ToolSplitRegion);
                 });
-            } else
-            if( ext === "json" ) {
-                if( me.debug ) {
-                    console.log("Reading local json file");
+
+                // Enable click on toolbar buttons
+                $("img.button").click(me.toolSelection);
+
+                // set annotation loading flag to false
+                me.annotationLoadingFlag = false;
+
+                // Initialize the control key handler and set shortcuts
+                me.initShortCutHandler();
+                me.shortCutHandler({pc:'^ z', mac:'cmd z'}, me.cmdUndo);
+                me.shortCutHandler({pc:'^ y', mac:'cmd y'}, me.cmdRedo);
+                if( me.config.drawingEnabled ) {
+                    me.shortCutHandler({pc:'^ x', mac:'cmd x'}, function () {
+                        console.log("cut!");
+                    });
+                    me.shortCutHandler({pc:'^ v', mac:'cmd v'}, me.cmdPaste);
+                    me.shortCutHandler({pc:'^ a', mac:'cmd a'}, function () {
+                        console.log("select all!");
+                    });
+                    me.shortCutHandler({pc:'^ c', mac:'cmd c'}, me.cmdCopy);
+                    me.shortCutHandler({pc:'#46', mac:'#8'}, me.cmdDeleteSelected); // delete key
                 }
-                $.ajax({
-                    type: 'GET',
-                    url: me.params.source,
-                    dataType: "json",
-                    contentType: "application/json",
-                    success: function(obj) {
-                        me.initMicrodraw2(obj);
-                        def.resolve();
+                me.shortCutHandler({pc:'#37', mac:'#37'}, me.loadPreviousImage); // left-arrow key
+                me.shortCutHandler({pc:'#39', mac:'#39'}, me.loadNextImage); // right-arrow key
+
+                // Configure currently selected tool
+                me.selectedTool = "navigate";
+                me.selectTool();
+
+                // decide between json (local) and jsonp (cross-origin)
+                var ext = me.params.source.split(".");
+                ext = ext[ext.length - 1];
+                if( ext === "jsonp" ) {
+                    if( me.debug ) {
+                        console.log("Reading cross-origin jsonp file");
                     }
+                    $.ajax({
+                        type: 'GET',
+                        url: me.params.source + "?callback=?",
+                        jsonpCallback: 'f',
+                        dataType: 'jsonp',
+                        contentType: "application/json",
+                        success: function(obj) {
+                            me.initMicrodraw2(obj);
+                            resolve();
+                        }
+                    });
+                } else
+                if( ext === "json" ) {
+                    if( me.debug ) {
+                        console.log("Reading local json file");
+                    }
+                    $.ajax({
+                        type: 'GET',
+                        url: me.params.source,
+                        dataType: "json",
+                        contentType: "application/json",
+                        success: function(obj) {
+                            me.initMicrodraw2(obj);
+                            resolve();
+                        }
+                    });
+                }
+
+                // Change current slice by typing in the slice number and pessing the enter key
+                $("#slice-name").keyup(me.sliceNameOnEnter);
+
+                // Show and hide menu
+                if( me.config.hideToolbar ) {
+                    var mousePosition;
+                    var animating = false;
+                    $(document).mousemove(function (e) {
+                        if( animating ) {
+                            return;
+                        }
+                        mousePosition = e.clientX;
+
+                        if( mousePosition <= 100 ) {
+                            //SLIDE IN MENU
+                            animating = true;
+                            $('#menuBar').animate({
+                                left: 0,
+                                opacity: 1
+                            }, 200, function () {
+                                animating = false;
+                            });
+                        } else if( mousePosition > 200 ) {
+                            animating = true;
+                            $('#menuBar').animate({
+                                left: -100,
+                                opacity: 0
+                            }, 500, function () {
+                                animating = false;
+                            });
+                        }
+                    });
+                }
+
+                $(window).resize(function() {
+                    $("#regionList").height($(window).height() - $("#regionList").offset().top);
+                    me.resizeAnnotationOverlay();
                 });
-            }
 
-            // Change current slice by typing in the slice number and pessing the enter key
-            $("#slice-name").keyup(me.sliceNameOnEnter);
-
-            // Show and hide menu
-            if( me.config.hideToolbar ) {
-                var mousePosition;
-                var animating = false;
-                $(document).mousemove(function (e) {
-                    if( animating ) {
-                        return;
-                    }
-                    mousePosition = e.clientX;
-
-                    if( mousePosition <= 100 ) {
-                        //SLIDE IN MENU
-                        animating = true;
-                        $('#menuBar').animate({
-                            left: 0,
-                            opacity: 1
-                        }, 200, function () {
-                            animating = false;
-                        });
-                    } else if( mousePosition > 200 ) {
-                        animating = true;
-                        $('#menuBar').animate({
-                            left: -100,
-                            opacity: 0
-                        }, 500, function () {
-                            animating = false;
-                        });
-                    }
-                });
-            }
-
-            $(window).resize(function() {
-                $("#regionList").height($(window).height() - $("#regionList").offset().top);
-                me.resizeAnnotationOverlay();
+                me.appendRegionTagsFromOntology(Ontology);
             });
-
-            me.appendRegionTagsFromOntology(Ontology);
-
-            return def.promise();
         },
 
         /**
@@ -2389,13 +2383,13 @@ var Microdraw = (function () {
         },
 
         init: function init() {
-            $.when(me.loadConfiguration())
+            me.loadConfiguration()
             .then(function () {
                 if( me.config.useDatabase ) {
-                    $.when(
+                    Promise.all([
                         // microdrawDBIP(),
                         // MyLoginWidget.init()
-                    )
+                    ])
                     .then(function () {
                         me.params = me.deparam();
                         me.slice = me.currentImage;
