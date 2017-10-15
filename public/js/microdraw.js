@@ -34,7 +34,7 @@ var Microdraw = (function () {
         config: {},                  // App configuration object
         isMac: navigator.platform.match(/Mac/i),
         isIOS: navigator.platform.match(/(iPhone|iPod|iPad)/i),
-        tolerance: 1,
+        tolerance: 3,
         counter: 1,
         tap: false,
         currentColorRegion: null,
@@ -701,11 +701,11 @@ var Microdraw = (function () {
 
             switch( me.selectedTool ) {
                 case "select":
-                case "addpoint":
-                case "delpoint":
-                case "addregion":
-                case "delregion":
-                case "splitregion": {
+                case "addPoint":
+                case "deletePoint":
+                case "addRegion":
+                case "delete":
+                case "splitRegion": {
                     hitResult = paper.project.hitTest(point, {
                             tolerance: me.tolerance,
                             stroke: true,
@@ -718,7 +718,7 @@ var Microdraw = (function () {
                     if( hitResult ) {
                         var i, re;
                         for( i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-                            if( me.ImageInfo[me.currentImage].Regions[i].path == hitResult.item ) {
+                            if( me.ImageInfo[me.currentImage].Regions[i].path === hitResult.item ) {
                                 re = me.ImageInfo[me.currentImage].Regions[i];
                                 break;
                             }
@@ -742,18 +742,18 @@ var Microdraw = (function () {
                                 me.handle = hitResult.segment.point;
                                 me.handle.point = point;
                             }
-                            if( me.selectedTool == "delpoint" ) {
+                            if( me.selectedTool == "deletePoint" ) {
                                 hitResult.segment.remove();
                                 me.commitMouseUndo();
                             }
-                        } else if( hitResult.type == 'stroke' && me.selectedTool == "addpoint" ) {
+                        } else if( hitResult.type == 'stroke' && me.selectedTool == "addPoint" ) {
                             me.region.path
                             .curves[hitResult.location.index]
                             .divide(hitResult.location);
                             me.region.path.fullySelected = true;
                             me.commitMouseUndo();
                             paper.view.draw();
-                        } else if( me.selectedTool == "addregion" ) {
+                        } else if( me.selectedTool == "addRegion" ) {
                             if( prevRegion ) {
                                 var newPath = me.region.path.unite(prevRegion.path);
                                 me.removeRegion(prevRegion);
@@ -765,7 +765,7 @@ var Microdraw = (function () {
                                 me.commitMouseUndo();
                                 me.backToSelect();
                             }
-                        } else if( me.selectedTool == "delregion" ) {
+                        } else if( me.selectedTool == "delete" ) {
                             if( prevRegion ) {
                                 var newPath = prevRegion.path.subtract(me.region.path);
                                 me.removeRegion(prevRegion);
@@ -777,7 +777,7 @@ var Microdraw = (function () {
                                 me.commitMouseUndo();
                                 me.backToSelect();
                             }
-                        } else if( me.selectedTool == "splitregion" ) {
+                        } else if( me.selectedTool == "splitRegion" ) {
 
                             /*selected region is prevRegion!
                             region is the region that should be split based on prevRegion
@@ -799,7 +799,7 @@ var Microdraw = (function () {
                                     if( i == 0 ) {
                                         me.region.path = newPath._children[i];
                                     } else {
-                                        newReg = newRegion({path:newPath._children[i]});
+                                        newReg = me.newRegion({path:newPath._children[i]});
                                     }
                                 }
                                 me.region.path.fillColor = color;
@@ -890,7 +890,9 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> mouseUp");
             }
-            me.tools[me.selectedTool].mouseUp();
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) {
+                me.tools[me.selectedTool].mouseUp();
+            }
         },
 
         /**
@@ -909,48 +911,6 @@ var Microdraw = (function () {
                 paper.view.draw();
             }
         },
-
-        /**
-         * @function flipRegion
-         * @desc Flip region along y-axis around its center point
-         * @returns {void}
-         */
-        flipRegion: function flipRegion() {
-            if( me.region !== null ) {
-                if( me.debug ) { console.log("> flipping region"); }
-
-                var i;
-                for( i in me.ImageInfo[me.currentImage].Regions ) {
-                    if( me.ImageInfo[me.currentImage].Regions[i].path.selected ) {
-                        me.ImageInfo[me.currentImage].Regions[i].path.scale(-1, 1);
-                    }
-                }
-                paper.view.draw();
-            }
-        },
-
-        /**
-         * @function bezierToPolygon
-         * @desc converts bezier curve into polygon
-         * @returns {void}
-         */
-
-        bezierToPolygon: function bezierToPolygon() {
-            console.log("> bezierToPolygon");
-            if (me.region !== null) {
-                if (me.region.path.hasHandles()) {
-                    if (confirm('Convert bezier curve into polygon?')) {
-                        var undoInfo = me.getUndo();
-                        me.region.path.clearHandles();
-                        me.saveUndo(undoInfo);
-                    }
-                } else {
-                    return;
-                }
-                paper.view.draw();
-            }
-        },
-
         /**
          * @function setRegionColor
          * @desc Set picked color & alpha
@@ -1349,12 +1309,14 @@ var Microdraw = (function () {
 
             switch(me.selectedTool) {
                 case "select":
-                case "addpoint":
-                case "delpoint":
-                case "addregion":
-                case "delregion":
+                case "addPoint":
+                case "deletePoint":
+                case "addRegion":
                 case "rotate":
-                case "zoom":
+                    me.navEnabled = false;
+                    me.handle = null;
+                    break;
+                case "navigate":
                     me.navEnabled = true;
                     me.handle = null;
                     break;
@@ -1366,12 +1328,12 @@ var Microdraw = (function () {
                     me.microdrawDBSave();
                     me.backToPreviousTool(prevTool);
                     break;
-                case "zoom-in":
-                case "zoom-out":
+                case "zoomIn":
+                case "zoomOut":
                 case "home":
                     me.backToPreviousTool(prevTool);
                     break;
-                case "prev":
+                case "previous":
                     me.loadPreviousImage();
                     me.backToPreviousTool(prevTool);
                     break;
@@ -1394,11 +1356,6 @@ var Microdraw = (function () {
                     //me.backToPreviousTool(prevTool);
                     me.backToSelect();
                     break;
-                case "flip":
-                    me.flipRegion(me.region);
-                    //backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
                 case "closeMenu":
                     me.toggleMenu();
                     me.backToPreviousTool(prevTool);
@@ -1408,13 +1365,13 @@ var Microdraw = (function () {
                     me.backToPreviousTool(prevTool);
                     break;
                 case "toPolygon":
-                    me.bezierToPolygon();
-                    me.backToPreviousTool(prevTool);
+                    me.tools[me.selectedTool].click(prevTool);
                     break;
                 /**
                  * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
                  */
-                 
+
+                case "flip":
                 case "draw":
                 case "drawPolygon":
                 case "toBezier":
@@ -1452,12 +1409,12 @@ var Microdraw = (function () {
                 console.log("> save promise");
             }
 
-            // key
-            var key = "regionPaths";
-            var savedSlices = "Saving slices: ";
             var i;
-
-            for( var sl in me.ImageInfo ) {
+            var sl;
+            var promiseArray = [];
+            var savedSlices = "Saving slices: ";
+            
+            for( sl in me.ImageInfo ) {
                 if ((me.config.multiImageSave === false) && (sl !== me.currentImage)) {
                     continue;
                 }
@@ -1485,39 +1442,50 @@ var Microdraw = (function () {
                 savedSlices += sl.toString() + " ";
 
                 // post data to database
-                (function(sl2, h2) {
-                    console.log('saving slice ', sl2);
-                    var data = {
-                            action: "save",
-                            source: me.source,
-                             slice: sl2,
-                               key: key,
-                             value: JSON.stringify(value)
-                    };
-                    $.ajax({
-                        url:me.dbroot,
-                        type:"POST",
-                        data: data,
-                        success: function(result) {
-                            console.log("< microdrawDBSave resolve: Successfully saved regions:", me.ImageInfo[sl2].Regions.length, "slice: " + sl2.toString(), "response:", result);
-                            //update hash
-                            me.ImageInfo[sl2].Hash = h2;
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            console.log("< microdrawDBSave resolve: ERROR: " + textStatus + " " + errorThrown, "slice: " + sl2.toString());
-                        }
-                    });
-                }(sl, h));
-
-                //show dialog box with timeout
-                $('#saveDialog')
-                    .html(savedSlices)
-                    .fadeIn();
-                setTimeout(function() {
-                    $("#saveDialog")
-                    .fadeOut(500);
-                }, 2000);
+                var pr = new Promise(function(resolve, reject) {
+                    (function(sl2,h2) {
+                        $.ajax({
+                            url:me.dbroot,
+                            type:"POST",
+                            data: {
+                                action: "save",
+                                source: me.source,
+                                slice: sl2,
+                                key: "regionPaths",
+                                value: JSON.stringify(value)
+                            },
+                            success: function(result) {
+                                console.log("< microdrawDBSave. Successfully saved regions:",
+                                    me.ImageInfo[sl2].Regions.length,
+                                    "slice: " + sl2.toString(),
+                                    "response:",
+                                    result
+                                );
+                                //update hash
+                                me.ImageInfo[sl2].Hash = h2;
+                                resolve();
+                            },
+                            error: function(jqXHR, textStatus, err) {
+                                console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "slice: " + sl2.toString());
+                                reject();
+                            }
+                        });
+                    })(sl, h);
+                });
+                promiseArray.push(pr);
             }
+            Promise.all(promiseArray).then(function(values) {
+                console.log(values);
+            });
+
+            //show dialog box with timeout
+            $('#saveDialog')
+                .html(savedSlices)
+                .fadeIn();
+            setTimeout(function() {
+                $("#saveDialog")
+                .fadeOut(500);
+            }, 2000);
         },
 
         /**
@@ -1817,7 +1785,7 @@ var Microdraw = (function () {
              * @todo Commenting this line out solves the image size issues set size of the current overlay to match the size of the current image
              */
 
-            me.magicV = me.viewer.world.getItemAt(0).getContentSize().x / 100;
+            //me.magicV = me.viewer.world.getItemAt(0).getContentSize().x / 100;
 
             me.transform();
         },
@@ -2121,11 +2089,10 @@ var Microdraw = (function () {
                                 "draw",
                                 "drawPolygon",
                                 "simplify",
-                                "addpoint",
-                                "delpoint",
-                                "addregion",
-                                "delregion",
-                                "splitregion",
+                                "addPoint",
+                                "deletePoint",
+                                "addRegion",
+                                "splitRegion",
                                 "rotate",
                                 "save",
                                 "copy",
@@ -2194,14 +2161,19 @@ var Microdraw = (function () {
             $.when(
                 me.loadScript('/js/tools/draw.js'),
                 me.loadScript('/js/tools/drawPolygon.js'),
+                me.loadScript('/js/tools/flipRegion.js'),
                 me.loadScript('/js/tools/screenshot.js'),
-                me.loadScript('/js/tools/toBezier.js')
+                me.loadScript('/js/tools/toBezier.js'),
+                me.loadScript('/js/tools/toPolygon.js')
             ).then(function () {
                 me.tools = {};
                 $.extend(me.tools, ToolDraw);
                 $.extend(me.tools, ToolDrawPolygon);
+                $.extend(me.tools, ToolFlipRegion);
                 $.extend(me.tools, ToolScreenshot);
                 $.extend(me.tools, ToolToBezier);
+                $.extend(me.tools, ToolToPolygon);
+
             });
 
             // Enable click on toolbar buttons
@@ -2229,7 +2201,7 @@ var Microdraw = (function () {
             me.shortCutHandler({pc:'#39', mac:'#39'}, me.loadNextImage); // right-arrow key
 
             // Configure currently selected tool
-            me.selectedTool = "zoom";
+            me.selectedTool = "navigate";
             me.selectTool();
 
             // decide between json (local) and jsonp (cross-origin)
@@ -2380,8 +2352,8 @@ var Microdraw = (function () {
                 showNavigator: true,
                 sequenceMode: false,
                 navigatorId:"myNavigator",
-                zoomInButton:"zoom-in",
-                zoomOutButton:"zoom-out",
+                zoomInButton:"zoomIn",
+                zoomOutButton:"zoomOut",
                 homeButton:"home",
                 maxZoomPixelRatio:10,
                 preserveViewport: true
