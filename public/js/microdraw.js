@@ -701,11 +701,11 @@ var Microdraw = (function () {
 
             switch( me.selectedTool ) {
                 case "select":
-                case "addpoint":
-                case "delpoint":
-                case "addregion":
-                case "delregion":
-                case "splitregion": {
+                case "addPoint":
+                case "deletePoint":
+                case "addRegion":
+                case "delete":
+                case "splitRegion": {
                     hitResult = paper.project.hitTest(point, {
                             tolerance: me.tolerance,
                             stroke: true,
@@ -742,18 +742,18 @@ var Microdraw = (function () {
                                 me.handle = hitResult.segment.point;
                                 me.handle.point = point;
                             }
-                            if( me.selectedTool == "delpoint" ) {
+                            if( me.selectedTool == "deletePoint" ) {
                                 hitResult.segment.remove();
                                 me.commitMouseUndo();
                             }
-                        } else if( hitResult.type == 'stroke' && me.selectedTool == "addpoint" ) {
+                        } else if( hitResult.type == 'stroke' && me.selectedTool == "addPoint" ) {
                             me.region.path
                             .curves[hitResult.location.index]
                             .divide(hitResult.location);
                             me.region.path.fullySelected = true;
                             me.commitMouseUndo();
                             paper.view.draw();
-                        } else if( me.selectedTool == "addregion" ) {
+                        } else if( me.selectedTool == "addRegion" ) {
                             if( prevRegion ) {
                                 var newPath = me.region.path.unite(prevRegion.path);
                                 me.removeRegion(prevRegion);
@@ -765,7 +765,7 @@ var Microdraw = (function () {
                                 me.commitMouseUndo();
                                 me.backToSelect();
                             }
-                        } else if( me.selectedTool == "delregion" ) {
+                        } else if( me.selectedTool == "delete" ) {
                             if( prevRegion ) {
                                 var newPath = prevRegion.path.subtract(me.region.path);
                                 me.removeRegion(prevRegion);
@@ -777,7 +777,7 @@ var Microdraw = (function () {
                                 me.commitMouseUndo();
                                 me.backToSelect();
                             }
-                        } else if( me.selectedTool == "splitregion" ) {
+                        } else if( me.selectedTool == "splitRegion" ) {
 
                             /*selected region is prevRegion!
                             region is the region that should be split based on prevRegion
@@ -1307,10 +1307,9 @@ var Microdraw = (function () {
 
             switch(me.selectedTool) {
                 case "select":
-                case "addpoint":
-                case "delpoint":
-                case "addregion":
-                case "delregion":
+                case "addPoint":
+                case "deletePoint":
+                case "addRegion":
                 case "rotate":
                 case "navigate":
                     me.navEnabled = true;
@@ -1329,7 +1328,7 @@ var Microdraw = (function () {
                 case "home":
                     me.backToPreviousTool(prevTool);
                     break;
-                case "prev":
+                case "previous":
                     me.loadPreviousImage();
                     me.backToPreviousTool(prevTool);
                     break;
@@ -2074,11 +2073,10 @@ var Microdraw = (function () {
                                 "draw",
                                 "drawPolygon",
                                 "simplify",
-                                "addpoint",
-                                "delpoint",
-                                "addregion",
-                                "delregion",
-                                "splitregion",
+                                "addPoint",
+                                "deletePoint",
+                                "addRegion",
+                                "splitRegion",
                                 "rotate",
                                 "save",
                                 "copy",
