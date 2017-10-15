@@ -187,7 +187,7 @@ app.post('/api', function (req, res) {
             })
             .then(function() {
                 // insert new version
-                var result = db.get('annotations').insert({
+                db.get('annotations').insert({
                     fileID: fileID,
                     userID: userID,
                     sectionNumber: sectionNumber,
@@ -196,7 +196,6 @@ app.post('/api', function (req, res) {
                     annotationHash: annotationHash,
                     annotation: value
                 });
-                console.log(result)
             });
             break;
     }
