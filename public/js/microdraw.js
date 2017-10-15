@@ -704,8 +704,7 @@ var Microdraw = (function () {
                 case "addPoint":
                 case "deletePoint":
                 case "addRegion":
-                case "delete":
-                case "splitRegion": {
+                case "delete": {
                     hitResult = paper.project.hitTest(point, {
                             tolerance: me.tolerance,
                             stroke: true,
@@ -777,42 +776,6 @@ var Microdraw = (function () {
                                 me.commitMouseUndo();
                                 me.backToSelect();
                             }
-                        } else if( me.selectedTool == "splitRegion" ) {
-
-                            /*selected region is prevRegion!
-                            region is the region that should be split based on prevRegion
-                            newRegionPath is outlining that part of region which has not been overlaid by prevRegion
-                            i.e. newRegion is what was region
-                            and prevRegion color should go to the other part*/
-                            if( prevRegion ) {
-                                var prevColor = prevRegion.path.fillColor;
-                                //color of the overlaid part
-                                var color = me.region.path.fillColor;
-                                var newPath = me.region.path.divide(prevRegion.path);
-
-                                me.removeRegion(prevRegion);
-                                me.region.path.remove();
-
-                                me.region.path = newPath;
-                                var newReg;
-                                for( i = 0; i < newPath._children.length; i += 1 ) {
-                                    if( i == 0 ) {
-                                        me.region.path = newPath._children[i];
-                                    } else {
-                                        newReg = me.newRegion({path:newPath._children[i]});
-                                    }
-                                }
-                                me.region.path.fillColor = color;
-                                if( newReg ) {
-                                    newReg.path.fillColor = prevColor;
-                                }
-                                me.updateRegionList();
-                                me.selectRegion(me.region);
-                                paper.view.draw();
-
-                                me.commitMouseUndo();
-                                me.backToSelect();
-                            }
                         }
                         break;
                     }
@@ -823,12 +786,16 @@ var Microdraw = (function () {
                     }
                     break;
                 }
+                case "rotate":
+                    me.region.origin = point;
+                    break;
+                /**
+                 * @todo These are the tools that have been already encapsulated. When all tools will be encapsulated, the whole switch/case should be removed
+                 */
+                case "splitRegion":
                 case "drawPolygon":
                 case "draw":
                     me.tools[me.selectedTool].mouseDown(point);
-                    break;
-                case "rotate":
-                    me.region.origin = point;
                     break;
             }
             paper.view.draw();
@@ -2164,7 +2131,8 @@ var Microdraw = (function () {
                 me.loadScript('/js/tools/flipRegion.js'),
                 me.loadScript('/js/tools/screenshot.js'),
                 me.loadScript('/js/tools/toBezier.js'),
-                me.loadScript('/js/tools/toPolygon.js')
+                me.loadScript('/js/tools/toPolygon.js'),
+                me.loadScript('/js/tools/splitRegion.js')
             ).then(function () {
                 me.tools = {};
                 $.extend(me.tools, ToolDraw);
@@ -2173,7 +2141,7 @@ var Microdraw = (function () {
                 $.extend(me.tools, ToolScreenshot);
                 $.extend(me.tools, ToolToBezier);
                 $.extend(me.tools, ToolToPolygon);
-
+                $.extend(me.tools, ToolSplitRegion);
             });
 
             // Enable click on toolbar buttons
