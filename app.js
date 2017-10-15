@@ -139,6 +139,8 @@ app.use('/data', require('./controller/data/'));
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
+    var data = [];
+    var i;
     console.warn(req.query);
     db.get('annotations').find({
         fileID: req.query.fileID,
@@ -147,8 +149,6 @@ app.get('/api', function (req, res) {
     })
     .then(function(obj) {
         if(obj) {
-            var data = [];
-            var i;
             for (i = 0; i < obj.length; i+=1) {
               data.push(obj[i].annotation);
             }
