@@ -1324,8 +1324,8 @@ var Microdraw = (function () {
                     me.microdrawDBSave();
                     me.backToPreviousTool(prevTool);
                     break;
-                case "zoom-in":
-                case "zoom-out":
+                case "zoomIn":
+                case "zoomOut":
                 case "home":
                     me.backToPreviousTool(prevTool);
                     break;
@@ -2338,8 +2338,8 @@ var Microdraw = (function () {
                 showNavigator: true,
                 sequenceMode: false,
                 navigatorId:"myNavigator",
-                zoomInButton:"zoom-in",
-                zoomOutButton:"zoom-out",
+                zoomInButton:"zoomIn",
+                zoomOutButton:"zoomOut",
                 homeButton:"home",
                 maxZoomPixelRatio:10,
                 preserveViewport: true
