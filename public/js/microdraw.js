@@ -8,9 +8,9 @@ var Microdraw = (function () {
     var me = {
         debug: 1,
         dbroot: localhost + "/api",
-        ImageInfo: {},               // regions, and projectID (for the paper.js canvas) for each slices, can be accessed by the slice name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
+        ImageInfo: {},               // regions, and projectID (for the paper.js canvas) for each sections, can be accessed by the section name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
                                      // regions contain a paper.js path, a unique ID and a name
-        imageOrder: [],              // names of slices ordered by their openseadragon page numbers
+        imageOrder: [],              // names of sections ordered by their openseadragon page numbers
         currentImage: null,          // name of the current image
         prevImage: null,             // name of the last image
         region: null,                // currently selected region (one element of Regions[])
@@ -22,7 +22,7 @@ var Microdraw = (function () {
         magicV: 1000,                // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
         params: null,                // URL parameters
         source: null,                // data source
-        slice: null,                 // slice index in a multi-slice dataset
+        section: null,               // section index in a multi-section dataset
         //    myIP,                  // user's IP
         UndoStack: [],
         RedoStack: [],
@@ -45,7 +45,7 @@ var Microdraw = (function () {
 
         /**
          * @function regionUID
-         * @returns {number} counter Number of regions in the current slice.
+         * @returns {number} counter Number of regions in the current section.
          */
         regionUID: function regionUID() {
             if( me.debug ) {
@@ -195,6 +195,7 @@ var Microdraw = (function () {
          * @desc Make the region selected
          * @param {object} reg The region to select.
          * @returns {void}
+         * @this
          */
         selectRegion: function selectRegion(reg) {
             if( me.debug ) { console.log("> selectRegion"); }
@@ -229,8 +230,8 @@ var Microdraw = (function () {
 
         /**
          * @function changeRegionName
-         *@param {object} reg The entry in the region's array.
-         *@param {string} name Name of the region.
+         * @param {object} reg The entry in the region's array.
+         * @param {string} name Name of the region.
          * @returns {void}
          */
         changeRegionName: function changeRegionName(reg, name) {
@@ -473,7 +474,7 @@ var Microdraw = (function () {
          * @function newRegion
          * @desc  Create a new region.
          * @param {object} arg An object containing the name of the region (arg.name) and the path of the data (arg.path)
-         * @param {number} imageNumber The number of the image slice where the region will be created
+         * @param {number} imageNumber The number of the image section where the region will be created
          * @returns {object} A new region
          */
         newRegion: function newRegion(arg, imageNumber) {
@@ -618,6 +619,7 @@ var Microdraw = (function () {
         /**
          * @function updateRegionList
          * @returns {void}
+         * @this
          */
         updateRegionList: function updateRegionList() {
             if( me.debug ) { console.log("> updateRegionList"); }
@@ -646,13 +648,12 @@ var Microdraw = (function () {
 
         /**
          * @function clickHandler
-         * @desc Interaction: mouse and tap
+         * @desc Interaction: mouse and tap: If on a computer, it will send click event; if on tablet, it will send touch event.
          * @param {object} event Event
          * @returns {void}
          */
         clickHandler: function clickHandler(event) {
             if( me.debug ) { console.log("> clickHandler"); }
-
             event.stopHandlers = !me.navEnabled;
         },
 
@@ -715,7 +716,6 @@ var Microdraw = (function () {
             me.handle = null;
 
             switch( me.selectedTool ) {
-                case "select":
                 case "addPoint":
                 case "deletePoint":
                 case "addRegion":
@@ -745,18 +745,8 @@ var Microdraw = (function () {
                         }
                         me.selectRegion(re);
 
-                        if( hitResult.type === 'handle-in' ) {
-                            me.handle = hitResult.segment.handleIn;
-                            me.handle.point = point;
-                        } else if( hitResult.type === 'handle-out' ) {
-                            me.handle = hitResult.segment.handleOut;
-                            me.handle.point = point;
-                        } else if( hitResult.type === 'segment' ) {
-                            if( me.selectedTool === "select" ) {
-                                me.handle = hitResult.segment.point;
-                                me.handle.point = point;
-                            }
-                            if( me.selectedTool === "deletePoint" ) {
+                        if( me.selectedTool === "deletePoint" ) {
+                            if( hitResult.type === 'segment' ) {
                                 hitResult.segment.remove();
                                 me.commitMouseUndo();
                             }
@@ -810,7 +800,9 @@ var Microdraw = (function () {
                  */
                 case "splitRegion":
                 case "drawPolygon":
+                case "drawLine":
                 case "draw":
+                case "select":
                     me.tools[me.selectedTool].mouseDown(point);
                     break;
             }
@@ -838,13 +830,13 @@ var Microdraw = (function () {
             dpoint.x -= orig.x;
             dpoint.y -= orig.y;
 
-            if( me.handle ) {
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
+                me.tools[me.selectedTool].mouseDrag(point);
+            } else if( me.handle ) {
                 me.handle.x += point.x-me.handle.point.x;
                 me.handle.y += point.y-me.handle.point.y;
                 me.handle.point = point;
                 me.commitMouseUndo();
-            } else if( me.selectedTool === "draw" ) {
-                me.region.path.add(point);
             } else if( me.selectedTool === "select" ) {
                 // event.stopHandlers = true;
                 for( i in me.ImageInfo[me.currentImage].Regions ) {
@@ -1166,7 +1158,11 @@ var Microdraw = (function () {
                     }
                 }
             }
-            me.drawingPolygonFlag = me.undo.drawingPolygonFlag;
+
+            /**
+             * @todo This line produces an error when the undo object is undefined. However, the code seems to work fine without this line. Check what the line was supposed to do
+             */
+             // me.drawingPolygonFlag = me.undo.drawingPolygonFlag;
         },
 
         /**
@@ -1304,7 +1300,6 @@ var Microdraw = (function () {
             me.selectTool();
 
             switch(me.selectedTool) {
-                case "select":
                 case "addPoint":
                 case "deletePoint":
                 case "addRegion":
@@ -1360,9 +1355,6 @@ var Microdraw = (function () {
                     me.toggleMenu();
                     me.backToPreviousTool(prevTool);
                     break;
-                case "toPolygon":
-                    me.tools[me.selectedTool].click(prevTool);
-                    break;
 
                 /**
                  * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
@@ -1370,8 +1362,11 @@ var Microdraw = (function () {
                 case "flip":
                 case "draw":
                 case "drawPolygon":
+                case "drawLine":
                 case "toBezier":
+                case "toPolygon":
                 case "screenshot":
+                case "select":
                     me.tools[me.selectedTool].click(prevTool);
                     break;
             }
@@ -1408,34 +1403,34 @@ var Microdraw = (function () {
             var i;
             var sl;
             var promiseArray = [];
-            var savedSlices = "Saving slices: ";
+            var savedSections = "Saving sections: ";
 
             for( sl in me.ImageInfo ) {
                 if ((me.config.multiImageSave === false) && (sl !== me.currentImage)) {
                     continue;
                 }
                 // configure value to be saved
-                var slice = me.ImageInfo[sl];
+                var section = me.ImageInfo[sl];
                 var value = {};
                 value.Regions = [];
-                for( i = 0; i < slice.Regions.length; i += 1 ) {
+                for( i = 0; i < section.Regions.length; i += 1 ) {
                     var el = {};
-                    el.path = JSON.parse(slice.Regions[i].path.exportJSON());
-                    el.name = slice.Regions[i].name;
+                    el.path = JSON.parse(section.Regions[i].path.exportJSON());
+                    el.name = section.Regions[i].name;
                     value.Regions.push(el);
                 }
 
-                // check if the slice annotations have changed since loaded by computing a hash
+                // check if the section annotations have changed since loaded by computing a hash
                 var h = me.hash(JSON.stringify(value.Regions)).toString(16);
-                if( me.debug > 1 ) { console.log("hash:", h, "original hash:", slice.Hash); }
-                // if the slice hash is undefined, this slice has not yet been loaded. do not save anything for this slice
-                if( typeof slice.Hash === "undefined" || h === slice.Hash ) {
+                if( me.debug > 1 ) { console.log("hash:", h, "original hash:", section.Hash); }
+                // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
+                if( typeof section.Hash === "undefined" || h === section.Hash ) {
                     if( me.debug > 1 ) { console.log("No change, no save"); }
                     value.Hash = h;
                     continue;
                 }
                 value.Hash = h;
-                savedSlices += sl.toString() + " ";
+                savedSections += sl.toString() + " ";
 
                 // post data to database
                 var pr = new Promise(function(resolve, reject) {
@@ -1446,23 +1441,23 @@ var Microdraw = (function () {
                             data: {
                                 action: "save",
                                 source: me.source,
-                                slice: sl2,
-                                key: "regionPaths",
-                                value: JSON.stringify(value)
+                                section: sl2,
+                                annotationHash: h2,
+                                annotation: JSON.stringify(value)
                             },
                             success: function(result) {
                                 console.log("< microdrawDBSave. Successfully saved regions:",
                                     me.ImageInfo[sl2].Regions.length,
-                                    "slice: " + sl2.toString(),
+                                    "section: " + sl2.toString(),
                                     "response:",
                                     result
                                 );
                                 //update hash
                                 me.ImageInfo[sl2].Hash = h2;
-                                resolve("slice " + sl2);
+                                resolve("section " + sl2);
                             },
                             error: function(jqXHR, textStatus, err) {
-                                console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "slice: " + sl2.toString());
+                                console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "section: " + sl2.toString());
                                 reject(err);
                             }
                         });
@@ -1476,7 +1471,7 @@ var Microdraw = (function () {
 
             //show dialog box with timeout
             $('#saveDialog')
-                .html(savedSlices)
+                .html(savedSections)
                 .fadeIn();
             setTimeout(function() {
                 $("#saveDialog")
@@ -1495,37 +1490,34 @@ var Microdraw = (function () {
                     console.log("> microdrawDBLoad promise");
                 }
 
-                var key = "regionPaths";
-
                 $.getJSON(me.dbroot, {
                     action: "load_last",
                     source: me.source,
-                    slice: me.slice,
-                    key: key
+                    section: me.section
                 }).success(function (data) {
                     var i, json, reg;
                     me.annotationLoadingFlag = false;
 
-                    // Because of asynchrony, the slice that just loaded may not be the one that the user
-                    // intended to get. If the slice that was just loaded does not correspond to the current slice,
-                    // do not display this one and load the current slice.
-                    if( me.slice !== me.currentImage ) {
+                    // Because of asynchrony, the section that just loaded may not be the one that the user
+                    // intended to get. If the section that was just loaded does not correspond to the current section,
+                    // do not display this one and load the current section.
+                    if( me.section !== me.currentImage ) {
                         me.microdrawDBLoad()
                         .then(function() {
                             $("#regionList").height($(window).height()-$("#regionList").offset().top);
                             me.updateRegionList();
                             paper.view.draw();
                         });
-                        resolve("Loaded slice does not correspond with the current slice.");
+                        resolve("Loaded section does not correspond with the current section.");
 
                         return;
                     }
 
-                    // if there is no data on the current slice
+                    // if there is no data on the current section
                     // save hash for the image none the less
                     if( $.isEmptyObject(data) ) {
                         me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
-                        resolve("No data for the current slice");
+                        resolve("No data for the current section");
                         
                         return;
                     }
@@ -1720,23 +1712,23 @@ var Microdraw = (function () {
             //console.log("new overlay size" + me.viewer.world.getItemAt(0).getContentSize());
 
             /*
-               Activate the paper.js project corresponding to this slice. If it does not yet
+               Activate the paper.js project corresponding to this section. If it does not yet
                exist, create a new canvas and associate it to the new project. Hide the previous
-               slice if it exists.
+               section if it exists.
            */
 
 
-            // change current slice index (for loading and saving)
-            me.slice = me.currentImage;
+            // change current section index (for loading and saving)
+            me.section = me.currentImage;
 
-            // hide previous slice
+            // hide previous section
             if( me.prevImage && paper.projects[me.ImageInfo[me.prevImage].projectID] ) {
                 paper.projects[me.ImageInfo[me.prevImage].projectID].activeLayer.visible = false;
                 $(paper.projects[me.ImageInfo[me.prevImage].projectID].view.element)
                 .hide();
             }
 
-            // if this is the first time a slice is accessed, create its canvas, its project,
+            // if this is the first time a section is accessed, create its canvas, its project,
             // and load its regions from the database
             if( typeof me.ImageInfo[me.currentImage].projectID === "undefined" ) {
 
@@ -1761,7 +1753,7 @@ var Microdraw = (function () {
                 if( me.debug ) { console.log('Set up new project, currentImage: ' + me.currentImage + ', ID: ' + me.ImageInfo[me.currentImage].projectID); }
             }
 
-            // activate the current slice and make it visible
+            // activate the current section and make it visible
             paper.projects[me.ImageInfo[me.currentImage].projectID].activate();
             paper.project.activeLayer.visible = true;
             $(paper.project.view.element).show();
@@ -1860,6 +1852,7 @@ var Microdraw = (function () {
         /**
          * @function makeSVGInline
          * @returns {Promise} Returns a promise that is fulfilled when the SVG data is loaded
+         * @this
          */
         makeSVGInline: function makeSVGInline() {
             return new Promise(function(resolve, reject) {
@@ -1905,11 +1898,11 @@ var Microdraw = (function () {
         },
 
         /**
-         * @function updateSliceName
+         * @function updateSectionName
          * @returns {void}
          */
-        updateSliceName: function updateSliceName() {
-            $("#slice-name").val(me.currentImage);
+        updateSectionName: function updateSectionName() {
+            $("#section-name").val(me.currentImage);
             var slashIndex = me.params.source.lastIndexOf("/") + 1;
             var filename = me.params.source.substr(slashIndex);
             $("title").text("MicroDraw|" + filename + "|" + me.currentImage);
@@ -1960,12 +1953,13 @@ var Microdraw = (function () {
 
         /**
          * @function initSlider
-         * @desc Initialises a slider to easily change between slices
+         * @desc Initialises a slider to easily change between sections
          * @param {number} minVal Minimum value
          * @param {number} maxVal Maximum value
          * @param {number} step Increase from one slider position to the next
          * @param {number} defaultValue Value at which the slider is initialised
          * @returns {void}
+         * @this
          */
         initSlider: function initSlider(minVal, maxVal, step, defaultValue) {
             if( me.debug ) { console.log("> initSlider promise"); }
@@ -1993,7 +1987,7 @@ var Microdraw = (function () {
 
         /**
          * @function sliderOnChange
-         * @desc Called when the slider value is changed to load a new slice
+         * @desc Called when the slider value is changed to load a new section
          * @param {number} newImageNumber Index of the image selected using the slider
          * @returns {void}
          */
@@ -2007,8 +2001,8 @@ var Microdraw = (function () {
 
         /**
          * @function updateSliderValue
-         * @desc Used to update the slider value if the slice was changed by another control
-         * @param {number} newIndex Slice number to which the slider will be set
+         * @desc Used to update the slider value if the section was changed by another control
+         * @param {number} newIndex section number to which the slider will be set
          * @returns {void}
          */
         updateSliderValue: function updateSliderValue(newIndex) {
@@ -2022,23 +2016,23 @@ var Microdraw = (function () {
         },
 
         /**
-         * @function findSliceNumber
-         * @param {String} numberStr Slice number
+         * @function findSectionNumber
+         * @param {String} numberStr Section number
          * @returns {void}
          */
-        findSliceNumber: function findSliceNumber(numberStr) {
+        findSectionNumber: function findSectionNumber(numberStr) {
 
         /*
-            Searches for the given slice-number.
+            Searches for the given section-number.
             If the number could be found its index will be returned. Otherwise -1
         */
             var number = parseInt(numberStr, 10); // number = NaN if cast to int failed!
             var i;
             if( !isNaN(number) ) {
                 for( i = 0; i < me.imageOrder.length; i += 1 ) {
-                        var sliceNumber = parseInt(me.imageOrder[i], 10);
+                        var sectionNumber = parseInt(me.imageOrder[i], 10);
                         // Compare the int values because the string values might be different (e.g. "0001" != "1")
-                        if( number === sliceNumber ) {
+                        if( number === sectionNumber ) {
                             return i;
                         }
                 }
@@ -2048,22 +2042,22 @@ var Microdraw = (function () {
         },
 
         /**
-         * @function sliceNameOnEnter
+         * @function sectionNameOnEnter
          * @param {object} event Event produced by the enter key
          * @returns {void}
          */
-        sliceNameOnEnter: function sliceNameOnEnter(event) {
+        sectionNameOnEnter: function sectionNameOnEnter(event) {
 
         /*
-            Eventhandler to open a specific slice by the enter key
+            Eventhandler to open a specific section by the enter key
         */
             if( me.debug ) {
-                console.log("> sliceNameOnEnter promise");
+                console.log("> sectionNameOnEnter promise");
             }
             if( event.keyCode === 13 ) { // enter key
-                var sliceNumber = $(this).val();
-                var index = me.findSliceNumber(sliceNumber);
-                if( index > -1 ) { // if slice number exists
+                var sectionNumber = $(this).val();
+                var index = me.findSectionNumber(sectionNumber);
+                if( index > -1 ) { // if section number exists
                     me.updateSliderValue(index);
                     me.loadImage(me.imageOrder[index]);
                 }
@@ -2086,6 +2080,7 @@ var Microdraw = (function () {
                                     "select",
                                     "draw",
                                     "drawPolygon",
+                                    "drawLine",
                                     "simplify",
                                     "addPoint",
                                     "deletePoint",
@@ -2155,11 +2150,13 @@ var Microdraw = (function () {
                 Promise.all([
                     me.loadScript('/js/tools/draw.js'),
                     me.loadScript('/js/tools/drawPolygon.js'),
+                    me.loadScript('/js/tools/drawLine.js'),
                     me.loadScript('/js/tools/flipRegion.js'),
                     me.loadScript('/js/tools/screenshot.js'),
                     me.loadScript('/js/tools/toBezier.js'),
                     me.loadScript('/js/tools/toPolygon.js'),
-                    me.loadScript('/js/tools/splitRegion.js')
+                    me.loadScript('/js/tools/splitRegion.js'),
+                    me.loadScript('/js/tools/select.js')
                 ]).then(function () {
                     me.tools = {};
                     $.extend(me.tools, ToolDraw);
@@ -2169,6 +2166,8 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolToBezier);
                     $.extend(me.tools, ToolToPolygon);
                     $.extend(me.tools, ToolSplitRegion);
+                    $.extend(me.tools, ToolDrawLine);
+                    $.extend(me.tools, ToolSelect);
                 });
 
                 // Enable click on toolbar buttons
@@ -2234,8 +2233,8 @@ var Microdraw = (function () {
                     });
                 }
 
-                // Change current slice by typing in the slice number and pessing the enter key
-                $("#slice-name").keyup(me.sliceNameOnEnter);
+                // Change current section by typing in the section number and pessing the enter key
+                $("#section-name").keyup(me.sectionNameOnEnter);
 
                 // Show and hide menu
                 if( me.config.hideToolbar ) {
@@ -2377,10 +2376,10 @@ var Microdraw = (function () {
                 showScreenshotControl: true // Default is true
             });
 
-            // add handlers: update slice name, animation, page change, mouse actions
+            // add handlers: update section name, animation, page change, mouse actions
             me.viewer.addHandler('open', function () {
                 me.initAnnotationOverlay();
-                me.updateSliceName();
+                me.updateSectionName();
             });
             me.viewer.addHandler('animation', function () {
                 me.transform();
@@ -2421,7 +2420,7 @@ var Microdraw = (function () {
                     Promise.all([]) // [microdrawDBIP(), MyLoginWidget.init()]
                     .then(function () {
                         me.params = me.deparam();
-                        me.slice = me.currentImage;
+                        me.section = me.currentImage;
                         me.source = me.params.source;
                         // updateUser();
                     })

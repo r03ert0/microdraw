@@ -4,7 +4,7 @@ module.exports = {
   'ZOOMIN':'#zoomIn',
   'ZOOMOUT':'#zoomOut',
   'PREVIOUS':'#previous',
-  'SLICE':'#slice',
+  'SECTION':'#section',
   'NEXT':'#next',
   'SLIDER':'#slider',
   'SELECT':'#select',

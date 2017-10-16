@@ -19,4 +19,5 @@ npm-debug.log
 php/base.php
 vervet
 vervet.zip
+server_config.json
 test/*.png

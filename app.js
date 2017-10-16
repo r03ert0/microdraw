@@ -9,6 +9,11 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mustacheExpress = require('mustache-express');
 
+var fs = require('fs');
+
+var dirname = __dirname; // local directory
+var serverConfig = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
+
 //var mongo = require('mongodb');
 var monk = require('monk');
 var MONGO_DB;
@@ -24,10 +29,6 @@ var db = monk(MONGO_DB);
 db.then( function () {
     console.log('Connected correctly to mongodb');
 });
-
-var fs = require('fs');
-
-var dirname = __dirname; // local directory
 
 //var index = require('./routes/index');
 
@@ -139,18 +140,26 @@ app.use('/data', require('./controller/data/'));
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
+//    var data = [];
+//    var i;
     console.warn(req.query);
-    db.get('data').findOne({
+    db.get('annotations').findOne({
         source: req.query.source,
-        slice: req.query.slice,
-        key: req.query.key,
+        section: req.query.section,
         backup: {$exists: false}
     })
     .then(function(obj) {
         if(obj) {
-            res.send(obj.value);
+
+            /*
+            for (i = 0; i < obj.length; i+=1) {
+                data.push(obj[i].annotation);
+            }
+            res.send(data);
+            */
+            res.send(obj.annotation);
         } else {
-            res.send({});
+            res.send([]);
         }
     })
     .catch(function(err) {
@@ -161,14 +170,12 @@ app.get('/api', function (req, res) {
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    var {body: body} = req;
-    switch(body.action) {
+    switch(req.body.action) {
         case 'save':
-            var { source: source, slice: slice, key: key } = body;
-            var value = JSON.parse(body.value);
             // mark previous version as backup
-            db.get('data').update({
-                source: source,
+            db.get('annotations').update({
+                source: req.body.source,
+                user: loggedUser,
                 backup: {$exists: false}
             }, {
                 $set:{backup: true}
@@ -177,13 +184,16 @@ app.post('/api', function (req, res) {
             })
             .then(function() {
                 // insert new version
-                db.get('data').insert({
+                db.get('annotations').insert({
+                    source: req.body.source,
                     user: loggedUser,
-                    source: source,
-                    slice: slice,
-                    key: key,
-                    value: value
-                });
+                    section: req.body.section,
+//                    visibility: req.body.visibility,
+                    annotationHash: req.body.annotationHash,
+                    annotation: JSON.parse(req.body.annotation)
+                })
+                .then(() => { console.warn('success'); } )
+                .catch((err) => { console.error('error', err); } );
             });
             break;
     }

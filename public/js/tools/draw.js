@@ -3,6 +3,7 @@
 
 var ToolDraw = {draw: (function() {
     var tool = {
+
         /**
          * @function checkRegionSize
          * @param {object} reg The selected region
@@ -15,16 +16,19 @@ var ToolDraw = {draw: (function() {
                 Microdraw.removeRegion(Microdraw.region, Microdraw.currentImage);
             }
         },
+
         /**
          * @function mouseDown
          * @returns {void}
          */
          mouseDown: function mouseDown(point) {
+
             // Start a new region
             // if there was an older region selected, unselect it
             if( Microdraw.region ) {
                 Microdraw.region.path.selected = false;
             }
+
             // start a new region
             var path = new paper.Path({segments:[point]});
             path.strokeWidth = Microdraw.config.defaultStrokeWidth;
@@ -34,6 +38,15 @@ var ToolDraw = {draw: (function() {
 
             Microdraw.commitMouseUndo();
         },
+
+        /**
+         * @function mouseDrag
+         * @param {object} point The point where you click (x,y)
+        */
+        mouseDrag: function mouseDrag(point) {
+            Microdraw.region.path.add(point);
+        },
+
         /**
          * @function mouseUp
          * @returns {void}
@@ -42,6 +55,7 @@ var ToolDraw = {draw: (function() {
             if( Microdraw.newRegionFlag === true ) {
                 Microdraw.region.path.closed = true;
                 Microdraw.region.path.fullySelected = true;
+
                 // to delete all unnecessary segments while preserving the form of the
                 // region to make it modifiable; & adding handles to the segments
                 var origSegments = Microdraw.region.path.segments.length;
@@ -74,6 +88,7 @@ var ToolDraw = {draw: (function() {
             }
             paper.view.draw();
         },
+
         /*
          * @function click
          * @desc Convert polygon path to bezier curve
