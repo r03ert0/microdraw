@@ -195,6 +195,7 @@ var Microdraw = (function () {
          * @desc Make the region selected
          * @param {object} reg The region to select.
          * @returns {void}
+         * @this
          */
         selectRegion: function selectRegion(reg) {
             if( me.debug ) { console.log("> selectRegion"); }
@@ -229,8 +230,8 @@ var Microdraw = (function () {
 
         /**
          * @function changeRegionName
-         *@param {object} reg The entry in the region's array.
-         *@param {string} name Name of the region.
+         * @param {object} reg The entry in the region's array.
+         * @param {string} name Name of the region.
          * @returns {void}
          */
         changeRegionName: function changeRegionName(reg, name) {
@@ -618,6 +619,7 @@ var Microdraw = (function () {
         /**
          * @function updateRegionList
          * @returns {void}
+         * @this
          */
         updateRegionList: function updateRegionList() {
             if( me.debug ) { console.log("> updateRegionList"); }
@@ -646,18 +648,12 @@ var Microdraw = (function () {
 
         /**
          * @function clickHandler
-         * @desc Interaction: mouse and tap
+         * @desc Interaction: mouse and tap: If on a computer, it will send click event; if on tablet, it will send touch event.
          * @param {object} event Event
          * @returns {void}
          */
         clickHandler: function clickHandler(event) {
             if( me.debug ) { console.log("> clickHandler"); }
-
-            if (me.selectedTool === 'drawLine') {
-                // fix the missing call of `drawLine#mouseUp`
-                me.tools[me.selectedTool].mouseUp();
-            }
-
             event.stopHandlers = !me.navEnabled;
         },
 
@@ -804,7 +800,7 @@ var Microdraw = (function () {
                  */
                 case "splitRegion":
                 case "drawPolygon":
-                case "drawLine":    
+                case "drawLine":
                 case "draw":
                 case "select":
                     me.tools[me.selectedTool].mouseDown(point);
@@ -834,13 +830,13 @@ var Microdraw = (function () {
             dpoint.x -= orig.x;
             dpoint.y -= orig.y;
 
-            if( me.handle ) {
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
+                me.tools[me.selectedTool].mouseDrag(point);
+            } else if( me.handle ) {
                 me.handle.x += point.x-me.handle.point.x;
                 me.handle.y += point.y-me.handle.point.y;
                 me.handle.point = point;
                 me.commitMouseUndo();
-            } else if( /(draw|drawLine)/.test(me.selectedTool) ) {
-                me.region.path.add(point);
             } else if( me.selectedTool === "select" ) {
                 // event.stopHandlers = true;
                 for( i in me.ImageInfo[me.currentImage].Regions ) {
@@ -1859,6 +1855,7 @@ var Microdraw = (function () {
         /**
          * @function makeSVGInline
          * @returns {Promise} Returns a promise that is fulfilled when the SVG data is loaded
+         * @this
          */
         makeSVGInline: function makeSVGInline() {
             return new Promise(function(resolve, reject) {
@@ -1965,6 +1962,7 @@ var Microdraw = (function () {
          * @param {number} step Increase from one slider position to the next
          * @param {number} defaultValue Value at which the slider is initialised
          * @returns {void}
+         * @this
          */
         initSlider: function initSlider(minVal, maxVal, step, defaultValue) {
             if( me.debug ) { console.log("> initSlider promise"); }
@@ -2085,6 +2083,7 @@ var Microdraw = (function () {
                                     "select",
                                     "draw",
                                     "drawPolygon",
+                                    "drawLine",
                                     "simplify",
                                     "addPoint",
                                     "deletePoint",
