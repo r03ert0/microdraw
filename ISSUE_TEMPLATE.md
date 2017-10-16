@@ -3,7 +3,7 @@
 ### Is this a feature request or a bug report? 
 * Please choose one of the labels on the right side and tag your issue :)
 
-### What is the current behavior?
+### What is the current behaviour?
 
 * If this is a bug, please explain how to reproduce the problem 
     * Which tools did you use in which sequence?

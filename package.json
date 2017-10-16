@@ -18,11 +18,13 @@
     "mustache-express": "^1.2.4",
     "passport": "^0.3.2",
     "passport-github": "^1.1.0",
-    "puppeteer": "^0.11.0",
     "serve-favicon": "~2.3.2"
   },
   "main": "app.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^4.9.0",
+    "puppeteer": "^0.12.0"
+  },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",
   "license": "ISC",
   "description": ""

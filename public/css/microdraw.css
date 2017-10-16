@@ -13,7 +13,7 @@ html,body {
 	top:0px;
 	left:0px;
 	background-color:rgba(200,200,200,0.5);
-	z-index:10; 
+	z-index:10;
 }
 #myNavigator {
 	position:absolute;
@@ -21,7 +21,7 @@ html,body {
 	height:150px;
 	top:0px;
 	left:0px;
-	z-index:10; 
+	z-index:10;
 }
 #menuButton {
 	position:absolute;
@@ -76,7 +76,7 @@ html,body {
 	border-radius:100px;
 }
 
-#prev, #next, #slice-name {
+.slice-nav * {
 	vertical-align:middle;
 }
 #slider {
@@ -191,7 +191,7 @@ html,body {
 }
 .row {
 	display:table-row;
-}	
+}
 .cell {
 	display:table-cell;
 	width:100%;
