@@ -720,7 +720,6 @@ var Microdraw = (function () {
             me.handle = null;
 
             switch( me.selectedTool ) {
-                case "select":
                 case "addPoint":
                 case "deletePoint":
                 case "addRegion":
@@ -750,18 +749,8 @@ var Microdraw = (function () {
                         }
                         me.selectRegion(re);
 
-                        if( hitResult.type === 'handle-in' ) {
-                            me.handle = hitResult.segment.handleIn;
-                            me.handle.point = point;
-                        } else if( hitResult.type === 'handle-out' ) {
-                            me.handle = hitResult.segment.handleOut;
-                            me.handle.point = point;
-                        } else if( hitResult.type === 'segment' ) {
-                            if( me.selectedTool === "select" ) {
-                                me.handle = hitResult.segment.point;
-                                me.handle.point = point;
-                            }
-                            if( me.selectedTool === "deletePoint" ) {
+                        if( me.selectedTool === "deletePoint" ) {
+                            if( hitResult.type === 'segment' ) {
                                 hitResult.segment.remove();
                                 me.commitMouseUndo();
                             }
@@ -817,6 +806,7 @@ var Microdraw = (function () {
                 case "drawPolygon":
                 case "drawLine":    
                 case "draw":
+                case "select":
                     me.tools[me.selectedTool].mouseDown(point);
                     break;
             }
@@ -1172,7 +1162,11 @@ var Microdraw = (function () {
                     }
                 }
             }
-            me.drawingPolygonFlag = me.undo.drawingPolygonFlag;
+
+            /**
+             * @todo This line produces an error when the undo object is undefined. However, the code seems to work fine without this line. Check what the line was supposed to do
+             */
+             // me.drawingPolygonFlag = me.undo.drawingPolygonFlag;
         },
 
         /**
@@ -1310,7 +1304,6 @@ var Microdraw = (function () {
             me.selectTool();
 
             switch(me.selectedTool) {
-                case "select":
                 case "addPoint":
                 case "deletePoint":
                 case "addRegion":
@@ -1366,9 +1359,6 @@ var Microdraw = (function () {
                     me.toggleMenu();
                     me.backToPreviousTool(prevTool);
                     break;
-                case "toPolygon":
-                    me.tools[me.selectedTool].click(prevTool);
-                    break;
 
                 /**
                  * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
@@ -1378,7 +1368,9 @@ var Microdraw = (function () {
                 case "drawPolygon":
                 case "drawLine":
                 case "toBezier":
+                case "toPolygon":
                 case "screenshot":
+                case "select":
                     me.tools[me.selectedTool].click(prevTool);
                     break;
             }
@@ -2167,7 +2159,8 @@ var Microdraw = (function () {
                     me.loadScript('/js/tools/screenshot.js'),
                     me.loadScript('/js/tools/toBezier.js'),
                     me.loadScript('/js/tools/toPolygon.js'),
-                    me.loadScript('/js/tools/splitRegion.js')
+                    me.loadScript('/js/tools/splitRegion.js'),
+                    me.loadScript('/js/tools/select.js')
                 ]).then(function () {
                     me.tools = {};
                     $.extend(me.tools, ToolDraw);
@@ -2177,7 +2170,8 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolToBezier);
                     $.extend(me.tools, ToolToPolygon);
                     $.extend(me.tools, ToolSplitRegion);
-                    $.extend(me.tools, ToolDrawLine)
+                    $.extend(me.tools, ToolDrawLine);
+                    $.extend(me.tools, ToolSelect);
                 });
 
                 // Enable click on toolbar buttons
