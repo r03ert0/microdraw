@@ -191,6 +191,43 @@ var Microdraw = (function () {
         },
 
         /**
+         * @function selectRegion
+         * @desc Make the region selected
+         * @param {object} reg The region to select.
+         * @returns {void}
+         */
+        selectRegion: function selectRegion(reg) {
+            if( me.debug ) { console.log("> selectRegion"); }
+
+            var i;
+
+            // Select path
+            for( i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
+                if( me.ImageInfo[me.currentImage].Regions[i] === reg ) {
+                    reg.path.selected = true;
+                    reg.path.fullySelected = true;
+                    me.region = reg;
+                } else {
+                    me.ImageInfo[me.currentImage].Regions[i].path.selected = false;
+                    me.ImageInfo[me.currentImage].Regions[i].path.fullySelected = false;
+                }
+            }
+            paper.view.draw();
+
+            // Select region name in list
+            $("#regionList > .region-tag").each(function () {
+                $(this).addClass("deselected");
+                $(this).removeClass("selected");
+            });
+
+            var tag = $("#regionList > .region-tag#" + reg.uid);
+            $(tag).removeClass("deselected");
+            $(tag).addClass("selected");
+
+            if(me.debug) { console.log("< selectRegion"); }
+        },
+
+        /**
          * @function changeRegionName
          *@param {object} reg The entry in the region's array.
          *@param {string} name Name of the region.
@@ -707,18 +744,8 @@ var Microdraw = (function () {
                         }
                         me.selectRegion(re);
 
-                        if( hitResult.type === 'handle-in' ) {
-                            me.handle = hitResult.segment.handleIn;
-                            me.handle.point = point;
-                        } else if( hitResult.type === 'handle-out' ) {
-                            me.handle = hitResult.segment.handleOut;
-                            me.handle.point = point;
-                        } else if( hitResult.type === 'segment' ) {
-                            if( me.selectedTool === "select" ) {
-                                me.handle = hitResult.segment.point;
-                                me.handle.point = point;
-                            }
-                            if( me.selectedTool === "deletePoint" ) {
+                        if( me.selectedTool === "deletePoint" ) {
+                            if( hitResult.type === 'segment' ) {
                                 hitResult.segment.remove();
                                 me.commitMouseUndo();
                             }
@@ -1129,7 +1156,11 @@ var Microdraw = (function () {
                     }
                 }
             }
-            me.drawingPolygonFlag = me.undo.drawingPolygonFlag;
+
+            /**
+             * @todo This line produces an error when the undo object is undefined. However, the code seems to work fine without this line. Check what the line was supposed to do
+             */
+             // me.drawingPolygonFlag = me.undo.drawingPolygonFlag;
         },
 
         /**
@@ -1322,9 +1353,6 @@ var Microdraw = (function () {
                     me.toggleMenu();
                     me.backToPreviousTool(prevTool);
                     break;
-                case "toPolygon":
-                    me.tools[me.selectedTool].click(prevTool);
-                    break;
 
                 /**
                  * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
@@ -1332,9 +1360,10 @@ var Microdraw = (function () {
                 case "flip":
                 case "draw":
                 case "drawPolygon":
-                case "select":
                 case "toBezier":
+                case "toPolygon":
                 case "screenshot":
+                case "select":
                     me.tools[me.selectedTool].click(prevTool);
                     break;
             }
@@ -1489,7 +1518,7 @@ var Microdraw = (function () {
                     if( $.isEmptyObject(data) ) {
                         me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
                         resolve("No data for the current slice");
-
+                        
                         return;
                     }
 
