@@ -653,6 +653,11 @@ var Microdraw = (function () {
         clickHandler: function clickHandler(event) {
             if( me.debug ) { console.log("> clickHandler"); }
 
+            if (me.selectedTool === 'drawLine') {
+                // fix the missing call of `drawLine#mouseUp`
+                me.tools[me.selectedTool].mouseUp();
+            }
+
             event.stopHandlers = !me.navEnabled;
         },
 
@@ -810,6 +815,7 @@ var Microdraw = (function () {
                  */
                 case "splitRegion":
                 case "drawPolygon":
+                case "drawLine":    
                 case "draw":
                     me.tools[me.selectedTool].mouseDown(point);
                     break;
@@ -843,7 +849,7 @@ var Microdraw = (function () {
                 me.handle.y += point.y-me.handle.point.y;
                 me.handle.point = point;
                 me.commitMouseUndo();
-            } else if( me.selectedTool === "draw" ) {
+            } else if( /(draw|drawLine)/.test(me.selectedTool) ) {
                 me.region.path.add(point);
             } else if( me.selectedTool === "select" ) {
                 // event.stopHandlers = true;
@@ -1370,6 +1376,7 @@ var Microdraw = (function () {
                 case "flip":
                 case "draw":
                 case "drawPolygon":
+                case "drawLine":
                 case "toBezier":
                 case "screenshot":
                     me.tools[me.selectedTool].click(prevTool);
@@ -2155,6 +2162,7 @@ var Microdraw = (function () {
                 Promise.all([
                     me.loadScript('/js/tools/draw.js'),
                     me.loadScript('/js/tools/drawPolygon.js'),
+                    me.loadScript('/js/tools/drawLine.js'),
                     me.loadScript('/js/tools/flipRegion.js'),
                     me.loadScript('/js/tools/screenshot.js'),
                     me.loadScript('/js/tools/toBezier.js'),
@@ -2169,6 +2177,7 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolToBezier);
                     $.extend(me.tools, ToolToPolygon);
                     $.extend(me.tools, ToolSplitRegion);
+                    $.extend(me.tools, ToolDrawLine)
                 });
 
                 // Enable click on toolbar buttons
