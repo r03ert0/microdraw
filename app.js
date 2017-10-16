@@ -137,8 +137,8 @@ app.use('/data', require('./controller/data/'));
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
-    var data = [];
-    var i;
+//    var data = [];
+//    var i;
     console.warn(req.query);
     db.get('annotations').findOne({
         source: req.query.source,
@@ -147,6 +147,7 @@ app.get('/api', function (req, res) {
     })
     .then(function(obj) {
         if(obj) {
+
             /*
             for (i = 0; i < obj.length; i+=1) {
                 data.push(obj[i].annotation);
@@ -166,10 +167,8 @@ app.get('/api', function (req, res) {
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    console.log(req.body.action, req.body.source, loggedUser);
     switch(req.body.action) {
         case 'save':
-            console.log('save');
             // mark previous version as backup
             db.get('annotations').update({
                 source: req.body.source,
@@ -181,13 +180,6 @@ app.post('/api', function (req, res) {
                 multi:true
             })
             .then(function() {
-                console.log('insert', req.body,
-                    req.body.source,
-                    loggedUser,
-                    req.body.section,
-                    req.body.annotationHash,
-                    JSON.parse(req.body.annotation)
-                );
                 // insert new version
                 db.get('annotations').insert({
                     source: req.body.source,
@@ -197,8 +189,8 @@ app.post('/api', function (req, res) {
                     annotationHash: req.body.annotationHash,
                     annotation: JSON.parse(req.body.annotation)
                 })
-                .then(()=>{console.log('success'); })
-                .catch((err)=>{console.log('error', err); });
+                .then(() => { console.warn('success'); } )
+                .catch((err) => { console.error('error', err); } );
             });
             break;
     }
