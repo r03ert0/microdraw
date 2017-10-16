@@ -9,7 +9,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mustacheExpress = require('mustache-express');
 
-
 var fs = require('fs');
 
 var dirname = __dirname; // local directory
@@ -27,7 +26,6 @@ if ( DOCKER_DB ) {
     MONGO_DB = serverConfig.MONGO_DB || 'localhost:27017/microdraw';
 }
 var db = monk(MONGO_DB);
-
 
 //var index = require('./routes/index');
 
@@ -142,20 +140,23 @@ app.get('/api', function (req, res) {
     var data = [];
     var i;
     console.warn(req.query);
-    db.get('annotations').find({
-        fileID: req.query.fileID,
-        userID: req.query.userID,
+    db.get('annotations').findOne({
+        source: req.query.source,
+        section: req.query.section,
         backup: {$exists: false}
     })
     .then(function(obj) {
         if(obj) {
+            /*
             for (i = 0; i < obj.length; i+=1) {
-              data.push(obj[i].annotation);
+                data.push(obj[i].annotation);
             }
             res.send(data);
-          } else {
-            res.send({});
-          }
+            */
+            res.send(obj.annotation);
+        } else {
+            res.send([]);
+        }
     })
     .catch(function(err) {
         console.error("ERROR", err);
@@ -165,20 +166,14 @@ app.get('/api', function (req, res) {
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
-    var { body: body } = req;
-    switch(body.action) {
+    console.log(req.body.action, req.body.source, loggedUser);
+    switch(req.body.action) {
         case 'save':
-            var fileID = body.fileID;
-            var userID = loggedUser;
-            var sectionNumber = body.sectionNumber;
-            var brainID = body.brainID;
-            var visibility = body.visibility;
-            var annotationHash = body.annotationHash;
-            var value = JSON.parse(body.annotation);
+            console.log('save');
             // mark previous version as backup
             db.get('annotations').update({
-                fileID: fileID,
-                userID: userID,
+                source: req.body.source,
+                user: loggedUser,
                 backup: {$exists: false}
             }, {
                 $set:{backup: true}
@@ -186,16 +181,24 @@ app.post('/api', function (req, res) {
                 multi:true
             })
             .then(function() {
+                console.log('insert', req.body,
+                    req.body.source,
+                    loggedUser,
+                    req.body.section,
+                    req.body.annotationHash,
+                    JSON.parse(req.body.annotation)
+                );
                 // insert new version
                 db.get('annotations').insert({
-                    fileID: fileID,
-                    userID: userID,
-                    sectionNumber: sectionNumber,
-                    brainID: brainID,
-                    visibility: visibility,
-                    annotationHash: annotationHash,
-                    annotation: value
-                });
+                    source: req.body.source,
+                    user: loggedUser,
+                    section: req.body.section,
+//                    visibility: req.body.visibility,
+                    annotationHash: req.body.annotationHash,
+                    annotation: JSON.parse(req.body.annotation)
+                })
+                .then(()=>{console.log('success'); })
+                .catch((err)=>{console.log('error', err); });
             });
             break;
     }
