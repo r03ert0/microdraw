@@ -7,4 +7,7 @@ jobs:
        - image: circleci/node:6.10.3
      steps:
        - checkout
-       - run: echo "hello world"
+       - run: npm install
+       - run: npm start
+       - run: npm test
+       
