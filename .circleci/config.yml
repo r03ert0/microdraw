@@ -17,7 +17,7 @@ jobs:
            command: 'echo "{ \"clientID\": \"$GITHUB_CLIENT_ID\", \"clientSecret\": \"$GITHUB_CLIENT_SECRET\", \"callbackURL\": \"$GITHUB_CALLBACK_URL\"}">github-keys.json'
        - run:
            name: Run server
-           command: 'npm start&'
+           command: 'npm start &'
        - run:
            name: Test
            command: 'npm test'
