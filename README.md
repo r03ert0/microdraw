@@ -31,13 +31,13 @@ as of 2017-08-15
      (default should be `var localhost = "http://localhost:3000";`)
   * `public/js/configuration.json.example -> public/js/configuration.json`
      set useDatabase to true
+  * `server_config.json.example -> server_config.json`
 
 * install the project
   * cd into microdraw
   * `npm install`
 * run the project
-  * in one terminal window start `mongo` database
-    and type `use microdraw` to switch to the MicroDraw database and leave it run
+  * in one terminal window start `mongod` database and leave it run
   * in another terminal: cd into microdraw folder: `npm start`
 * open http://localhost:3000
   to see MicroDraws landing page and click any of the data links provided
