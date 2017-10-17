@@ -30,7 +30,7 @@ as of 2017-08-15
   * `public/js/base.js.example -> public/js/base.js`
      (default should be `var localhost = "http://localhost:3000";`)
   * `public/js/configuration.json.example -> public/js/configuration.json`
-     set database to true
+     set useDatabase to true
 
 * install the project
   * cd into microdraw
