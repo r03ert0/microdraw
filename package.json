@@ -18,6 +18,7 @@
     "mustache-express": "latest",
     "passport": "^0.4.0",
     "passport-github": "latest",
+    "request": "^2.83.0",
     "serve-favicon": "latest"
   },
   "main": "app.js",

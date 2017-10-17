@@ -196,6 +196,9 @@ app.post('/api', function (req, res) {
                 .catch((err) => { console.error('error', err); } );
             });
             break;
+        case 'detente':
+            process.exit();
+            break;
     }
     res.send({});
 });

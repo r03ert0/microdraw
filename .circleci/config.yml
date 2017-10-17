@@ -16,16 +16,11 @@ jobs:
            name: Instantiate github-keys.json
            command: 'echo "{ \"clientID\": \"$GITHUB_CLIENT_ID\", \"clientSecret\": \"$GITHUB_CLIENT_SECRET\", \"callbackURL\": \"$GITHUB_CALLBACK_URL\"}">github-keys.json'
        - run:
-           name: Run server in background
-           command: 'npm start&'
-       - run:
-           name: Get PID of server
-           command: 'SERVER_PID=$!'
+           name: Run server
+           command: 'npm start'
        - run:
            name: Test server
            command: 'npm test'
        - run:
-           name: Kill server
-           command: 'kill $SERVER_PID'
-          
-       
+           name: Stop server
+           command: 'node stop.js'
