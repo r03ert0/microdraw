@@ -5,6 +5,7 @@ jobs:
    build:
      docker:
        - image: circleci/node:6.10.3
+       - image: circleci/mongo:3.4.4
      steps:
        - checkout
        - run: npm install
