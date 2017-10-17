@@ -15,6 +15,20 @@ jobs:
        - run:
            name: Instantiate github-keys.json
            command: 'echo "{ \"clientID\": \"$GITHUB_CLIENT_ID\", \"clientSecret\": \"$GITHUB_CLIENT_SECRET\", \"callbackURL\": \"$GITHUB_CALLBACK_URL\"}">github-keys.json'
-       - run: npm start
-       - run: npm test
+       - run:
+           name: Lint app.js
+           command: 'eslint app.js'
+       - run:
+           name: Lint microdraw.js
+           command: 'eslint public/js/microdraw.js'
+       - run:
+           name: Run server
+           command: 'npm start&;SERVER_PID=$!'
+       - run:
+           name: Test server
+           command: 'npm test'
+       - run:
+           name: Kill server
+           command: 'kill $SERVER_PID'
+          
        
