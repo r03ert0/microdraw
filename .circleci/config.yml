@@ -13,7 +13,7 @@ jobs:
            command: 'mv server_config.json.example server_config.json'
        - run:
            name: Instantiate github-keys.json
-           command: 'echo "{ \"clientID"\: \"$GITHUB_CLIENT_ID\", \"clientSecret\": \"$GITHUB_CLIENT_SECRET\", \"callbackURL\": \"$GITHUB_CALLBACK_URL\"}">github-keys.json;cat github-keys.json'
+           command: 'echo "{ \"clientID\": \"$GITHUB_CLIENT_ID\", \"clientSecret\": \"$GITHUB_CLIENT_SECRET\", \"callbackURL\": \"$GITHUB_CALLBACK_URL\"}">github-keys.json;cat github-keys.json'
        - run: npm start
        - run: npm test
        
