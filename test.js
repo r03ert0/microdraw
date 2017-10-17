@@ -11,7 +11,7 @@ function delay(timeout) {
     });
 }
 
-puppeteer.launch({headless: true})
+puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
 .then(function(browser) {
     console.log('puppeteer launched');
     browser.newPage()
