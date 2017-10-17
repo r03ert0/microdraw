@@ -29,7 +29,7 @@ puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandb
         // OPEN HOMEPAGE
         .then(() => {
           console.log('go to home page');
-          page.goto('http://localhost:3000');
+          page.goto('http://0.0.0.0:3000');
         })
         .then(() => page.screenshot({path:'test/01.home.png'}))
 
@@ -37,7 +37,7 @@ puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandb
         // OPEN DATA
         .then(() => {
           console.log('go to cat');
-          page.goto('http://localhost:3000/data?source=/test_data/cat.json');
+          page.goto('http://0.0.0.0:3000/data?source=/test_data/cat.json');
         })
         .then(() => delay(2000))
         .then(() => page.screenshot({path:'test/02.cat.png'}))
