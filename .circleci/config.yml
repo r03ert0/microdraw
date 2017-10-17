@@ -8,6 +8,9 @@ jobs:
      steps:
        - checkout
        - run: npm install
+       - run:
+           name: Instantiate server_config.json
+           command: 'mv server_config.json.example server_config.json'
        - run: npm start
        - run: npm test
        
