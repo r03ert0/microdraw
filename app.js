@@ -196,6 +196,9 @@ app.post('/api', function (req, res) {
                 .catch((err) => { console.error('error', err); } );
             });
             break;
+        case 'host':
+            console.log(req.get('host'));
+            break;
         case 'detente':
             process.exit();
             break;

@@ -19,6 +19,9 @@ jobs:
            name: Run server
            command: 'npm start'
        - run:
+           name: Query host
+           command: 'node host.js'
+       - run:
            name: Test server
            command: 'npm test'
        - run:
