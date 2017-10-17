@@ -19,7 +19,7 @@ jobs:
            name: Run server
            command: 'npm start'
        - run:
-           name: Test server
+           name: Test
            command: 'npm test'
        - run:
            name: Stop server
