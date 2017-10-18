@@ -2219,7 +2219,7 @@ var Microdraw = (function () {
                                 resolve();
                             },
                             error: function(err) {
-                                reject(err) /* TODO */
+                                reject(err) 
                             }
                         });
                     } else
@@ -2235,6 +2235,9 @@ var Microdraw = (function () {
                             success: function(obj) {
                                 me.initMicrodraw2(obj);
                                 resolve();
+                            },
+                            error: function(err) {
+                                reject(err)
                             }
                         });
                     } else {
