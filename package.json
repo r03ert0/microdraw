@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-<<<<<<< ec576397d7f1d4204e9eebd0bf27451d147c648f
     "test": "node test.js"
   },
   "dependencies": {
@@ -26,30 +25,6 @@
   "devDependencies": {
     "eslint": "latest",
     "puppeteer": "latest"
-=======
-    "dev": "nodemon ./bin/www"
-  },
-  "dependencies": {
-    "body-parser": "~1.16.0",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.0",
-    "express": "~4.14.1",
-    "express-session": "^1.15.1",
-    "jade": "~1.11.0",
-    "mongodb": "^2.2.24",
-    "monk": "^4.0.0",
-    "morgan": "~1.7.0",
-    "mustache-express": "^1.2.4",
-    "node-fetch": "^1.7.3",
-    "passport": "^0.3.2",
-    "passport-github": "^1.1.0",
-    "puppeteer": "^0.11.0",
-    "serve-favicon": "~2.3.2"
-  },
-  "main": "app.js",
-  "devDependencies": {
-    "nodemon": "^1.12.1"
->>>>>>> init commit for overcoming cors header
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",
   "license": "ISC",
