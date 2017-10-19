@@ -4,8 +4,10 @@
 
 var ToolSelect = {select: (function() {
     var tool = {
+
         /**
          * @function mouseDown
+         * @param {object} point The point where you click (x,y)
          * @returns {void}
          */
         mouseDown: function mouseDown(point) {
@@ -83,5 +85,6 @@ var ToolSelect = {select: (function() {
             Microdraw.handle = null;
         }
     };
+
     return tool;
-})()};
+}())};

@@ -1,7 +1,7 @@
 /*global Microdraw*/
 /*global paper*/
 
-var ToolDraw = {draw: (function() {
+var ToolDraw = { draw: (function () {
     var tool = {
 
         /**
@@ -10,18 +10,17 @@ var ToolDraw = {draw: (function() {
          * @returns {void}
          */
         checkRegionSize: function checkRegionSize(reg) {
-            if( reg.path.segments.length > 3 ) {
-
-            } else {
+            if( reg.path.segments.length <= 3 ) {
                 Microdraw.removeRegion(Microdraw.region, Microdraw.currentImage);
             }
         },
 
         /**
          * @function mouseDown
+         * @param {object} point The point where you click (x,y)
          * @returns {void}
          */
-         mouseDown: function mouseDown(point) {
+        mouseDown: function mouseDown(point) {
 
             // Start a new region
             // if there was an older region selected, unselect it
@@ -42,6 +41,7 @@ var ToolDraw = {draw: (function() {
         /**
          * @function mouseDrag
          * @param {object} point The point where you click (x,y)
+         * @return {void}
         */
         mouseDrag: function mouseDrag(point) {
             Microdraw.region.path.add(point);
@@ -68,10 +68,10 @@ var ToolDraw = {draw: (function() {
                 // pixels per dot (dot is a device-independent psuedo-pixel with a
                 // resolution of roughly 72 dpi)
                 var ppd = paper.view.pixelRatio;
-         
+        
                 // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
                 var pixelSelectAccuracy = 4.0*ppd;
-         
+        
                 // ratio between project coordinates and browser pixels
                 var coordsPerPixel = paper.view.size.width/paper.view.viewSize.width;
 
@@ -90,14 +90,15 @@ var ToolDraw = {draw: (function() {
         },
 
         /*
-         * @function click
-         * @desc Convert polygon path to bezier curve
-         * @param {string} prevTool The previous tool to which the selection goes back
-         * @returns {void}
-         */
+        * @function click
+        * @desc Convert polygon path to bezier curve
+        * @param {string} prevTool The previous tool to which the selection goes back
+        * @returns {void}
+        */
         click: function click(prevTool) {
             Microdraw.navEnabled = false;
-        },
+        }
     };
+
     return tool;
-})()};
+}())};

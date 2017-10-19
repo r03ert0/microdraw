@@ -3,6 +3,7 @@
 
 var ToolToBezier = {toBezier: (function() {
     var tool = {
+
         /**
          * @function polygonToBezier
          * @desc converts polygon into bezier curve
@@ -20,6 +21,7 @@ var ToolToBezier = {toBezier: (function() {
                 paper.view.draw();
             }
         },
+
         /*
          * @function click
          * @desc Convert polygon path to bezier curve
@@ -31,5 +33,6 @@ var ToolToBezier = {toBezier: (function() {
             Microdraw.backToPreviousTool(prevTool);
         }
     };
+
     return tool;
-})()};
+}())};
