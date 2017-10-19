@@ -1,6 +1,7 @@
 /*global Microdraw*/
 var ToolScreenshot = {screenshot: (function() {
     var tool = {
+
         /*
          * @function click
          * @desc Take a screenshot on click
@@ -12,5 +13,6 @@ var ToolScreenshot = {screenshot: (function() {
             Microdraw.backToPreviousTool(prevTool);
         }
     };
+
     return tool;
-})()};
+}())};
