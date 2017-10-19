@@ -2366,7 +2366,7 @@ var Microdraw = (function () {
                 barThickness:4,
                 location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
                 xOffset:5,
-                yOffset:5
+                yOffset:25
             });
 
             // add screenshot
