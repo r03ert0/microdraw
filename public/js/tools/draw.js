@@ -11,15 +11,14 @@ var ToolDraw = {
              * @returns {void}
              */
             checkRegionSize: function checkRegionSize(reg) {
-                if( reg.path.segments.length > 3 ) {
-
-                } else {
+                if( reg.path.segments.length <= 3 ) {
                     Microdraw.removeRegion(Microdraw.region, Microdraw.currentImage);
                 }
             },
 
             /**
              * @function mouseDown
+             * @param {object} point The point where you click (x,y)
              * @returns {void}
              */
             mouseDown: function mouseDown(point) {
@@ -43,6 +42,7 @@ var ToolDraw = {
             /**
              * @function mouseDrag
              * @param {object} point The point where you click (x,y)
+             * @return {void}
             */
             mouseDrag: function mouseDrag(point) {
                 Microdraw.region.path.add(point);
@@ -98,8 +98,9 @@ var ToolDraw = {
             */
             click: function click(prevTool) {
                 Microdraw.navEnabled = false;
-            },
+            }
         };
+
         return tool;
     }())
 };
