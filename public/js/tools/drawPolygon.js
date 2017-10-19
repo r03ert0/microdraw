@@ -3,8 +3,10 @@
 
 var ToolDrawPolygon = {drawPolygon: (function() {
     var tool = {
+
         /**
          * @function mouseDown
+         * @param {object} point The point where you click (x,y)
          * @returns {void}
          */
          mouseDown: function mouseDown(point) {
@@ -34,6 +36,7 @@ var ToolDrawPolygon = {drawPolygon: (function() {
                 }
             }
         },
+
         /**
          * @function mouseUp
          * @returns {void}
@@ -74,6 +77,7 @@ var ToolDrawPolygon = {drawPolygon: (function() {
             }
             paper.view.draw();
         },
+
         /*
          * @function click
          * @desc Convert polygon path to bezier curve
@@ -82,7 +86,8 @@ var ToolDrawPolygon = {drawPolygon: (function() {
          */
         click: function click(prevTool) {
             Microdraw.navEnabled = false;
-        },
+        }
     };
+
     return tool;
-})()};
+}())};

@@ -3,8 +3,10 @@
 
 var ToolSplitRegion = {splitRegion: (function() {
     var tool = {
+
         /**
          * @function mouseDown
+         * @param {object} point The point where you click (x,y)
          * @returns {void}
          */
         mouseDown: function mouseDown(point) {
@@ -69,19 +71,22 @@ var ToolSplitRegion = {splitRegion: (function() {
                 }
             }
         },
+
         /**
          * @function mouseUp
          * @returns {void}
          */
         mouseUp: function mouseUp() {
         },
+
         /*
          * @function click
          * @param {string} prevTool The previous tool to which the selection goes back
          * @returns {void}
          */
         click: function click(prevTool) {
-        },
+        }
     };
+
     return tool;
-})()};
+}())};

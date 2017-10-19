@@ -98,5 +98,5 @@ var ToolDrawLine = {
         };
 
         return tool;
-    })()
+    }())
 };
