@@ -2197,8 +2197,7 @@ var Microdraw = (function () {
                 me.selectTool();
 
                 // attempt to fetch json file directly from browser first
-                (new Promise((resolveDirectFetch,rejectDirectFetch)=>{
-                    
+                (new Promise((resolveDirectFetch, rejectDirectFetch) => {
                     // decide between json (local) and jsonp (cross-origin)
                     var ext = me.params.source.split(".");
                     ext = ext[ext.length - 1];
@@ -2217,7 +2216,7 @@ var Microdraw = (function () {
                                 resolveDirectFetch();
                             },
                             error: function(err) {
-                                rejectDirectFetch(err) 
+                                rejectDirectFetch(err);
                             }
                         });
                     } else
@@ -2235,32 +2234,31 @@ var Microdraw = (function () {
                                 resolveDirectFetch();
                             },
                             error: function(err) {
-                                rejectDirectFetch(err)
+                                rejectDirectFetch(err);
                             }
                         });
                     } else {
                         fetch(me.params.source)
-                            .then(data=>data.json())
-                            .then(json=>{
+                            .then((data) => data.json())
+                            .then((json) => {
                                 me.initMicrodraw2(json);
                                 resolveDirectFetch();
                             })
-                            .catch(e=>rejectDirectFetch(e))
+                            .catch((e) => rejectDirectFetch(e));
                     }
                 }))
-                    .then(()=>resolve())
-                    .catch(e=>{
-                        console.log('direct fetching of source failed ... ',e,'attempting to fetch via microdraw server')
-                        
+                    .then(() => resolve())
+                    .catch((e) => {
+                        console.log('direct fetching of source failed ... ', e, 'attempting to fetch via microdraw server');
                         //fetch json via microdraw server
                         fetch('/getJson?source='+me.params.source)
-                        .then(data=>data.json())
-                        .then(json=>{
-                            console.log('getjson success',json)
+                        .then((data) => data.json())
+                        .then((json) => {
+                            console.log('getjson success', json);
                             me.initMicrodraw2(json);
                         })
-                        .catch(e=>console.log(e));
-                    })
+                        .catch((err) => console.log(err));
+                    });
 
                 // Change current section by typing in the section number and pessing the enter key
                 $("#section-name").keyup(me.sectionNameOnEnter);
