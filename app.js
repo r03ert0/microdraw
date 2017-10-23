@@ -51,10 +51,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 var session = require('express-session');
 var passport = require('passport');
 var GithubStrategy = require('passport-github').Strategy;
-passport.use(new GithubStrategy(
-    JSON.parse(fs.readFileSync(dirname + "/github-keys.json")),
-    function (accessToken, refreshToken, profile, done) { return done(null, profile); }
-));
+var warningGithubConfig = false;
+fs.readFile("github-keys.json","utf8",(err,githubKeys)=>{
+    if(err){
+        console.warn('github-keys.json does not exist. Users cannot be authenticated ...',err)
+        warningGithubConfig = true
+    }else{
+        try{
+            passport.use(new GithubStrategy( JSON.parse(githubKeys), 
+            (accessToken,refreshToken,profile,done)=>done(null,profile)))
+        }catch(e){
+            console.warn('parsing githubkey.json or passport.use(new GithubStrategy error',e)
+            warningGithubConfig = true
+        }
+    }
+})
+
 app.use(session({
     secret: "a mi no me gusta la sémola",
     resave: false,
@@ -134,7 +146,10 @@ app.get('/', function (req, res) { // /auth/github
     });
 });
 
-app.use('/data', require('./controller/data/'));
+app.use('/data', (req,res,next)=>{
+    req.warningGithubConfig = warningGithubConfig;
+    next();
+},require('./controller/data/'));
 
 // API routes
 app.get('/api', function (req, res) {
