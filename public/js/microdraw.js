@@ -2197,7 +2197,7 @@ var Microdraw = (function () {
                 me.selectTool();
 
                 // attempt to fetch json file directly from browser first
-                (new Promise((resolve,reject)=>{
+                (new Promise((resolveDirectFetch,rejectDirectFetch)=>{
                     
                     // decide between json (local) and jsonp (cross-origin)
                     var ext = me.params.source.split(".");
@@ -2214,10 +2214,10 @@ var Microdraw = (function () {
                             contentType: "application/json",
                             success: function(obj) {
                                 me.initMicrodraw2(obj);
-                                resolve();
+                                resolveDirectFetch();
                             },
                             error: function(err) {
-                                reject(err) 
+                                rejectDirectFetch(err) 
                             }
                         });
                     } else
@@ -2232,10 +2232,10 @@ var Microdraw = (function () {
                             contentType: "application/json",
                             success: function(obj) {
                                 me.initMicrodraw2(obj);
-                                resolve();
+                                resolveDirectFetch();
                             },
                             error: function(err) {
-                                reject(err)
+                                rejectDirectFetch(err)
                             }
                         });
                     } else {
@@ -2243,12 +2243,12 @@ var Microdraw = (function () {
                             .then(data=>data.json())
                             .then(json=>{
                                 me.initMicrodraw2(json);
-                                resolve();
+                                resolveDirectFetch();
                             })
-                            .catch(e=>reject(e))
+                            .catch(e=>rejectDirectFetch(e))
                     }
                 }))
-                    .then(()=>({}))
+                    .then(()=>resolve())
                     .catch(e=>{
                         console.log('direct fetching of source failed ... ',e,'attempting to fetch via microdraw server')
                         
@@ -2258,7 +2258,6 @@ var Microdraw = (function () {
                         .then(json=>{
                             console.log('getjson success',json)
                             me.initMicrodraw2(json);
-                            def.resolve();
                         })
                         .catch(e=>console.log(e));
                     })
