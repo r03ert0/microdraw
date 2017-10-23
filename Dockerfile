@@ -9,7 +9,8 @@ ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils 
 COPY . /microdraw
 WORKDIR /microdraw
 RUN npm install
-RUN ln -sf public/lib/openseadragon-2.3.1-bin public/lib/openseadragon
-RUN ln -sf public/lib/Openseadragon-screenshot-master-f0c5169 public/lib/openseadragon-screenshot
+RUN ln -sf openseadragon-bin-2.3.1 public/lib/openseadragon
+RUN ln -sf FileSaver.js-master-c347c51 public/lib/FileSaver.js
+RUN ln -sf Openseadragon-screenshot-master-f0c5169 public/lib/openseadragon-screenshot
 RUN echo '#!/bin/bash\nnpm start &> server.log &\nnode host.js\nnpm test' > test.sh && chmod u+x test.sh && ln -s /microdraw/test.sh /usr/local/bin/tests
 CMD ["npm", "start"]
