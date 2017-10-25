@@ -1432,13 +1432,15 @@ var Microdraw = (function () {
                 // post data to database
                 var pr = new Promise(function(resolve, reject) {
                     (function(sl2, h2) {
+                        if (typeof me.fileID === 'undefined') {
+                            me.fileID = me.source + '_' + sl2;
+                        }
                         $.ajax({
                             url:me.dbroot,
                             type:"POST",
                             data: {
                                 action: "save",
-                                source: me.source,
-                                section: sl2,
+                                fileID: me.fileID,
                                 annotationHash: h2,
                                 annotation: JSON.stringify(value)
                             },
@@ -1486,11 +1488,14 @@ var Microdraw = (function () {
                 if( me.debug ) {
                     console.log("> microdrawDBLoad promise");
                 }
+                // if no fileID given, set it to 'source_section'
+                if (typeof me.fileID === 'undefined') {
+                    me.fileID = me.source + "_" + me.section;
+                }
 
                 $.getJSON(me.dbroot, {
                     action: "load_last",
-                    source: me.source,
-                    section: me.section
+                    fileID: me.fileID
                 }).success(function (data) {
                     var i, json, reg;
                     me.annotationLoadingFlag = false;
@@ -1524,11 +1529,11 @@ var Microdraw = (function () {
                     //obj = JSON.parse(data);
                     //obj = data;
                     //if( obj ) {
-                    for( i = 0; i < data.Regions.length; i += 1 ) {
+                    for( i = 0; i < data.length; i += 1 ) {
                         reg = {};
-                        reg.name = data.Regions[i].name;
-                        reg.page = data.Regions[i].page;
-                        json = data.Regions[i].path;
+                        reg.name = data[i].annotation.name;
+                        //reg.page = data[i].annotation.page;
+                        json = data[i].annotation.path;
                         reg.path = new paper.Path();
 
                         /** @todo Remove workaround once paperjs will be fixed */

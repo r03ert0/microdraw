@@ -174,15 +174,21 @@ app.post('/api', function (req, res) {
                 multi:true
             })
             .then(function() {
+                var annotation_list = [];
+                var item;
+                var i;
+                var all_annotations = JSON.parse(req.body.annotation);
+                for( i = 0; i < all_annotations.Regions.length; i += 1) {
+                    item = {
+                        fileID: req.body.fileID,
+                        user: loggedUser,
+                        annotationHash: req.body.annotationHash,
+                        annotation: all_annotations.Regions[i]
+                    };
+                    annotation_list.push(item);
+                }
                 // insert new version
-                db.get('annotations').insert({
-                    source: req.body.source,
-                    user: loggedUser,
-                    section: req.body.section,
-//                    visibility: req.body.visibility,
-                    annotationHash: req.body.annotationHash,
-                    annotation: JSON.parse(req.body.annotation)
-                })
+                db.get('annotations').insert(annotation_list)
                 .then(() => { console.warn('success'); } )
                 .catch((err) => { console.error('error', err); } );
             });
