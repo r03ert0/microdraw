@@ -1432,9 +1432,6 @@ var Microdraw = (function () {
                 // post data to database
                 var pr = new Promise(function(resolve, reject) {
                     (function(sl2, h2) {
-                        if (typeof me.fileID === 'undefined') {
-                            me.fileID = me.source + '_' + sl2;
-                        }
                         $.ajax({
                             url:me.dbroot,
                             type:"POST",
@@ -1487,10 +1484,6 @@ var Microdraw = (function () {
             return new Promise(function(resolve, reject) {
                 if( me.debug ) {
                     console.log("> microdrawDBLoad promise");
-                }
-                // if no fileID given, set it to 'source_section'
-                if (typeof me.fileID === 'undefined') {
-                    me.fileID = me.source + "_" + me.section;
                 }
 
                 $.getJSON(me.dbroot, {
@@ -2345,6 +2338,11 @@ var Microdraw = (function () {
             me.currentImage = me.imageOrder[Math.floor(obj.tileSources.length / 2)];
 
             me.params.tileSources = obj.tileSources;
+            if (typeof obj.fileID !== 'undefined') {
+                me.fileID = obj.fileID;
+            } else {
+                me.fileID = me.source + '_' + me.section;
+            }
             me.viewer = new OpenSeadragon({
                 id: "openseadragon1",
                 prefixUrl: "lib/openseadragon/images/",
