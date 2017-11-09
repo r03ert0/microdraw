@@ -2196,46 +2196,69 @@ var Microdraw = (function () {
                 me.selectedTool = "navigate";
                 me.selectTool();
 
-                // decide between json (local) and jsonp (cross-origin)
-                var ext = me.params.source.split(".");
-                ext = ext[ext.length - 1];
-                if( ext === "jsonp" ) {
-                    if( me.debug ) {
-                        console.log("Reading cross-origin jsonp file");
-                    }
-                    $.ajax({
-                        type: 'GET',
-                        url: me.params.source + "?callback=?",
-                        jsonpCallback: 'f',
-                        dataType: 'jsonp',
-                        contentType: "application/json",
-                        success: function(obj) {
-                            me.initMicrodraw2(obj);
-                            resolve();
-                        },
-                        error: function() {
-                            reject(new Error("Something wrong happened"));
+                // attempt to fetch json file directly from browser first
+                (new Promise((resolveDirectFetch, rejectDirectFetch) => {
+                    // decide between json (local) and jsonp (cross-origin)
+                    var ext = me.params.source.split(".");
+                    ext = ext[ext.length - 1];
+                    if( ext === "jsonp" ) {
+                        if( me.debug ) {
+                            console.log("Reading cross-origin jsonp file");
                         }
-                    });
-                } else
-                if( ext === "json" ) {
-                    if( me.debug ) {
-                        console.log("Reading local json file");
-                    }
-                    $.ajax({
-                        type: 'GET',
-                        url: me.params.source,
-                        dataType: "json",
-                        contentType: "application/json",
-                        success: function(obj) {
-                            me.initMicrodraw2(obj);
-                            resolve();
-                        },
-                        error: function() {
-                            reject(new Error("Something wrong happened"));
+                        $.ajax({
+                            type: 'GET',
+                            url: me.params.source + "?callback=?",
+                            jsonpCallback: 'f',
+                            dataType: 'jsonp',
+                            contentType: "application/json",
+                            success: function(obj) {
+                                me.initMicrodraw2(obj);
+                                resolveDirectFetch();
+                            },
+                            error: function(err) {
+                                rejectDirectFetch(err);
+                            }
+                        });
+                    } else
+                    if( ext === "json" ) {
+                        if( me.debug ) {
+                            console.log("Reading local json file");
                         }
+                        $.ajax({
+                            type: 'GET',
+                            url: me.params.source,
+                            dataType: "json",
+                            contentType: "application/json",
+                            success: function(obj) {
+                                me.initMicrodraw2(obj);
+                                resolveDirectFetch();
+                            },
+                            error: function(err) {
+                                rejectDirectFetch(err);
+                            }
+                        });
+                    } else {
+                        fetch(me.params.source)
+                            .then((data) => data.json())
+                            .then((json) => {
+                                me.initMicrodraw2(json);
+                                resolveDirectFetch();
+                            })
+                            .catch((e) => rejectDirectFetch(e));
+                    }
+                }))
+                    .then(() => resolve())
+                    .catch((e) => {
+                        console.log('direct fetching of source failed ... ', e, 'attempting to fetch via microdraw server');
+                        //fetch json via microdraw server
+                        fetch('/getJson?source='+me.params.source)
+                        .then((data) => data.json())
+                        .then((json) => {
+                            console.log('getjson success', json);
+                            me.initMicrodraw2(json);
+                        })
+                        .catch((err) => console.log(err));
                     });
-                }
 
                 // Change current section by typing in the section number and pessing the enter key
                 $("#section-name").keyup(me.sectionNameOnEnter);
