@@ -4,7 +4,8 @@ function data(req, res) {
     var { source: source } = req.query; // eslint-disable-line no-unused-vars, no-useless-rename
     var login = (req.isAuthenticated()) ?
                 ("<a href='/user/" + req.user.username + "'>" + req.user.username + "</a> (<a href='/logout'>Log Out</a>)")
-                : ("<a href='/auth/github'>Log in with GitHub</a>");
+                : req.warningGithubConfig ? ("Github OAuth failed ... ")
+                    :("<a href='/auth/github'>Log in with GitHub</a>");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
 
     // store return path in case of login

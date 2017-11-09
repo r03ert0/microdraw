@@ -31,6 +31,7 @@ puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandb
           console.log('go to home page');
           page.goto('http://localhost:3000');
         })
+        .then(() => delay(2000))
         .then(() => page.screenshot({path:'test/01.home.png'}))
 
 

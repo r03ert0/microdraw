@@ -3,12 +3,13 @@
 
 var ToolFlipRegion = {flip: (function() {
     var tool = {
+
          /**
          * @function flipRegion
          * @desc Flip region along y-axis around its center point
          * @returns {void}
          */
-        flip: function flipRegion() {
+        flipRegion: function flipRegion() {
             if( Microdraw.region !== null ) {
                 if( Microdraw.debug ) { console.log("> flipping region"); }
 
@@ -29,9 +30,10 @@ var ToolFlipRegion = {flip: (function() {
          * @returns {void}
          */
         click: function click(prevTool) {
-            tool.flip();
+            tool.flipRegion();
             Microdraw.backToPreviousTool(prevTool);
         }
     };
+
     return tool;
-})()};
+}())};

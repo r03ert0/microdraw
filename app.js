@@ -8,6 +8,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mustacheExpress = require('mustache-express');
+var fetch = require('node-fetch');
+var url = require('url')
 
 var fs = require('fs');
 
@@ -51,10 +53,22 @@ app.use(express.static(path.join(__dirname, 'public')));
 var session = require('express-session');
 var passport = require('passport');
 var GithubStrategy = require('passport-github').Strategy;
-passport.use(new GithubStrategy(
-    JSON.parse(fs.readFileSync(dirname + "/github-keys.json")),
-    function (accessToken, refreshToken, profile, done) { return done(null, profile); }
-));
+var warningGithubConfig = false;
+fs.readFile("github-keys.json", "utf8", (err, githubKeys) => {
+    if (err) {
+        console.warn('github-keys.json does not exist. Users would not be able to be authenticated ...', err);
+        warningGithubConfig = true;
+    }else{
+        try{
+            passport.use(new GithubStrategy( JSON.parse(githubKeys),
+            (accessToken, refreshToken, profile, done) => done(null, profile)));
+        }catch (e) {
+            console.warn('parsing githubkey.json or passport.use(new GithubStrategy) error', e);
+            warningGithubConfig = true;
+        }
+    }
+});
+
 app.use(session({
     secret: "a mi no me gusta la sémola",
     resave: false,
@@ -127,14 +141,57 @@ app.get('/', function (req, res) { // /auth/github
 
     // store return path in case of login
     req.session.returnTo = req.originalUrl;
-
     res.render('index', {
         title: 'MicroDraw',
         login: login
     });
 });
 
-app.use('/data', require('./controller/data/'));
+app.use('/data', (req, res, next) => {
+    req.warningGithubConfig = warningGithubConfig;
+    next();
+}, require('./controller/data/'));
+
+app.get('/getTile',function (req,res){
+    fetch(req.query.source)
+        .then(img=>img.body.pipe(res))
+        .catch(e=>{
+            console.log('gettile api broken',e);
+            res.sendStatus(500)
+        });
+})
+
+app.get('/getJson',function (req,res) {
+    var { source } = req.query;
+
+    var thisHostname = req.protocol + '://' + req.get('host')
+    console.log('thishostname',thisHostname)
+    var sourceHostname = 
+        !source ? 
+            null : 
+            (new RegExp('^http')).test(source) ? 
+                url.parse(source).protocol + '//' + url.parse(source).host : 
+                req.protocol + '://' + req.hostname;
+    var sourcePath = url.parse(source).path ? url.parse(source).path : null;
+    (new Promise((resolve,reject)=>{
+        if( sourceHostname && sourcePath ){
+            fetch(sourceHostname + sourcePath)
+                .then(data=>resolve(data))
+                .catch(e=>reject(e));
+        }else{
+            reject('sourceurl not defined');
+        }
+    }))
+        .then(data=>data.json())
+        .then(json=>{
+            json.tileSources = json.tileSources.map(tileSource=>(new RegExp('^http')).test(tileSource) ? tileSource : tileSource[0] == '/' ? thisHostname + '/getTile?source=' + sourceHostname + tileSource : thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource );
+            res.send(JSON.stringify(json));
+        })  
+        .catch(e=>{
+            console.log('error'+e)
+            res.sendStatus(404);
+        })
+})
 
 // API routes
 app.get('/api', function (req, res) {
