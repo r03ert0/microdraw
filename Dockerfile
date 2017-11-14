@@ -23,5 +23,5 @@ COPY . /microdraw
 WORKDIR /microdraw
 RUN npm install puppeteer
 RUN npm install
-RUN echo '#!/bin/bash\nnpm start &> server.log &\nnode host.js\nnpm test\npy.test' > test.sh && chmod u+x test.sh && ln -s /microdraw/test.sh /usr/local/bin/tests
+RUN echo '#!/bin/bash\nnpm start &> server.log &\nsleep 5\nnode host.js\nnpm test\npy.test' > test.sh && chmod u+x test.sh && ln -s /microdraw/test.sh /usr/local/bin/tests
 CMD ["npm", "start"]
