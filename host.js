@@ -5,4 +5,4 @@ request({
     url:'http://localhost:3000/api',
     method: 'POST',
     form: {action: 'host'}
-}, () => console.log('Server queried'));
+}, (err,resp,body) => console.log( err ? ('Server query error' , err) : 'Server queried'));
