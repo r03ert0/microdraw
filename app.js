@@ -13,34 +13,6 @@ var url = require('url')
 var fs = require('fs');
 
 var dirname = __dirname; // local directory
-var serverConfig;
-
-// Check if .example files have been instantiated
-// Server-side
-if( fs.existsSync(dirname + '/server_config.json') === false ) {
-    console.error("ERROR: The file server_config.json is not present.");
-    console.error("Maybe server_config.json.example was not instantiated?");
-    process.exit();
-}
-if( fs.existsSync(dirname + '/github-keys.json') === false ) {
-    console.error("ERROR: The file github-keys.json is not present.");
-    console.error("Maybe github-keys.json.example was not instantiated?");
-    process.exit();
-}
-// Client-side
-if( fs.existsSync(dirname + '/public/js/base.js') === false ) {
-    console.error("ERROR: The file /public/js/base.js is not present.");
-    console.error("Maybe /public/js/base.js.example was not instantiated?");
-    process.exit();
-}
-if( fs.existsSync(dirname + '/public/js/configuration.json') === false ) {
-    console.error("ERROR: The file /public/js/configuration.json is not present.");
-    console.error("Maybe /public/js/configuration.json.example was not instantiated?");
-    process.exit();
-}
-
-
-serverConfig = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
 
 //var mongo = require('mongodb');
 var monk = require('monk');
@@ -96,7 +68,7 @@ fs.readFile("github-keys.json", "utf8", (err, githubKeys) => {
 });
 
 app.use(session({
-    secret: "a mi no me gusta la sémola",
+    secret: process.env.SESSION_SECRET || "a mi no me gusta la sémola",
     resave: false,
     saveUninitialized: false
 }));

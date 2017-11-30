@@ -22,7 +22,7 @@
 var Microdraw = (function () {
     var me = {
         debug: 1,
-        dbroot: localhost + "/api",
+        dbroot: "/api",
         ImageInfo: {},               // regions, and projectID (for the paper.js canvas) for each sections, can be accessed by the section name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
                                      // regions contain a paper.js path, a unique ID and a name
         imageOrder: [],              // names of sections ordered by their openseadragon page numbers
@@ -2066,40 +2066,55 @@ var Microdraw = (function () {
          * @returns {void}
          */
         loadConfiguration: function loadConfiguration() {
-            return fetch("js/configuration.json").then((r) => r.json())
+            function initConfiguration(data){
+                var i;
+                me.config = data;
+
+                var drawingTools = [
+                                "select",
+                                "draw",
+                                "drawPolygon",
+                                "drawLine",
+                                "simplify",
+                                "addPoint",
+                                "deletePoint",
+                                "addRegion",
+                                "splitRegion",
+                                "rotate",
+                                "save",
+                                "copy",
+                                "paste",
+                                "delete"
+                ];
+                if( me.config.drawingEnabled === false ) {
+                    // remove drawing tools from ui
+                    for( i = 0; i < drawingTools.length; i += 1 ) {
+                        $("#" + drawingTools[i]).remove();
+                    }
+
+                }
+                for( i = 0; i < me.config.removeTools.length; i += 1 ) {
+                    $("#" + me.config.removeTools[i]).remove();
+                }
+                if( me.config.useDatabase === false ) {
+                    $("#save").remove();
+                }
+            }
+            return fetch("js/configuration.json")
+                .then((r) => r.json())
                 .then(function(data) {
-                    var i;
-                    me.config = data;
-
-                    var drawingTools = [
-                                    "select",
-                                    "draw",
-                                    "drawPolygon",
-                                    "drawLine",
-                                    "simplify",
-                                    "addPoint",
-                                    "deletePoint",
-                                    "addRegion",
-                                    "splitRegion",
-                                    "rotate",
-                                    "save",
-                                    "copy",
-                                    "paste",
-                                    "delete"
-                    ];
-                    if( me.config.drawingEnabled === false ) {
-                        // remove drawing tools from ui
-                        for( i = 0; i < drawingTools.length; i += 1 ) {
-                            $("#" + drawingTools[i]).remove();
-                        }
-
-                    }
-                    for( i = 0; i < me.config.removeTools.length; i += 1 ) {
-                        $("#" + me.config.removeTools[i]).remove();
-                    }
-                    if( me.config.useDatabase === false ) {
-                        $("#save").remove();
-                    }
+                    initConfiguration(data)
+                })
+                .catch(function(e){
+                    console.warn('fetching configuration.json failed ... initialising Microdraw with default configuration ...')
+                    initConfiguration({
+                        "useDatabase":true,
+                        "hideToolbar":false,
+                        "regionOntology":true,
+                        "drawingEnabled":true,
+                        "removeTools":[],
+                        "multiImageSave":false
+                    })
                 });
         },
 
