@@ -65,11 +65,11 @@ db.then( function () {
 var app = express();
 if( isWin ){
     console.warn('Dev machine does not recognise symlinks ...')
-    var reroute = ['/lib/openseadragon','/lib/FileSaver.js','/lib/openseadragon-screenshot']
+    var reroute = ['/lib/openseadragon/','/lib/FileSaver.js/','/lib/openseadragon-screenshot/']
     reroute.forEach(file=>{
         var readFile = fs.readFileSync(dirname+'/public'+file,'utf8')
         app.get(file+'*',(req,res)=>{
-            res.sendFile(dirname+'/public/lib/'+req.path.replace(file,readFile))
+            res.sendFile(dirname+'/public/lib/'+req.path.replace(file,readFile+'/'))
         })
     })
 }
