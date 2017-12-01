@@ -89,7 +89,7 @@ var ToolDraw = { draw: (function () {
             paper.view.draw();
         },
 
-        /*
+        /**
         * @function click
         * @desc Convert polygon path to bezier curve
         * @param {string} prevTool The previous tool to which the selection goes back
