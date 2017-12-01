@@ -1467,9 +1467,11 @@ var Microdraw = (function () {
             });
 
             //show dialog box with timeout
-            $('#saveDialog')
+            setTimeout(function() {
+                $('#saveDialog')
                 .html(savedSections)
                 .fadeIn();
+            },50)
             setTimeout(function() {
                 $("#saveDialog")
                 .fadeOut(500);
