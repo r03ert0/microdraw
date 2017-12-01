@@ -18,7 +18,7 @@ RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
 
 ENV PATH /opt/conda/bin:$PATH
 
-RUN conda install -y scikit-image && pip install pytest imagehash
+RUN pip install pytest
 COPY . /microdraw
 WORKDIR /microdraw
 RUN npm install puppeteer
