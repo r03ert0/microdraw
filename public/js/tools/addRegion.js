@@ -1,7 +1,7 @@
 /*global Microdraw*/
 /*global paper*/
 
-var ToolAddPoint = { addPoint : (function(){
+var ToolAddRegion = { addRegion : (function(){
     var tool = {
 
         /**
@@ -10,6 +10,7 @@ var ToolAddPoint = { addPoint : (function(){
          * @returns {void}
          */
         mouseDown : function mouseDown(point) {
+            var prevRegion = null
             var hitResult = paper.project.hitTest(point, {
                 tolerance : Microdraw.tolerance,
                 stroke : true,
@@ -20,13 +21,7 @@ var ToolAddPoint = { addPoint : (function(){
             Microdraw.newRegionFlag = false;
             
             if( hitResult ) {
-                var i, re;
-                for( i = 0; i < Microdraw.ImageInfo[Microdraw.currentImage].Regions.length; i += 1 ) {
-                    if( Microdraw.ImageInfo[Microdraw.currentImage].Regions[i].path === hitResult.item ) {
-                        re = Microdraw.ImageInfo[Microdraw.currentImage].Regions[i];
-                        break;
-                    }
-                }
+                var re = Microdraw.ImageInfo[Microdraw.currentImage].Regions.find(region=>region.path === hitResult.item)
 
                 // select path
                 if( Microdraw.region && Microdraw.region !== re ) {
@@ -35,13 +30,17 @@ var ToolAddPoint = { addPoint : (function(){
                 }
                 Microdraw.selectRegion(re);
 
-                if( hitResult.type === 'stroke'){
-                    Microdraw.region.path
-                        .curves[hitResult.location.index]
-                        .divide(hitResult.location);
-                        Microdraw.region.path.fullySelected = true;
-                        Microdraw.commitMouseUndo();
-                };
+                if( prevRegion ) {
+                    var newPath = me.region.path.unite(prevRegion.path);
+                    Microdraw.removeRegion(prevRegion);
+                    Microdraw.region.path.remove();
+                    Microdraw.region.path = newPath;
+                    Microdraw.updateRegionList();
+                    Microdraw.selectRegion(Microdraw.region);
+                    paper.view.draw();
+                    Microdraw.commitMouseUndo();
+                    Microdraw.backToSelect();
+                }
             } else {
                 if( Microdraw.region ){
                     Microdraw.region.path.selected = false

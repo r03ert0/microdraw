@@ -1,7 +1,7 @@
 /*global Microdraw*/
 /*global paper*/
 
-var ToolAddPoint = { addPoint : (function(){
+var ToolDeletePoint = { deletePoint : (function(){
     var tool = {
 
         /**
@@ -35,13 +35,10 @@ var ToolAddPoint = { addPoint : (function(){
                 }
                 Microdraw.selectRegion(re);
 
-                if( hitResult.type === 'stroke'){
-                    Microdraw.region.path
-                        .curves[hitResult.location.index]
-                        .divide(hitResult.location);
-                        Microdraw.region.path.fullySelected = true;
-                        Microdraw.commitMouseUndo();
-                };
+                if( hitResult.type === 'segment' ) {
+                    hitResult.segment.remove();
+                    me.commitMouseUndo();
+                }
             } else {
                 if( Microdraw.region ){
                     Microdraw.region.path.selected = false
