@@ -61,4 +61,6 @@ var ToolAddRegion = { addRegion : (function(){
             Microdraw.handle = null;
         }
     }
-})}
+    
+    return tool;
+}())}

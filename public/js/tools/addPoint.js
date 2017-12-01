@@ -62,4 +62,6 @@ var ToolAddPoint = { addPoint : (function(){
             Microdraw.handle = null;
         }
     }
-})}
+    
+    return tool;
+}())}

@@ -62,5 +62,7 @@ var ToolDelete = { delete : (function(){
             Microdraw.cmdDeleteSelected();
             Microdraw.backToPreviousTool(prevTool);
         }
-    }
-})}
+    };
+
+    return tool;
+}())}

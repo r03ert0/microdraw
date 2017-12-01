@@ -37,7 +37,7 @@ var ToolDeletePoint = { deletePoint : (function(){
 
                 if( hitResult.type === 'segment' ) {
                     hitResult.segment.remove();
-                    me.commitMouseUndo();
+                    Microdraw.commitMouseUndo();
                 }
             } else {
                 if( Microdraw.region ){
@@ -58,5 +58,8 @@ var ToolDeletePoint = { deletePoint : (function(){
             Microdraw.navEnabled = false;
             Microdraw.handle = null;
         }
-    }
-})}
+    };
+
+
+    return tool;
+}())}
