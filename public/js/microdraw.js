@@ -1898,7 +1898,7 @@ var Microdraw = (function () {
          * @returns {void}
          */
         updateSectionName: function updateSectionName() {
-            $("#section-name").val(me.currentImage);
+            $("#sectionName").val(me.currentImage);
             var slashIndex = me.params.source.lastIndexOf("/") + 1;
             var filename = me.params.source.substr(slashIndex);
             $("title").text("MicroDraw|" + filename + "|" + me.currentImage);
@@ -2261,7 +2261,7 @@ var Microdraw = (function () {
                     });
 
                 // Change current section by typing in the section number and pessing the enter key
-                $("#section-name").keyup(me.sectionNameOnEnter);
+                $("#sectionName").keyup(me.sectionNameOnEnter);
 
                 // Show and hide menu
                 if( me.config.hideToolbar ) {
