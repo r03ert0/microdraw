@@ -1,7 +1,7 @@
 /*global Microdraw*/
 /*global paper*/
 
-var ToolAddRegion = { addRegion : (function(){
+var ToolSubtractRegion = { subtractRegion : (function(){
     var tool = {
 
         /**
@@ -31,7 +31,7 @@ var ToolAddRegion = { addRegion : (function(){
                 Microdraw.selectRegion(re);
 
                 if( prevRegion ) {
-                    var newPath = Microdraw.region.path.unite(prevRegion.path);
+                    var newPath = Microdraw.region.path.subtract(prevRegion.path);
                     Microdraw.removeRegion(prevRegion);
                     Microdraw.region.path.remove();
                     Microdraw.region.path = newPath;

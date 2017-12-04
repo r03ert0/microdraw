@@ -11,7 +11,7 @@ var ToolNavigate = { navigate : (function(){
          * @returns {void}
          */
         click : function click(prevTool) {
-            Microdraw.navEnabled = false;
+            Microdraw.navEnabled = true;
             Microdraw.handle = null;
         }
     }

@@ -12,7 +12,7 @@ var ToolRotate = { rotate : (function(){
          */
         mouseDrag : function mouseDrag(point,dpoint) {
             event.stopHandlers = true;
-            var degree = parseInt(point.x - dpoint.x, 10);
+            var degree = parseInt(dpoint.x, 10);
             for( i in Microdraw.ImageInfo[Microdraw.currentImage].Regions ) {
                 if( Microdraw.ImageInfo[Microdraw.currentImage].Regions[i].path.selected ) {
                     Microdraw.ImageInfo[Microdraw.currentImage].Regions[i].path.rotate(degree, Microdraw.region.origin);
