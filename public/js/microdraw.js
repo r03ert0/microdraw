@@ -2331,7 +2331,7 @@ var Microdraw = (function () {
                 };
                 // if getTileUrl is specified, we might need to eval it to get the function
                 if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
-                    me.ImageInfo[name].source.getTileUrl = obj.tileSources[i].getTileUrl;
+                    eval(`me.ImageInfo[name].source.getTileUrl = ${obj.tileSources[i].getTileUrl}`);
                 }
             }
 

@@ -204,7 +204,10 @@ app.get('/getJson',function (req,res) {
         string[0] == '/' ? 
             thisHostname + '/getTile?source=' + sourceHostname + string : 
             thisHostname + '/getTile?source=' + sourceHostname +  '/'+ string ;
-
+    var rewriteTileSourceObject = (tileSource) => 
+        {
+            return Object.assign( {} , tileSource,{ getTileUrl : tileSource.getTileUrl.toString().replace(/http/gi,(getTileUrl)=>(thisHostname + '/getTile?source=' + getTileUrl))} ) 
+        }
     (new Promise((resolve,reject)=>{
         if( sourceHostname && sourcePath ){
             fetch(sourceHostname + sourcePath)
@@ -219,11 +222,7 @@ app.get('/getJson',function (req,res) {
             json.tileSources = json.tileSources.map(tileSource => 
                 tileSource.constructor.name == 'String' ?
                     rewriteString(tileSource) :
-                    ()=>{
-                        console.log(tileSource['getTileUrl'])
-                        return tileSource
-                    }); 
-                        
+                    rewriteTileSourceObject(tileSource)); 
             res.send(JSON.stringify(json));
         })  
         .catch(e=>{
