@@ -6,6 +6,23 @@ var ToolSelect = {select: (function() {
     var tool = {
 
         /**
+         * @function mouseDrag
+         * @param {object} point The point where you moved to (x,y)
+         * @param {object} dpoint The movement of the point
+         * @return {void}
+        */
+        mouseDrag: function mouseDrag(point,dpoint) {
+            // event.stopHandlers = true;
+            for( var reg of Microdraw.ImageInfo[Microdraw.currentImage].Regions ) {
+                if( reg.path.selected ) {
+                    reg.path.position.x += dpoint.x;
+                    reg.path.position.y += dpoint.y;
+                    Microdraw.commitMouseUndo();
+                }
+            }
+        },
+
+        /**
          * @function mouseDown
          * @param {object} point The point where you click (x,y)
          * @returns {void}
