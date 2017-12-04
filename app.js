@@ -179,7 +179,7 @@ app.use('/data', (req, res, next) => {
 }, require('./controller/data/'));
 
 app.get('/getTile',function (req,res){
-    fetch(req.query.source)
+    fetch(req.url.replace(/.*source\=/,''))
         .then(img=>img.body.pipe(res))
         .catch(e=>{
             console.log('getTile api broken',e);
