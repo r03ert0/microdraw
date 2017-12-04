@@ -713,7 +713,7 @@ var Microdraw = (function () {
 
             me.handle = null;
 
-            if( me.tools[me.selectedTool].mouseDown ) me.tools[me.selectedTool].mouseDown(point);
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDown ) me.tools[me.selectedTool].mouseDown(point);
             paper.view.draw();
         },
 
@@ -756,9 +756,7 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> mouseUp");
             }
-            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) {
-                me.tools[me.selectedTool].mouseUp();
-            }
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) me.tools[me.selectedTool].mouseUp();
         },
 
         /**
@@ -1186,8 +1184,7 @@ var Microdraw = (function () {
             me.selectedTool = $(this).attr("id");
             me.selectTool();
 
-            if( me.tools[me.selectedTool] )
-                me.tools[me.selectedTool].click()
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].click ) me.tools[me.selectedTool].click()
         },
 
         /**
