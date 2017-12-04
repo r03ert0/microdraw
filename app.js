@@ -191,7 +191,6 @@ app.get('/getJson',function (req,res) {
     var { source } = req.query;
 
     var thisHostname = req.protocol + '://' + req.get('host')
-    console.log('thishostname',thisHostname)
     var sourceHostname = 
         !source ? 
             null : 
@@ -199,6 +198,13 @@ app.get('/getJson',function (req,res) {
                 url.parse(source).protocol + '//' + url.parse(source).host : 
                 req.protocol + '://' + req.hostname;
     var sourcePath = url.parse(source).path ? url.parse(source).path : null;
+
+    var rewriteString = (string) => (new RegExp('^http')).test(string) ? 
+        string : 
+        string[0] == '/' ? 
+            thisHostname + '/getTile?source=' + sourceHostname + string : 
+            thisHostname + '/getTile?source=' + sourceHostname +  '/'+ string ;
+
     (new Promise((resolve,reject)=>{
         if( sourceHostname && sourcePath ){
             fetch(sourceHostname + sourcePath)
@@ -210,11 +216,18 @@ app.get('/getJson',function (req,res) {
     }))
         .then(data=>data.json())
         .then(json=>{
-            json.tileSources = json.tileSources.map(tileSource=>(new RegExp('^http')).test(tileSource) ? tileSource : tileSource[0] == '/' ? thisHostname + '/getTile?source=' + sourceHostname + tileSource : thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource );
+            json.tileSources = json.tileSources.map(tileSource => 
+                tileSource.constructor.name == 'String' ?
+                    rewriteString(tileSource) :
+                    ()=>{
+                        console.log(tileSource['getTileUrl'])
+                        return tileSource
+                    }); 
+                        
             res.send(JSON.stringify(json));
         })  
         .catch(e=>{
-            console.log('error'+e)
+            console.log('GET /getJson: Error while nocors fetching tiles',e)
             res.sendStatus(404);
         })
 })
