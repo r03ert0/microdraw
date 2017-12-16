@@ -223,24 +223,15 @@ app.get('/getJson',function (req,res) {
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
-//    var data = [];
-//    var i;
     console.warn(req.query);
-    db.get('annotations').findOne({
-        source: req.query.source,
-        section: req.query.section,
+    db.get('annotations').find({
+        fileID: req.query.fileID,
+        user: loggedUser,
         backup: {$exists: false}
     })
     .then(function(obj) {
         if(obj) {
-
-            /*
-            for (i = 0; i < obj.length; i+=1) {
-                data.push(obj[i].annotation);
-            }
-            res.send(data);
-            */
-            res.send(obj.annotation);
+            res.send(obj);
         } else {
             res.send([]);
         }
@@ -266,15 +257,21 @@ app.post('/api', function (req, res) {
                 multi:true
             })
             .then(function() {
+                var annotation_list = [];
+                var item;
+                var i;
+                var all_annotations = JSON.parse(req.body.annotation);
+                for( i = 0; i < all_annotations.Regions.length; i += 1) {
+                    item = {
+                        fileID: req.body.fileID,
+                        user: loggedUser,
+                        annotationHash: req.body.annotationHash,
+                        annotation: all_annotations.Regions[i]
+                    };
+                    annotation_list.push(item);
+                }
                 // insert new version
-                db.get('annotations').insert({
-                    source: req.body.source,
-                    user: loggedUser,
-                    section: req.body.section,
-//                    visibility: req.body.visibility,
-                    annotationHash: req.body.annotationHash,
-                    annotation: JSON.parse(req.body.annotation)
-                })
+                db.get('annotations').insert(annotation_list)
                 .then(() => { console.warn('success'); } )
                 .catch((err) => { console.error('error', err); } );
             });
