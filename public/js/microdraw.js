@@ -713,97 +713,7 @@ var Microdraw = (function () {
 
             me.handle = null;
 
-            switch( me.selectedTool ) {
-                case "addPoint":
-                case "deletePoint":
-                case "addRegion":
-                case "delete": {
-                    hitResult = paper.project.hitTest(point, {
-                            tolerance: me.tolerance,
-                            stroke: true,
-                            segments: true,
-                            fill: true,
-                            handles: true
-                        });
-
-                    me.newRegionFlag = false;
-                    if( hitResult ) {
-                        var i, re;
-                        for( i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-                            if( me.ImageInfo[me.currentImage].Regions[i].path === hitResult.item ) {
-                                re = me.ImageInfo[me.currentImage].Regions[i];
-                                break;
-                            }
-                        }
-
-                        // select path
-                        if( me.region && me.region !== re ) {
-                            me.region.path.selected = false;
-                            prevRegion = me.region;
-                        }
-                        me.selectRegion(re);
-
-                        if( me.selectedTool === "deletePoint" ) {
-                            if( hitResult.type === 'segment' ) {
-                                hitResult.segment.remove();
-                                me.commitMouseUndo();
-                            }
-                        } else if( hitResult.type === 'stroke' && me.selectedTool === "addPoint" ) {
-                            me.region.path
-                            .curves[hitResult.location.index]
-                            .divide(hitResult.location);
-                            me.region.path.fullySelected = true;
-                            me.commitMouseUndo();
-                            paper.view.draw();
-                        } else if( me.selectedTool === "addRegion" ) {
-                            if( prevRegion ) {
-                                var newPath = me.region.path.unite(prevRegion.path);
-                                me.removeRegion(prevRegion);
-                                me.region.path.remove();
-                                me.region.path = newPath;
-                                me.updateRegionList();
-                                me.selectRegion(me.region);
-                                paper.view.draw();
-                                me.commitMouseUndo();
-                                me.backToSelect();
-                            }
-                        } else if( me.selectedTool === "delete" ) {
-                            if( prevRegion ) {
-                                var newPath = prevRegion.path.subtract(me.region.path);
-                                me.removeRegion(prevRegion);
-                                prevRegion.path.remove();
-                                me.newRegion({path:newPath});
-                                me.updateRegionList();
-                                me.selectRegion(me.region);
-                                paper.view.draw();
-                                me.commitMouseUndo();
-                                me.backToSelect();
-                            }
-                        }
-                        break;
-                    }
-                    if( hitResult === null && me.region ) {
-                        //deselect paths
-                        me.region.path.selected = false;
-                        me.region = null;
-                    }
-                    break;
-                }
-                case "rotate":
-                    me.region.origin = point;
-                    break;
-
-                /**
-                 * @todo These are the tools that have been already encapsulated. When all tools will be encapsulated, the whole switch/case should be removed
-                 */
-                case "splitRegion":
-                case "drawPolygon":
-                case "drawLine":
-                case "draw":
-                case "select":
-                    me.tools[me.selectedTool].mouseDown(point);
-                    break;
-            }
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDown ) me.tools[me.selectedTool].mouseDown(point);
             paper.view.draw();
         },
 
@@ -827,34 +737,14 @@ var Microdraw = (function () {
             var dpoint = paper.view.viewToProject(new paper.Point(dx, dy));
             dpoint.x -= orig.x;
             dpoint.y -= orig.y;
-
-            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
-                me.tools[me.selectedTool].mouseDrag(point);
-            } else if( me.handle ) {
+            if( me.handle ) {
                 me.handle.x += point.x-me.handle.point.x;
                 me.handle.y += point.y-me.handle.point.y;
                 me.handle.point = point;
                 me.commitMouseUndo();
-            } else if( me.selectedTool === "select" ) {
-                // event.stopHandlers = true;
-                for( var reg of me.ImageInfo[me.currentImage].Regions ) {
-                    if( reg.path.selected ) {
-                        reg.path.position.x += dpoint.x;
-                        reg.path.position.y += dpoint.y;
-                        me.commitMouseUndo();
-                    }
-                }
-            }
-            if( me.selectedTool === "rotate" ) {
-                event.stopHandlers = true;
-                var degree = parseInt(dpoint.x, 10);
-                for( i in me.ImageInfo[me.currentImage].Regions ) {
-                    if( me.ImageInfo[me.currentImage].Regions[i].path.selected ) {
-                        me.ImageInfo[me.currentImage].Regions[i].path.rotate(degree, me.region.origin);
-                        me.commitMouseUndo();
-                    }
-                }
-            }
+            } else if (me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
+                me.tools[me.selectedTool].mouseDrag(point,dpoint);
+            }  
             paper.view.draw();
         },
 
@@ -866,9 +756,7 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> mouseUp");
             }
-            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) {
-                me.tools[me.selectedTool].mouseUp();
-            }
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) me.tools[me.selectedTool].mouseUp();
         },
 
         /**
@@ -1296,77 +1184,7 @@ var Microdraw = (function () {
             me.selectedTool = $(this).attr("id");
             me.selectTool();
 
-            switch(me.selectedTool) {
-                case "addPoint":
-                case "deletePoint":
-                case "addRegion":
-                case "rotate":
-                    me.navEnabled = false;
-                    me.handle = null;
-                    break;
-                case "navigate":
-                    me.navEnabled = true;
-                    me.handle = null;
-                    break;
-                case "delete":
-                    me.cmdDeleteSelected();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "save":
-                    me.microdrawDBSave();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "zoomIn":
-                case "zoomOut":
-                case "home":
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "previous":
-                    me.loadPreviousImage();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "next":
-                    me.loadNextImage();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "copy":
-                    me.cmdCopy();
-                    //me.backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
-                case "paste":
-                    me.cmdPaste();
-                    //me.backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
-                case "simplify":
-                    me.simplify(me.region);
-                    //me.backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
-                case "closeMenu":
-                    me.toggleMenu();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "openMenu":
-                    me.toggleMenu();
-                    me.backToPreviousTool(prevTool);
-                    break;
-
-                /**
-                 * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
-                 */
-                case "flip":
-                case "draw":
-                case "drawPolygon":
-                case "drawLine":
-                case "toBezier":
-                case "toPolygon":
-                case "screenshot":
-                case "select":
-                    me.tools[me.selectedTool].click(prevTool);
-                    break;
-            }
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].click ) me.tools[me.selectedTool].click()
         },
 
         /**
