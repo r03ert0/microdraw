@@ -20,23 +20,23 @@ var serverConfig;
 if( fs.existsSync(dirname + '/server_config.json') === false ) {
     console.error("ERROR: The file server_config.json is not present.");
     console.error("Maybe server_config.json.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 if( fs.existsSync(dirname + '/github-keys.json') === false ) {
     console.error("ERROR: The file github-keys.json is not present.");
     console.error("Maybe github-keys.json.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 // Client-side
 if( fs.existsSync(dirname + '/public/js/base.js') === false ) {
     console.error("ERROR: The file /public/js/base.js is not present.");
     console.error("Maybe /public/js/base.js.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 if( fs.existsSync(dirname + '/public/js/configuration.json') === false ) {
     console.error("ERROR: The file /public/js/configuration.json is not present.");
     console.error("Maybe /public/js/configuration.json.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 
 serverConfig = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
@@ -52,9 +52,14 @@ if ( DOCKER_DB ) {
     MONGO_DB = process.env.MONGODB || 'localhost:27017/microdraw'; //process.env.MONGODB;
 }
 var db = monk(MONGO_DB);
-db.then( function () {
-    console.log('Connected correctly to mongodb');
-});
+db
+    .then( function () {
+        console.log('Connected correctly to mongodb');
+    })
+    .catch( function (e) {
+        console.error('Failed to connect to mongodb',e)
+        process.exit(1)
+    })
 
 //var index = require('./routes/index');
 
