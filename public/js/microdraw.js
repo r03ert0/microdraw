@@ -1970,7 +1970,26 @@ var Microdraw = (function () {
                     me.loadScript('/js/tools/toBezier.js'),
                     me.loadScript('/js/tools/toPolygon.js'),
                     me.loadScript('/js/tools/splitRegion.js'),
-                    me.loadScript('/js/tools/select.js')
+                    me.loadScript('/js/tools/select.js'),
+
+                    me.loadScript('/js/tools/addPoint.js'),
+                    me.loadScript('/js/tools/addRegion.js'),
+                    me.loadScript('/js/tools/closeMenu.js'),
+                    me.loadScript('/js/tools/copy.js'),
+                    me.loadScript('/js/tools/delete.js'),
+                    me.loadScript('/js/tools/deletePoint.js'),
+                    me.loadScript('/js/tools/home.js'),
+                    me.loadScript('/js/tools/navigate.js'),
+                    me.loadScript('/js/tools/next.js'),
+                    me.loadScript('/js/tools/openMenu.js'),
+                    me.loadScript('/js/tools/paste.js'),
+                    me.loadScript('/js/tools/previous.js'),
+                    me.loadScript('/js/tools/rotate.js'),
+                    me.loadScript('/js/tools/save.js'),
+                    me.loadScript('/js/tools/simplify.js'),
+                    me.loadScript('/js/tools/subtractRegion.js'),
+                    me.loadScript('/js/tools/zoomIn.js'),
+                    me.loadScript('/js/tools/zoomOut.js')
                 ]).then(function () {
                     me.tools = {};
                     $.extend(me.tools, ToolDraw);
@@ -1982,6 +2001,25 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolSplitRegion);
                     $.extend(me.tools, ToolDrawLine);
                     $.extend(me.tools, ToolSelect);
+                    
+                    $.extend(me.tools, ToolAddPoint);
+                    $.extend(me.tools, ToolAddRegion);
+                    $.extend(me.tools, ToolCloseMenu);
+                    $.extend(me.tools, ToolCopy);
+                    $.extend(me.tools, ToolDelete);
+                    $.extend(me.tools, ToolDeletePoint);
+                    $.extend(me.tools, ToolHome);
+                    $.extend(me.tools, ToolNavigate);
+                    $.extend(me.tools, ToolNext);
+                    $.extend(me.tools, ToolCloseMenu);
+                    $.extend(me.tools, ToolPaste);
+                    $.extend(me.tools, ToolPrevious);
+                    $.extend(me.tools, ToolRotate);
+                    $.extend(me.tools, ToolSave);
+                    $.extend(me.tools, ToolSimplify);
+                    $.extend(me.tools, ToolSubtractRegion);
+                    $.extend(me.tools, ToolZoomIn);
+                    $.extend(me.tools, ToolZoomOut);
                 });
 
                 // Enable click on toolbar buttons
