@@ -232,10 +232,15 @@ app.get('/api', function (req, res) {
     db.get('annotations').find({
         fileID: req.query.fileID,
         user: loggedUser,
-        backup: {$exists: false}
+        deleted: {$exists: false}
     })
     .then(function(obj) {
         if(obj) {
+            var i;
+            for( i = 0; i < obj.length; i += 1 ) {
+                obj[i].annotation = obj[i].annotation[obj[i].annotation.length-1];
+                obj[i].annotationID = obj[i]._id;
+            }
             res.send(obj);
         } else {
             res.send([]);
@@ -251,35 +256,54 @@ app.post('/api', function (req, res) {
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
     switch(req.body.action) {
         case 'save':
-            // mark previous version as backup
-            db.get('annotations').update({
-                source: req.body.source,
-                user: loggedUser,
-                backup: {$exists: false}
-            }, {
-                $set:{backup: true}
-            }, {
-                multi:true
-            })
-            .then(function() {
-                var annotation_list = [];
-                var item;
-                var i;
-                var all_annotations = JSON.parse(req.body.annotation);
-                for( i = 0; i < all_annotations.Regions.length; i += 1) {
-                    item = {
-                        fileID: req.body.fileID,
-                        user: loggedUser,
-                        annotationHash: req.body.annotationHash,
-                        annotation: all_annotations.Regions[i]
-                    };
-                    annotation_list.push(item);
+            var annotations = JSON.parse(req.body.annotations);
+            var item;
+            var i;
+            for( i = 0; i < annotations.length; i+=1 ) {
+                // build item to save
+                item = {
+                    fileID: annotations[i].fileID,
+                    user: loggedUser,
+                    type: annotations[i].type,
+                };
+                if( item.type === 'Region' ){
+                    item.annotation = [{
+                        name: annotations[i].name, 
+                        path: annotations[i].path, 
+                        hash: annotations[i].hash
+                    },];
                 }
-                // insert new version
-                db.get('annotations').insert(annotation_list)
+                console.warn(annotations[i]);
+                // insert or update current annotation
+                if ( typeof annotations[i].annotationID === "undefined" ) {
+                    // insert new
+                    console.warn('Inserting new');
+                    db.get('annotations').insert(item, 
+                    );
+                } else {
+                    // update existing
+                    console.warn('Updating');
+                    console.warn('ann', item.annotation[0]);
+                    db.get('annotation').update(
+                        { _id:annotations[i].annotationID }, 
+                        { $set: { fileID: item.fileID, user: item.user, type: item.type }, 
+                          $push: { "annotation": item.annotation },
+                          $unset: { deleted: "" }
+                        },
+                        { multi: true }
+                    ) 
+                    .then(() => { console.warn('success'); } )
+                    .catch((err) => { console.error('error', err); } );
+                }
+            }
+            break;
+        case 'delete':
+            var annotations = JSON.parse(req.body.annotations);
+            for( i = 0; i < annotations.length; i += 1 ){
+                db.get('annotations').update({annotationID: annotations[i]}, {$set:{deleted: true}},)
                 .then(() => { console.warn('success'); } )
                 .catch((err) => { console.error('error', err); } );
-            });
+            }
             break;
         case 'host':
             console.log(req.get('host'));

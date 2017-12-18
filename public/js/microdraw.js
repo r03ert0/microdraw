@@ -102,6 +102,21 @@ var Microdraw = (function () {
         },
 
         /**
+         * @function annotationHash
+         * @desc Calculates hash of given annotation
+         * @param {object} annotation with name, type and path (e.g. from ImageInfo[currentImage].Regions[i]
+         * @param {string} type (optional if given in annotation): type of annotation, e.g. 'Region', 'Text'...
+         * @return {number} hash
+         */
+        annotationHash: function annotationHash(annotation, type){
+            var t = type ? type : annotation.type;
+            if ( t === "Region" ) {
+                return me.hash(JSON.stringify([annotation.name, annotation.path]).toString(16));
+            }
+            return 'null';
+        },
+
+        /**
          * @function regionHashColor
          * @desc Produces a color based on a region name.
          * @param {string} name Name of the region.
@@ -496,6 +511,8 @@ var Microdraw = (function () {
             } else {
                 reg.name = "Untitled " + reg.uid;
             }
+            // annotationID is undefined for new Regions, except when we pass it in arg
+            reg.annotationID = arg.annotationID;
 
             var color = me.regionHashColor(reg.name);
 
@@ -507,6 +524,9 @@ var Microdraw = (function () {
                 reg.path.fillColor = arg.path.fillColor ? arg.path.fillColor :'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',' + me.config.defaultFillAlpha + ')';
                 reg.path.selected = false;
             }
+
+            // set hash to passed value or compute it
+            reg.hash = arg.hash ? arg.hash : me.annotationHash(reg, "Region");
 
             if( typeof imageNumber === "undefined" ) {
                 imageNumber = me.currentImage;
@@ -561,6 +581,10 @@ var Microdraw = (function () {
                 // remove from regionList
                 var tag = $("#regionList > .region-tag#" + reg.uid);
                 $(tag).remove();
+            }
+            // remember the annotationID to remove the region from the DB when saving
+            if( typeof reg.annotationID != "undefined" ){
+                me.ImageInfo[imageNumber].deletedAnnotations.push(reg.annotationID) 
             }
         },
 
@@ -962,6 +986,7 @@ var Microdraw = (function () {
                 var el = {
                     json: JSON.parse(info[i].path.exportJSON()),
                     name: info[i].name,
+                    annotationID: info[i].annotationID,
                     selected: info[i].path.selected,
                     fullySelected: info[i].path.fullySelected
                 };
@@ -1031,7 +1056,7 @@ var Microdraw = (function () {
                 path.importJSON(el.json);
                 path.insert = insert;
 
-                reg = me.newRegion({name:el.name, path:path}, undo.imageNumber);
+                reg = me.newRegion({name:el.name, path:path, annotationID:el.annotationID, hash:el.hash}, undo.imageNumber);
                 // here order matters. if fully selected is set after selected, partially selected paths will be incorrect
                   reg.path.fullySelected = el.fullySelected;
                  reg.path.selected = el.selected;
@@ -1223,51 +1248,91 @@ var Microdraw = (function () {
                 if ((me.config.multiImageSave === false) && (sl !== me.currentImage)) {
                     return;
                 }
-                // configure value to be saved
+
                 var section = me.ImageInfo[sl];
-                var value = {};
-                value.Regions = [];
+                // delete all annotations that were marked 
+                if( section.deletedAnnotations.length > 0 ) {
+                    var pr = new Promise(function(resolve, reject) {
+                        (function(sl2, annotations) {
+                            $ajax({
+                                url:me.dbroot,
+                                type:"POST",
+                                data: {
+                                    action: "delete",
+                                    annotations: JSON.stringify(annotations)
+                                },
+                                success: function(result) {
+                                    console.log("< microdrawDBSave. Successfully deleted regions: ", annotation.length, 
+                                        "section:", sl2, "response:", result);
+                                    // empty list of deleted Annotations
+                                    me.ImageInfo[sl].deletedAnnotations = [];
+                                    resolve("section " + sl2); //TODO what does this do???
+                                },
+                                error: function(jqXHR, textStatus, err) {
+                                    console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "section: " + sl2.toString());
+                                    reject(err);
+                                }
+                            });
+                        }(sl, section.deletedAnnotations));
+                    });
+                    promiseArray.push(pr);
+                }
+
+                // configure value to be saved for the current section
+                var value = [];
                 for( i = 0; i < section.Regions.length; i += 1 ) {
+                    
                     var el = {};
                     el.path = JSON.parse(section.Regions[i].path.exportJSON());
                     el.name = section.Regions[i].name;
-                    value.Regions.push(el);
+                    el.annotationID = section.Regions[i].annotationID;
+                    el.type = "Region";
+                    el.fileID = me.fileID;
+                    console.log(el);
+                    // check if the current annotation has changed since loading it by computing a hash
+                    var currentHash = me.annotationHash(section.Regions[i], "Region");
+                    console.log(currentHash, section.Regions[i].hash);  
+                    if( me.debug > 1 ) { console.log("Annotation", i, "hash:", currentHash, "original hash:", section.Regions[i].hash); }
+                    if( !(currentHash === section.Regions[i].hash) ) {
+                        // hash is different, save this annotation
+                        el.hash = currentHash;
+                        value.push(el);
+                    }
                 }
-
-                // check if the section annotations have changed since loaded by computing a hash
-                var h = me.hash(JSON.stringify(value.Regions)).toString(16);
-                if( me.debug > 1 ) { console.log("hash:", h, "original hash:", section.Hash); }
                 // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
-                if( typeof section.Hash === "undefined" || h === section.Hash ) {
-                    if( me.debug > 1 ) { console.log("No change, no save"); }
-                    value.Hash = h;
+                //if( typeof section.Hash === "undefined" || h === section.Hash ) {
+                //    if( me.debug > 1 ) { console.log("No change, no save"); }
+                //    value.Hash = h;
 
-                    return;
-                }
-                value.Hash = h;
-                savedSections += sl.toString() + " ";
+                //    return;
+                //}
+                //TODO with multiple non-loaded images do I still need this code???
+                savedSections += sl.toString() + "(" + value.length.toString() + ") ";
 
                 // post data to database
                 var pr = new Promise(function(resolve, reject) {
-                    (function(sl2, h2) {
+                    (function(sl2, annotations) {
                         $.ajax({
                             url:me.dbroot,
                             type:"POST",
                             data: {
                                 action: "save",
-                                fileID: me.fileID,
-                                annotationHash: h2,
-                                annotation: JSON.stringify(value)
+                                annotations: JSON.stringify(annotations)
                             },
                             success: function(result) {
                                 console.log("< microdrawDBSave. Successfully saved regions:",
-                                    me.ImageInfo[sl2].Regions.length,
+                                    annotations.length,
                                     "section: " + sl2.toString(),
                                     "response:",
                                     result
                                 );
                                 //update hash
-                                me.ImageInfo[sl2].Hash = h2;
+                                for( i = 0; i < annotations.length; i += 1 ) {
+                                    if ( annotations[i].type === "Region" ) {
+                                        var res = me.ImageInfo[sl2].Regions.find(x => x.annotationID === annotations[i].annotationID);
+                                        if( typeof res != "undefined" ) { res.hash = annotations[i].hash; }
+                                    }
+                                }
                                 resolve("section " + sl2);
                             },
                             error: function(jqXHR, textStatus, err) {
@@ -1275,7 +1340,7 @@ var Microdraw = (function () {
                                 reject(err);
                             }
                         });
-                    }(sl, h));
+                    }(sl, value));
                 });
                 promiseArray.push(pr);
             });
@@ -1326,14 +1391,14 @@ var Microdraw = (function () {
                         return;
                     }
 
-                    // if there is no data on the current section
-                    // save hash for the image none the less
-                    if( $.isEmptyObject(data) ) {
-                        me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
-                        resolve("No data for the current section");
+                    // if there is no data on the current section just return
+                    // save hash for the image none the less TODO not needed anymore!
+                    //if( $.isEmptyObject(data) ) {
+                    //    me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
+                    //    resolve("No data for the current section");
 
-                        return;
-                    }
+                    //    return;
+                    //}
 
                     // parse the data and add to the current canvas
                     // console.log("[", data, "]");
@@ -1341,22 +1406,27 @@ var Microdraw = (function () {
                     //obj = data;
                     //if( obj ) {
                     for( i = 0; i < data.length; i += 1 ) {
-                        reg = {};
-                        reg.name = data[i].annotation.name;
-                        //reg.page = data[i].annotation.page;
-                        json = data[i].annotation.path;
-                        reg.path = new paper.Path();
+                        console.log(data[i]);
+                        if ( data[i].type === "Region" ) {
+                            reg = {};
+                            reg.annotationID = data[i].annotationID;
+                            reg.name = data[i].annotation.name;
 
-                        /** @todo Remove workaround once paperjs will be fixed */
-                        var {insert} = reg.path.insert;
-                        reg.path.importJSON(json);
-                        reg.path.insert = insert;
+                            //reg.page = data[i].annotation.page;
+                            json = data[i].annotation.path;
+                            reg.path = new paper.Path();
 
-                        me.newRegion({name:reg.name, path:reg.path});
+                            /** @todo Remove workaround once paperjs will be fixed */
+                            var {insert} = reg.path.insert;
+                            reg.path.importJSON(json);
+                            reg.path.insert = insert;
+
+                            me.newRegion({name:reg.name, path:reg.path, annotationID:reg.annotationID, hash:data[i].annotation.hash});
+                        }
                     }
                     paper.view.draw();
                     // if image has no hash, save one
-                    me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
+                    //me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
 
 
                     if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
@@ -2181,7 +2251,8 @@ var Microdraw = (function () {
                 me.imageOrder.push(name);
                 me.ImageInfo[name] = {
                     source: obj.tileSources[i],
-                    Regions: []
+                    Regions: [],
+                    deletedAnnotations: [], //temporary list to hold annotations that were deleted on the canvas but not yet in the DB
                 };
                 // if getTileUrl is specified, we might need to eval it to get the function
                 if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
