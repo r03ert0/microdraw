@@ -241,7 +241,6 @@ app.get('/getJson',function (req,res) {
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
-    console.warn(req.query,loggedUser);
     db.get('annotations').find({
         fileID: req.query.fileID,
         user: loggedUser,
@@ -275,8 +274,8 @@ app.post('/api', function (req, res) {
             Promise.all(
                 annotations
                     .filter(a => a.type === 'Region')
-                    .map(a => db.get('annotations').insert({
-                            annotationID : a.annotationID ? a.annotationID : assignNewAnnotationID(),
+                    .map(a => 
+                        db.get('annotations').insert({
                             fileID : a.fileID,
                             user : loggedUser,
                             type : a.type,
@@ -286,8 +285,11 @@ app.post('/api', function (req, res) {
                                 hash : a.hash
                             },
                             created_at : Date.now().toString()
-                        })
-                    ))
+                        }).then(item=>
+                            db.get('annotations').findOneAndUpdate(
+                                {_id : item._id},
+                                {$set : { annotationID : a.annotationID ? a.annotationID : '' + item._id }}) //important to convert ObjectId to String
+                        )))
                 .then(arr=>res.send(arr))
                 .catch(e=>res.sendStatus(500).send(JSON.stringify(e)))
 
@@ -301,12 +303,16 @@ app.post('/api', function (req, res) {
 
             break;
         case 'delete':
-            var annotations = JSON.parse(req.body.annotations);
-            const allDeletions = annotations.map(a=>
+            console.log(req.body.annotationIDs)
+            var annotationIDs = JSON.parse(req.body.annotationIDs);
+            console.log('delete',annotationIDs)
+            const allDeletions = annotationIDs.map(annotationID=>
                 db.get('annotations').update({
-                    annotationID : a.annotationID
+                    annotationID : annotationID
                 },{
                     $set:{deleted : true}
+                },{
+                    multi : true
                 }))
             Promise.all(allDeletions)
                 .then(arr=>res.send(arr))

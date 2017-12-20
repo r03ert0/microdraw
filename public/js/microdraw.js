@@ -101,6 +101,8 @@ var Microdraw = (function () {
             return result;
         },
 
+        //TODO selected state affect hash? intended?
+
         /**
          * @function annotationHash
          * @desc Calculates hash of given annotation
@@ -1253,20 +1255,20 @@ var Microdraw = (function () {
                 // delete all annotations that were marked 
                 if( section.deletedAnnotations.length > 0 ) {
                     var pr = new Promise(function(resolve, reject) {
-                        (function(sl2, annotations) {
-                            $ajax({
+                        (function(sl2, annotationIDs) {
+                            $.ajax({
                                 url:me.dbroot,
                                 type:"POST",
                                 data: {
                                     action: "delete",
-                                    annotations: JSON.stringify(annotations)
+                                    annotationIDs: JSON.stringify(annotationIDs)
                                 },
                                 success: function(result) {
-                                    console.log("< microdrawDBSave. Successfully deleted regions: ", annotation.length, 
+                                    console.log("< microdrawDBSave. Successfully deleted regions: ", annotationIDs.length, 
                                         "section:", sl2, "response:", result);
                                     // empty list of deleted Annotations
                                     me.ImageInfo[sl].deletedAnnotations = [];
-                                    resolve("section " + sl2); //TODO what does this do???
+                                    resolve("section " + sl2); //TODO what does this do??? -> this resolves the promise, allowing promiseArray to be resolved
                                 },
                                 error: function(jqXHR, textStatus, err) {
                                     console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "section: " + sl2.toString());
@@ -1279,7 +1281,7 @@ var Microdraw = (function () {
                 }
 
                 // configure value to be saved for the current section
-                var value = [];
+                var arrAnnotationsToBeSaved = [];
                 for( i = 0; i < section.Regions.length; i += 1 ) {
                     
                     var el = {};
@@ -1288,6 +1290,8 @@ var Microdraw = (function () {
                     el.annotationID = section.Regions[i].annotationID;
                     el.type = "Region";
                     el.fileID = me.fileID;
+
+                    el.originalRe = section.Regions[i]
                     console.log(el);
                     // check if the current annotation has changed since loading it by computing a hash
                     var currentHash = me.annotationHash(section.Regions[i], "Region");
@@ -1296,7 +1300,7 @@ var Microdraw = (function () {
                     if( !(currentHash === section.Regions[i].hash) ) {
                         // hash is different, save this annotation
                         el.hash = currentHash;
-                        value.push(el);
+                        arrAnnotationsToBeSaved.push(el);
                     }
                 }
                 // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
@@ -1307,7 +1311,7 @@ var Microdraw = (function () {
                 //    return;
                 //}
                 //TODO with multiple non-loaded images do I still need this code???
-                savedSections += sl.toString() + "(" + value.length.toString() + ") ";
+                savedSections += sl.toString() + "(" + arrAnnotationsToBeSaved.length.toString() + ") ";
 
                 // post data to database
                 var pr = new Promise(function(resolve, reject) {
@@ -1326,13 +1330,11 @@ var Microdraw = (function () {
                                     "response:",
                                     result
                                 );
-                                //update hash
-                                for( i = 0; i < annotations.length; i += 1 ) {
-                                    if ( annotations[i].type === "Region" ) {
-                                        var res = me.ImageInfo[sl2].Regions.find(x => x.annotationID === annotations[i].annotationID);
-                                        if( typeof res != "undefined" ) { res.hash = annotations[i].hash; }
-                                    }
-                                }
+                                //update hash after annotation saved
+                                arrAnnotationsToBeSaved.forEach((annotationSaved,idx)=>{
+                                    annotationSaved.originalRe.annotationID = result[idx].annotationID
+                                    annotationSaved.originalRe.hash = result[idx].annotation.hash
+                                })
                                 resolve("section " + sl2);
                             },
                             error: function(jqXHR, textStatus, err) {
@@ -1340,7 +1342,7 @@ var Microdraw = (function () {
                                 reject(err);
                             }
                         });
-                    }(sl, value));
+                    }(sl, arrAnnotationsToBeSaved));
                 });
                 promiseArray.push(pr);
             });
