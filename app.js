@@ -49,7 +49,7 @@ var DOCKER_DB = process.env.DB_PORT;
 if ( DOCKER_DB ) {
     MONGO_DB = DOCKER_DB.replace( 'tcp', 'mongodb' ) + '/microdraw';
 } else {
-    MONGO_DB = process.env.MONGODB || 'localhost:27017/microdraw'; //process.env.MONGODB;
+    MONGO_DB = process.env.MONGODB || 'medpc055.ime.kfa-juelich.de:27017/json_db'; //process.env.MONGODB;
 }
 var db = monk(MONGO_DB);
 db
@@ -65,6 +65,19 @@ db
 
 var app = express();
 app.engine('mustache', mustacheExpress());
+
+/* hack until roberto merges fix windows symlink PR */
+const isWin = !fs.statSync(dirname + '/public/lib/openseadragon').isDirectory()
+if( isWin ){
+    console.warn('Dev machine does not recognise symlinks ... or a windows machine touched this repo ...')
+    var reroute = ['/lib/openseadragon/','/lib/FileSaver.js/','/lib/openseadragon-screenshot/']
+    reroute.forEach(file=>{
+        var readFile = fs.readFileSync(dirname+'/public'+file,'utf8')
+        app.get(file+'*',(req,res)=>{
+            res.sendFile(req.path.replace(file,readFile+'/'),{root:path.join(dirname,'public/lib')})
+        })
+    })
+}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -228,20 +241,19 @@ app.get('/getJson',function (req,res) {
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
-    console.warn(req.query);
+    console.warn(req.query,loggedUser);
     db.get('annotations').find({
         fileID: req.query.fileID,
         user: loggedUser,
         deleted: {$exists: false}
+    },{
+        sort : {created_at : -1}
     })
-    .then(function(obj) {
-        if(obj) {
-            var i;
-            for( i = 0; i < obj.length; i += 1 ) {
-                obj[i].annotation = obj[i].annotation[obj[i].annotation.length-1];
-                obj[i].annotationID = obj[i]._id;
-            }
-            res.send(obj);
+    .then(function(arr) {
+        if(arr) {
+            const reducedArr = arr.reduce((acc,curr)=>
+                acc.findIndex(el=>el.annotationID===curr.annotationID) < 0 ? [...acc,curr]:acc , [])
+            res.send(reducedArr);
         } else {
             res.send([]);
         }
@@ -251,59 +263,54 @@ app.get('/api', function (req, res) {
         res.send({error:JSON.stringify(err)});
     });
 });
+
+const assignNewAnnotationID = () => Date.now()
+
 app.post('/api', function (req, res) {
     console.warn("call to POST api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous";
     switch(req.body.action) {
         case 'save':
             var annotations = JSON.parse(req.body.annotations);
-            var item;
-            var i;
-            for( i = 0; i < annotations.length; i+=1 ) {
-                // build item to save
-                item = {
-                    fileID: annotations[i].fileID,
-                    user: loggedUser,
-                    type: annotations[i].type,
-                };
-                if( item.type === 'Region' ){
-                    item.annotation = [{
-                        name: annotations[i].name, 
-                        path: annotations[i].path, 
-                        hash: annotations[i].hash
-                    },];
-                }
-                console.warn(annotations[i]);
-                // insert or update current annotation
-                if ( typeof annotations[i].annotationID === "undefined" ) {
-                    // insert new
-                    console.warn('Inserting new');
-                    db.get('annotations').insert(item, 
-                    );
+            Promise.all(
+                annotations
+                    .filter(a => a.type === 'Region')
+                    .map(a => db.get('annotations').insert({
+                            annotationID : a.annotationID ? a.annotationID : assignNewAnnotationID(),
+                            fileID : a.fileID,
+                            user : loggedUser,
+                            type : a.type,
+                            annotation : {
+                                name : a.name,
+                                path : a.path,
+                                hash : a.hash
+                            },
+                            created_at : Date.now().toString()
+                        })
+                    ))
+                .then(arr=>res.send(arr))
+                .catch(e=>res.sendStatus(500).send(JSON.stringify(e)))
+
+                // saving each iteration of annotation separately
+                /*
+                if (typeof a.annotationID === 'undefined'){
                 } else {
-                    // update existing
-                    console.warn('Updating');
-                    console.warn('ann', item.annotation[0]);
-                    db.get('annotation').update(
-                        { _id:annotations[i].annotationID }, 
-                        { $set: { fileID: item.fileID, user: item.user, type: item.type }, 
-                          $push: { "annotation": item.annotation },
-                          $unset: { deleted: "" }
-                        },
-                        { multi: true }
-                    ) 
-                    .then(() => { console.warn('success'); } )
-                    .catch((err) => { console.error('error', err); } );
+
                 }
-            }
+                */
+
             break;
         case 'delete':
             var annotations = JSON.parse(req.body.annotations);
-            for( i = 0; i < annotations.length; i += 1 ){
-                db.get('annotations').update({annotationID: annotations[i]}, {$set:{deleted: true}},)
-                .then(() => { console.warn('success'); } )
-                .catch((err) => { console.error('error', err); } );
-            }
+            const allDeletions = annotations.map(a=>
+                db.get('annotations').update({
+                    annotationID : a.annotationID
+                },{
+                    $set:{deleted : true}
+                }))
+            Promise.all(allDeletions)
+                .then(arr=>res.send(arr))
+                .catch(err=>{res.send({error:err});console.error('error',err)})
             break;
         case 'host':
             console.log(req.get('host'));
@@ -312,7 +319,7 @@ app.post('/api', function (req, res) {
             process.exit();
             break;
     }
-    res.send({});
+    // res.send({});
 });
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

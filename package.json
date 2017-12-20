@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "node test.js"
+    "test": "node test.js",
+    "mocha": "node node_modules/mocha/bin/mocha ./test/mocha.index.js"
   },
   "dependencies": {
     "body-parser": "^1.18.2",
@@ -24,8 +25,11 @@
   },
   "main": "app.js",
   "devDependencies": {
+    "chai": "^4.1.2",
     "eslint": "latest",
-    "puppeteer": "latest"
+    "mocha": "^4.0.1",
+    "puppeteer": "latest",
+    "sinon": "^4.1.3"
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",
   "license": "ISC",

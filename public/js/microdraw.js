@@ -1405,6 +1405,7 @@ var Microdraw = (function () {
                     //obj = JSON.parse(data);
                     //obj = data;
                     //if( obj ) {
+                    console.log(data)
                     for( i = 0; i < data.length; i += 1 ) {
                         console.log(data[i]);
                         if ( data[i].type === "Region" ) {
