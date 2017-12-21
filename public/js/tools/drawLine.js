@@ -25,9 +25,11 @@ var ToolDrawLine = {
 
             /**
              * @function mouseDrag
-             * @param {object} point The point where you click (x,y)
+             * @param {object} point The point where you moved to (x,y)
+             * @param {object} dpoint The movement of the point
+             * @return {void}
             */
-            mouseDrag: function mouseDrag(point) {
+            mouseDrag: function mouseDrag(point,dpoint) {
                 Microdraw.region.path.add(point);
             },
 

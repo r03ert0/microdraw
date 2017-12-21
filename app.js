@@ -21,30 +21,29 @@ var isWin = false
 if( fs.existsSync(dirname + '/server_config.json') === false ) {
     console.error("ERROR: The file server_config.json is not present.");
     console.error("Maybe server_config.json.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 if( fs.existsSync(dirname + '/github-keys.json') === false ) {
     console.error("ERROR: The file github-keys.json is not present.");
     console.error("Maybe github-keys.json.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 // Client-side
 if( fs.existsSync(dirname + '/public/js/base.js') === false ) {
     console.error("ERROR: The file /public/js/base.js is not present.");
     console.error("Maybe /public/js/base.js.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 if( fs.existsSync(dirname + '/public/js/configuration.json') === false ) {
     console.error("ERROR: The file /public/js/configuration.json is not present.");
     console.error("Maybe /public/js/configuration.json.example was not instantiated?");
-    process.exit();
+    process.exit(1);
 }
 
 isWin = !fs.statSync(dirname + '/public/lib/openseadragon').isDirectory()
 
 serverConfig = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
 
-//var mongo = require('mongodb');
 var monk = require('monk');
 var MONGO_DB;
 
@@ -56,9 +55,14 @@ if ( DOCKER_DB ) {
     MONGO_DB = process.env.MONGODB || 'localhost:27017/microdraw'; //process.env.MONGODB;
 }
 var db = monk(MONGO_DB);
-db.then( function () {
-    console.log('Connected correctly to mongodb');
-});
+db
+    .then( function () {
+        console.log('Connected correctly to mongodb');
+    })
+    .catch( function (e) {
+        console.error('Failed to connect to mongodb',e)
+        process.exit(1)
+    })
 
 //var index = require('./routes/index');
 
@@ -81,7 +85,9 @@ app.set('view engine', 'mustache');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+if (process.env.NODE_ENV === 'development') {
+    app.use(logger('dev'));
+}
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -194,7 +200,7 @@ app.get('/getTile',function (req,res){
     fetch(req.query.source)
         .then(img=>img.body.pipe(res))
         .catch(e=>{
-            console.log('gettile api broken',e);
+            console.log('getTile api broken',e);
             res.sendStatus(500)
         });
 })
@@ -235,24 +241,15 @@ app.get('/getJson',function (req,res) {
 app.get('/api', function (req, res) {
     console.warn("call to GET api");
     var loggedUser = req.isAuthenticated()?req.user.username:"anonymous"; // eslint-disable-line no-unused-vars
-//    var data = [];
-//    var i;
     console.warn(req.query);
-    db.get('annotations').findOne({
-        source: req.query.source,
-        section: req.query.section,
+    db.get('annotations').find({
+        fileID: req.query.fileID,
+        user: loggedUser,
         backup: {$exists: false}
     })
     .then(function(obj) {
         if(obj) {
-
-            /*
-            for (i = 0; i < obj.length; i+=1) {
-                data.push(obj[i].annotation);
-            }
-            res.send(data);
-            */
-            res.send(obj.annotation);
+            res.send(obj);
         } else {
             res.send([]);
         }
@@ -278,15 +275,21 @@ app.post('/api', function (req, res) {
                 multi:true
             })
             .then(function() {
+                var annotation_list = [];
+                var item;
+                var i;
+                var all_annotations = JSON.parse(req.body.annotation);
+                for( i = 0; i < all_annotations.Regions.length; i += 1) {
+                    item = {
+                        fileID: req.body.fileID,
+                        user: loggedUser,
+                        annotationHash: req.body.annotationHash,
+                        annotation: all_annotations.Regions[i]
+                    };
+                    annotation_list.push(item);
+                }
                 // insert new version
-                db.get('annotations').insert({
-                    source: req.body.source,
-                    user: loggedUser,
-                    section: req.body.section,
-//                    visibility: req.body.visibility,
-                    annotationHash: req.body.annotationHash,
-                    annotation: JSON.parse(req.body.annotation)
-                })
+                db.get('annotations').insert(annotation_list)
                 .then(() => { console.warn('success'); } )
                 .catch((err) => { console.error('error', err); } );
             });
@@ -300,23 +303,22 @@ app.post('/api', function (req, res) {
     }
     res.send({});
 });
-
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
 // error handler
 app.use(function(err, req, res) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+    // set locals, only providing error in development
+    res.locals.message = err.message;
+    res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+    // render the error page
+    res.status(err.status || 500);
+    res.render('error');
 });
 
 

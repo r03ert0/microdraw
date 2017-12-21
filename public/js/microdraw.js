@@ -713,97 +713,7 @@ var Microdraw = (function () {
 
             me.handle = null;
 
-            switch( me.selectedTool ) {
-                case "addPoint":
-                case "deletePoint":
-                case "addRegion":
-                case "delete": {
-                    hitResult = paper.project.hitTest(point, {
-                            tolerance: me.tolerance,
-                            stroke: true,
-                            segments: true,
-                            fill: true,
-                            handles: true
-                        });
-
-                    me.newRegionFlag = false;
-                    if( hitResult ) {
-                        var i, re;
-                        for( i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-                            if( me.ImageInfo[me.currentImage].Regions[i].path === hitResult.item ) {
-                                re = me.ImageInfo[me.currentImage].Regions[i];
-                                break;
-                            }
-                        }
-
-                        // select path
-                        if( me.region && me.region !== re ) {
-                            me.region.path.selected = false;
-                            prevRegion = me.region;
-                        }
-                        me.selectRegion(re);
-
-                        if( me.selectedTool === "deletePoint" ) {
-                            if( hitResult.type === 'segment' ) {
-                                hitResult.segment.remove();
-                                me.commitMouseUndo();
-                            }
-                        } else if( hitResult.type === 'stroke' && me.selectedTool === "addPoint" ) {
-                            me.region.path
-                            .curves[hitResult.location.index]
-                            .divide(hitResult.location);
-                            me.region.path.fullySelected = true;
-                            me.commitMouseUndo();
-                            paper.view.draw();
-                        } else if( me.selectedTool === "addRegion" ) {
-                            if( prevRegion ) {
-                                var newPath = me.region.path.unite(prevRegion.path);
-                                me.removeRegion(prevRegion);
-                                me.region.path.remove();
-                                me.region.path = newPath;
-                                me.updateRegionList();
-                                me.selectRegion(me.region);
-                                paper.view.draw();
-                                me.commitMouseUndo();
-                                me.backToSelect();
-                            }
-                        } else if( me.selectedTool === "delete" ) {
-                            if( prevRegion ) {
-                                var newPath = prevRegion.path.subtract(me.region.path);
-                                me.removeRegion(prevRegion);
-                                prevRegion.path.remove();
-                                me.newRegion({path:newPath});
-                                me.updateRegionList();
-                                me.selectRegion(me.region);
-                                paper.view.draw();
-                                me.commitMouseUndo();
-                                me.backToSelect();
-                            }
-                        }
-                        break;
-                    }
-                    if( hitResult === null && me.region ) {
-                        //deselect paths
-                        me.region.path.selected = false;
-                        me.region = null;
-                    }
-                    break;
-                }
-                case "rotate":
-                    me.region.origin = point;
-                    break;
-
-                /**
-                 * @todo These are the tools that have been already encapsulated. When all tools will be encapsulated, the whole switch/case should be removed
-                 */
-                case "splitRegion":
-                case "drawPolygon":
-                case "drawLine":
-                case "draw":
-                case "select":
-                    me.tools[me.selectedTool].mouseDown(point);
-                    break;
-            }
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDown ) me.tools[me.selectedTool].mouseDown(point);
             paper.view.draw();
         },
 
@@ -827,34 +737,14 @@ var Microdraw = (function () {
             var dpoint = paper.view.viewToProject(new paper.Point(dx, dy));
             dpoint.x -= orig.x;
             dpoint.y -= orig.y;
-
-            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
-                me.tools[me.selectedTool].mouseDrag(point);
-            } else if( me.handle ) {
+            if( me.handle ) {
                 me.handle.x += point.x-me.handle.point.x;
                 me.handle.y += point.y-me.handle.point.y;
                 me.handle.point = point;
                 me.commitMouseUndo();
-            } else if( me.selectedTool === "select" ) {
-                // event.stopHandlers = true;
-                for( var reg of me.ImageInfo[me.currentImage].Regions ) {
-                    if( reg.path.selected ) {
-                        reg.path.position.x += dpoint.x;
-                        reg.path.position.y += dpoint.y;
-                        me.commitMouseUndo();
-                    }
-                }
-            }
-            if( me.selectedTool === "rotate" ) {
-                event.stopHandlers = true;
-                var degree = parseInt(dpoint.x, 10);
-                for( i in me.ImageInfo[me.currentImage].Regions ) {
-                    if( me.ImageInfo[me.currentImage].Regions[i].path.selected ) {
-                        me.ImageInfo[me.currentImage].Regions[i].path.rotate(degree, me.region.origin);
-                        me.commitMouseUndo();
-                    }
-                }
-            }
+            } else if (me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
+                me.tools[me.selectedTool].mouseDrag(point,dpoint);
+            }  
             paper.view.draw();
         },
 
@@ -866,9 +756,7 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> mouseUp");
             }
-            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) {
-                me.tools[me.selectedTool].mouseUp();
-            }
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) me.tools[me.selectedTool].mouseUp();
         },
 
         /**
@@ -1296,77 +1184,7 @@ var Microdraw = (function () {
             me.selectedTool = $(this).attr("id");
             me.selectTool();
 
-            switch(me.selectedTool) {
-                case "addPoint":
-                case "deletePoint":
-                case "addRegion":
-                case "rotate":
-                    me.navEnabled = false;
-                    me.handle = null;
-                    break;
-                case "navigate":
-                    me.navEnabled = true;
-                    me.handle = null;
-                    break;
-                case "delete":
-                    me.cmdDeleteSelected();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "save":
-                    me.microdrawDBSave();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "zoomIn":
-                case "zoomOut":
-                case "home":
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "previous":
-                    me.loadPreviousImage();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "next":
-                    me.loadNextImage();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "copy":
-                    me.cmdCopy();
-                    //me.backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
-                case "paste":
-                    me.cmdPaste();
-                    //me.backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
-                case "simplify":
-                    me.simplify(me.region);
-                    //me.backToPreviousTool(prevTool);
-                    me.backToSelect();
-                    break;
-                case "closeMenu":
-                    me.toggleMenu();
-                    me.backToPreviousTool(prevTool);
-                    break;
-                case "openMenu":
-                    me.toggleMenu();
-                    me.backToPreviousTool(prevTool);
-                    break;
-
-                /**
-                 * @todo These are the tools that have been already encapsulated. The switch/case should be removed when the encapsulation of all tools is finished
-                 */
-                case "flip":
-                case "draw":
-                case "drawPolygon":
-                case "drawLine":
-                case "toBezier":
-                case "toPolygon":
-                case "screenshot":
-                case "select":
-                    me.tools[me.selectedTool].click(prevTool);
-                    break;
-            }
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].click ) me.tools[me.selectedTool].click()
         },
 
         /**
@@ -1437,8 +1255,7 @@ var Microdraw = (function () {
                             type:"POST",
                             data: {
                                 action: "save",
-                                source: me.source,
-                                section: sl2,
+                                fileID: me.fileID,
                                 annotationHash: h2,
                                 annotation: JSON.stringify(value)
                             },
@@ -1489,8 +1306,7 @@ var Microdraw = (function () {
 
                 $.getJSON(me.dbroot, {
                     action: "load_last",
-                    source: me.source,
-                    section: me.section
+                    fileID: me.fileID
                 }).success(function (data) {
                     var i, json, reg;
                     me.annotationLoadingFlag = false;
@@ -1524,11 +1340,11 @@ var Microdraw = (function () {
                     //obj = JSON.parse(data);
                     //obj = data;
                     //if( obj ) {
-                    for( i = 0; i < data.Regions.length; i += 1 ) {
+                    for( i = 0; i < data.length; i += 1 ) {
                         reg = {};
-                        reg.name = data.Regions[i].name;
-                        reg.page = data.Regions[i].page;
-                        json = data.Regions[i].path;
+                        reg.name = data[i].annotation.name;
+                        //reg.page = data[i].annotation.page;
+                        json = data[i].annotation.path;
                         reg.path = new paper.Path();
 
                         /** @todo Remove workaround once paperjs will be fixed */
@@ -1898,7 +1714,7 @@ var Microdraw = (function () {
          * @returns {void}
          */
         updateSectionName: function updateSectionName() {
-            $("#section-name").val(me.currentImage);
+            $("#sectionName").val(me.currentImage);
             var slashIndex = me.params.source.lastIndexOf("/") + 1;
             var filename = me.params.source.substr(slashIndex);
             $("title").text("MicroDraw|" + filename + "|" + me.currentImage);
@@ -2154,7 +1970,26 @@ var Microdraw = (function () {
                     me.loadScript('/js/tools/toBezier.js'),
                     me.loadScript('/js/tools/toPolygon.js'),
                     me.loadScript('/js/tools/splitRegion.js'),
-                    me.loadScript('/js/tools/select.js')
+                    me.loadScript('/js/tools/select.js'),
+
+                    me.loadScript('/js/tools/addPoint.js'),
+                    me.loadScript('/js/tools/addRegion.js'),
+                    me.loadScript('/js/tools/closeMenu.js'),
+                    me.loadScript('/js/tools/copy.js'),
+                    me.loadScript('/js/tools/delete.js'),
+                    me.loadScript('/js/tools/deletePoint.js'),
+                    me.loadScript('/js/tools/home.js'),
+                    me.loadScript('/js/tools/navigate.js'),
+                    me.loadScript('/js/tools/next.js'),
+                    me.loadScript('/js/tools/openMenu.js'),
+                    me.loadScript('/js/tools/paste.js'),
+                    me.loadScript('/js/tools/previous.js'),
+                    me.loadScript('/js/tools/rotate.js'),
+                    me.loadScript('/js/tools/save.js'),
+                    me.loadScript('/js/tools/simplify.js'),
+                    me.loadScript('/js/tools/subtractRegion.js'),
+                    me.loadScript('/js/tools/zoomIn.js'),
+                    me.loadScript('/js/tools/zoomOut.js')
                 ]).then(function () {
                     me.tools = {};
                     $.extend(me.tools, ToolDraw);
@@ -2166,6 +2001,25 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolSplitRegion);
                     $.extend(me.tools, ToolDrawLine);
                     $.extend(me.tools, ToolSelect);
+                    
+                    $.extend(me.tools, ToolAddPoint);
+                    $.extend(me.tools, ToolAddRegion);
+                    $.extend(me.tools, ToolCloseMenu);
+                    $.extend(me.tools, ToolCopy);
+                    $.extend(me.tools, ToolDelete);
+                    $.extend(me.tools, ToolDeletePoint);
+                    $.extend(me.tools, ToolHome);
+                    $.extend(me.tools, ToolNavigate);
+                    $.extend(me.tools, ToolNext);
+                    $.extend(me.tools, ToolCloseMenu);
+                    $.extend(me.tools, ToolPaste);
+                    $.extend(me.tools, ToolPrevious);
+                    $.extend(me.tools, ToolRotate);
+                    $.extend(me.tools, ToolSave);
+                    $.extend(me.tools, ToolSimplify);
+                    $.extend(me.tools, ToolSubtractRegion);
+                    $.extend(me.tools, ToolZoomIn);
+                    $.extend(me.tools, ToolZoomOut);
                 });
 
                 // Enable click on toolbar buttons
@@ -2261,7 +2115,7 @@ var Microdraw = (function () {
                     });
 
                 // Change current section by typing in the section number and pessing the enter key
-                $("#section-name").keyup(me.sectionNameOnEnter);
+                $("#sectionName").keyup(me.sectionNameOnEnter);
 
                 // Show and hide menu
                 if( me.config.hideToolbar ) {
@@ -2363,6 +2217,11 @@ var Microdraw = (function () {
             me.currentImage = me.imageOrder[Math.floor(obj.tileSources.length / 2)];
 
             me.params.tileSources = obj.tileSources;
+            if (typeof obj.fileID !== 'undefined') {
+                me.fileID = obj.fileID;
+            } else {
+                me.fileID = me.source + '_' + me.section;
+            }
             me.viewer = new OpenSeadragon({
                 id: "openseadragon1",
                 prefixUrl: "lib/openseadragon/images/",
