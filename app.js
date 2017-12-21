@@ -303,18 +303,30 @@ app.post('/api', function (req, res) {
 
             break;
         case 'delete':
-            console.log(req.body.annotationIDs)
-            var annotationIDs = JSON.parse(req.body.annotationIDs);
-            console.log('delete',annotationIDs)
-            const allDeletions = annotationIDs.map(annotationID=>
+            var annotations = JSON.parse(req.body.annotations);
+            const allDeletions = annotations.map(annotation=>
                 db.get('annotations').update({
-                    annotationID : annotationID
+                    annotationID : annotations.annotationID
                 },{
                     $set:{deleted : true}
                 },{
                     multi : true
                 }))
             Promise.all(allDeletions)
+                .then(arr=>res.send(arr))
+                .catch(err=>{res.send({error:err});console.error('error',err)})
+            break;
+        case 'undelete':
+            var annotations = JSON.parse(req.body.annotations);
+            const allUndeletions = annotations.map(annotation=>
+                db.get('annotations').update({
+                    annotationID : annotations.annotationID
+                },{
+                    $unset:{ deleted : '' }
+                },{
+                    multi : true
+                }))
+            Promise.all(allUndeletions)
                 .then(arr=>res.send(arr))
                 .catch(err=>{res.send({error:err});console.error('error',err)})
             break;

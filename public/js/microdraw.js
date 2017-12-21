@@ -21,7 +21,7 @@
 
 var Microdraw = (function () {
     var me = {
-        debug: 1,
+        debug: -1,
         dbroot: localhost + "/api",
         ImageInfo: {},               // regions, and projectID (for the paper.js canvas) for each sections, can be accessed by the section name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
                                      // regions contain a paper.js path, a unique ID and a name
@@ -53,6 +53,8 @@ var Microdraw = (function () {
         counter: 1,
         tap: false,
         currentColorRegion: null,
+
+        lastSaveState : {},
 
         /*
             Region handling functions
@@ -239,6 +241,9 @@ var Microdraw = (function () {
                 }
             }
             paper.view.draw();
+
+            /* allow null to be passed to deselect all regions */
+            if( !reg ) return
 
             // Select region name in list
             [].forEach.call(document.querySelectorAll("#regionList > .region-tag"), function(r) {
@@ -583,10 +588,6 @@ var Microdraw = (function () {
                 // remove from regionList
                 var tag = $("#regionList > .region-tag#" + reg.uid);
                 $(tag).remove();
-            }
-            // remember the annotationID to remove the region from the DB when saving
-            if( typeof reg.annotationID != "undefined" ){
-                me.ImageInfo[imageNumber].deletedAnnotations.push(reg.annotationID) 
             }
         },
 
@@ -1242,122 +1243,184 @@ var Microdraw = (function () {
                 console.log("> save promise");
             }
 
-            var i;
+            me.selectRegion( null )
             var promiseArray = [];
             var savedSections = "Saving sections: ";
 
-            Object.keys(me.ImageInfo).forEach(function(sl) {
+            var prepareRegionForDB = (re) => 
+                ({
+                    path : JSON.parse(re.path.exportJSON()),
+                    name : re.name,
+                    annotationID : re.annotationID,
+                    type : 'Region',
+                    fileID : me.fileID,
+                    hash : me.annotationHash(re,'Region'),
+                    
+                    originalRe : re
+                })
+
+            var regionHashChanged = (re) => 
+                 me.annotationHash(re,'Region') != re.hash
+            
+
+            const savingPromise = Object.keys(me.ImageInfo).map(function(sl) {
                 if ((me.config.multiImageSave === false) && (sl !== me.currentImage)) {
-                    return;
+                    return Promise.resolve([[],[],[],[]]) ;
                 }
 
                 var section = me.ImageInfo[sl];
-                // delete all annotations that were marked 
-                if( section.deletedAnnotations.length > 0 ) {
-                    var pr = new Promise(function(resolve, reject) {
-                        (function(sl2, annotationIDs) {
-                            $.ajax({
-                                url:me.dbroot,
-                                type:"POST",
-                                data: {
-                                    action: "delete",
-                                    annotationIDs: JSON.stringify(annotationIDs)
-                                },
-                                success: function(result) {
-                                    console.log("< microdrawDBSave. Successfully deleted regions: ", annotationIDs.length, 
-                                        "section:", sl2, "response:", result);
-                                    // empty list of deleted Annotations
-                                    me.ImageInfo[sl].deletedAnnotations = [];
-                                    resolve("section " + sl2); //TODO what does this do??? -> this resolves the promise, allowing promiseArray to be resolved
-                                },
-                                error: function(jqXHR, textStatus, err) {
-                                    console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "section: " + sl2.toString());
-                                    reject(err);
-                                }
-                            });
-                        }(sl, section.deletedAnnotations));
-                    });
-                    promiseArray.push(pr);
-                }
+                var lastSavedStateSection = me.lastSaveState[sl];
 
-                // configure value to be saved for the current section
-                var arrAnnotationsToBeSaved = [];
-                for( i = 0; i < section.Regions.length; i += 1 ) {
+                /* regions that do not currently have annotaitonIDs will be saved */
+                const objsTobeSaved = section.Regions
+                    .filter(re=>!re.annotationID)
+                    .map(prepareRegionForDB)
+
+                const savingObjsPromise = 
+                    fetch(me.dbroot,{
+                        method : 'POST',
+                        headers : { 'Content-Type' : 'application/json' },
+                        body : JSON.stringify({
+                            action : "save",
+                            annotations : JSON.stringify(objsTobeSaved)
+                        })
+                    })
+                    .then(res=>res.json())
+                    .then(json=>{
+                        /* successful save results in replacing old hash (undefined) with new hash
+                        successful save will populate the annotationID (originally undefined)
+                        */
+                        objsTobeSaved.forEach(obj=>{
+                            obj.originalRe.annotationID = json.find(savedA => savedA.annotation.hash == obj.hash).annotationID
+                            obj.originalRe.hash = obj.hash
+                        })
+                        return Promise.resolve(json)
+                    })
+
+                /* regions that do have annotationIDs
+                AND the annotaitonIDs existed in lastSAvedStateSection
+                will have their hash calculated ...
+                if their hash changed, they will be updated */
+                /* regardless if they were updated, this operation will also splice out
+                the regions that exist in section, and also in lastSavedStateSection */
+                const objsTobeUpdated = lastSavedStateSection
+                    .filter(historyRe=>
+                        section.Regions
+                            .filter(re=>re.annotationID)
+                            .findIndex(re=> re.annotationID === historyRe.annotationID) >= 0)
+                    .filter(regionHashChanged)
+                    .map(prepareRegionForDB)
+                
+                const updateObjsPromise = 
+                    fetch(me.dbroot,{
+                        method : 'POST',
+                        headers : { 'Content-Type' : 'application/json' },
+                        body : JSON.stringify({
+                            action : "save",
+                            annotations : JSON.stringify(objsTobeUpdated)
+                        })
+                    })
+                    .then(res=>res.json())
+                    .then(json=>{
+                        /* successful save results in replacing old hash with new hash */
+                        objsTobeUpdated.forEach(obj=>{
+                            console.log(obj.originalRe.hash,obj.hash)
+                            obj.originalRe.hash = obj.hash
+                            console.log(obj.originalRe.hash,obj.hash)
+                        })
+                        return Promise.resolve(json)
+                    })
+
+
+                /* regions that exist in lastSaveState, but does not exist in Regions, 
+                will be deleted */
+                const objsTobeDeleted = lastSavedStateSection
+                    .filter(historyRe=>
+                        section.Regions
+                            .filter(re=>re.annotationID)
+                            .findIndex(re=> re.annotationID === historyRe.annotationID) < 0)
+                    .map(prepareRegionForDB)
+
+                const deleteObjsPromise = 
+                    fetch(me.dbroot,{
+                        method : 'POST',
+                        headers : { 'Content-Type' : 'application/json' },
+                        body : JSON.stringify({
+                            action : "delete",
+                            annotations : JSON.stringify(objsTobeDeleted)
+                        })
+                    })
+                    .then(res=>res.json())
+                    .then(json=>{
+                        /* successful deletion does not need to change to the Region array */
+                        return Promise.resolve(json)
+                    })
                     
-                    var el = {};
-                    el.path = JSON.parse(section.Regions[i].path.exportJSON());
-                    el.name = section.Regions[i].name;
-                    el.annotationID = section.Regions[i].annotationID;
-                    el.type = "Region";
-                    el.fileID = me.fileID;
 
-                    el.originalRe = section.Regions[i]
-                    console.log(el);
-                    // check if the current annotation has changed since loading it by computing a hash
-                    var currentHash = me.annotationHash(section.Regions[i], "Region");
-                    console.log(currentHash, section.Regions[i].hash);  
-                    if( me.debug > 1 ) { console.log("Annotation", i, "hash:", currentHash, "original hash:", section.Regions[i].hash); }
-                    if( !(currentHash === section.Regions[i].hash) ) {
-                        // hash is different, save this annotation
-                        el.hash = currentHash;
-                        arrAnnotationsToBeSaved.push(el);
+                /* region that does not exist in lastSaveState, but exists in Regions will be undeleted
+                ...
+                or could there be another reason why they might appear? 
+                */
+                const objsTobeUndeleted = section.Regions
+                    .filter(re=>re.annotationID)
+                    .filter(re=>
+                        lastSavedStateSection
+                            .findIndex(historyRe=>historyRe.annotationID===re.annotationID) < 0)
+                    .map(prepareRegionForDB)
+                    
+                const undeleteObjsPromise = 
+                    fetch(me.dbroot,{
+                        method : 'POST',
+                        headers : { 'Content-Type' : 'application/json' },
+                        body : JSON.stringify({
+                            action : "undelete",
+                            annotations : JSON.stringify(objsTobeUndeleted)
+                        })
+                    })
+                    .then(res=>res.json())
+                    .then(json=>{
+                        /* successful undeletion does not need to do anything visually */
+                        return Promise.resolve(json)
+                    })
+
+                return Promise.all([
+                    savingObjsPromise,
+                    updateObjsPromise,
+                    deleteObjsPromise,
+                    undeleteObjsPromise
+                ])
+            });
+
+            /* savingPromise is an array (slice) of array(operation) of array (db jsons) */
+            Promise.all(savingPromise)
+                .then(arrOfArr=>{
+                    //all operations successfully carried out, 
+
+                    const modifiedAnnotations = [0,0,0,0]
+                    console.log(arrOfArr)
+                    arrOfArr.forEach((arr,sliceIdx)=>arr.forEach((el,opIdx)=>{
+                        modifiedAnnotations[opIdx % 4] += el.length
+                    }))
+
+                    for(let key in me.ImageInfo){
+                        //make a copy of lastSaveState
+                        me.lastSaveState[key] = me.ImageInfo[key].Regions.slice(0,me.ImageInfo[key].Regions.length)
                     }
-                }
-                // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
-                //if( typeof section.Hash === "undefined" || h === section.Hash ) {
-                //    if( me.debug > 1 ) { console.log("No change, no save"); }
-                //    value.Hash = h;
+                    // show dialog box with timeout
+                    const saveDialog = `Annotations saved.<br />New : (${modifiedAnnotations[0]})<br />Updated : (${modifiedAnnotations[1]})<br />Deleted : (${modifiedAnnotations[2]})<br />Undeleted : (${modifiedAnnotations[3]})`
 
-                //    return;
-                //}
-                //TODO with multiple non-loaded images do I still need this code???
-                savedSections += sl.toString() + "(" + arrAnnotationsToBeSaved.length.toString() + ") ";
-
-                // post data to database
-                var pr = new Promise(function(resolve, reject) {
-                    (function(sl2, annotations) {
-                        $.ajax({
-                            url:me.dbroot,
-                            type:"POST",
-                            data: {
-                                action: "save",
-                                annotations: JSON.stringify(annotations)
-                            },
-                            success: function(result) {
-                                console.log("< microdrawDBSave. Successfully saved regions:",
-                                    annotations.length,
-                                    "section: " + sl2.toString(),
-                                    "response:",
-                                    result
-                                );
-                                //update hash after annotation saved
-                                arrAnnotationsToBeSaved.forEach((annotationSaved,idx)=>{
-                                    annotationSaved.originalRe.annotationID = result[idx].annotationID
-                                    annotationSaved.originalRe.hash = result[idx].annotation.hash
-                                })
-                                resolve("section " + sl2);
-                            },
-                            error: function(jqXHR, textStatus, err) {
-                                console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "section: " + sl2.toString());
-                                reject(err);
-                            }
-                        });
-                    }(sl, arrAnnotationsToBeSaved));
-                });
-                promiseArray.push(pr);
-            });
-            Promise.all(promiseArray).then(function(values) {
-                console.log(values);
-            });
-
-            //show dialog box with timeout
-            $('#saveDialog')
-                .html(savedSections)
-                .fadeIn();
-            setTimeout(function() {
-                $("#saveDialog")
-                .fadeOut(500);
-            }, 2000);
+                    $('#saveDialog')
+                        .html(saveDialog)
+                        .fadeIn();
+                    setTimeout(function() {
+                        $("#saveDialog")
+                        .fadeOut(500);
+                    }, 5000);
+                })
+                .catch(e=>{
+                    //error in some operations
+                    console.log(e)
+                })
         },
 
         /**
@@ -1407,7 +1470,6 @@ var Microdraw = (function () {
                     //obj = JSON.parse(data);
                     //obj = data;
                     //if( obj ) {
-                    console.log(data)
                     for( i = 0; i < data.length; i += 1 ) {
                         console.log(data[i]);
                         if ( data[i].type === "Region" ) {
@@ -1427,10 +1489,13 @@ var Microdraw = (function () {
                             me.newRegion({name:reg.name, path:reg.path, annotationID:reg.annotationID, hash:data[i].annotation.hash});
                         }
                     }
+                    
+                    for(let key in me.ImageInfo){
+                        me.lastSaveState[key] = me.ImageInfo[key].Regions.slice(0,me.ImageInfo[key].Regions.length)
+                    }
                     paper.view.draw();
                     // if image has no hash, save one
                     //me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
-
 
                     if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
                     resolve();
@@ -2254,8 +2319,7 @@ var Microdraw = (function () {
                 me.imageOrder.push(name);
                 me.ImageInfo[name] = {
                     source: obj.tileSources[i],
-                    Regions: [],
-                    deletedAnnotations: [], //temporary list to hold annotations that were deleted on the canvas but not yet in the DB
+                    Regions: []
                 };
                 // if getTileUrl is specified, we might need to eval it to get the function
                 if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
