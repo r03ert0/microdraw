@@ -1,0 +1,197 @@
+/*
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 3.0 License
+
+Name       : Lettering  
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20120513
+*/
+
+body {
+    background-color:#888;
+}
+
+article {
+    margin: 0 auto;
+    padding: 0;
+    display:block;
+    font-family: 'Roboto', sans-serif;
+    font-weight:100;
+    font-size: 13px;
+    color: #333;   
+    overflow: hidden;
+    width: 900px;
+    padding: 20px 40px 20px 40px;
+}
+
+footer {
+    width: 920px;
+    height: 80px;
+    margin: 0 auto;
+    padding: 0px 0 15px 310px;
+}
+
+nav {
+    float: left;
+    width: 220px;
+    margin: 0px;
+    padding: 0px 0px 80px 10px;
+    color: white;
+    display: block;
+    word-wrap: break-word;
+}
+nav ul {
+    list-style: none;
+}
+
+nav h1 a {
+    color:white;
+    font-size:1.5rem;
+    font-weight:400;
+    text-decoration:none;
+}
+
+nav h2 a {
+    color:white;
+    font-size:1.2rem;
+    font-weight:200;
+    text-decoration:none;
+}
+
+nav ul {
+    padding-left:20px;
+}
+
+nav li a {
+    display: block;
+    width: 300px;
+/*    padding: 5px 0px 6px 12px;*/
+    text-align: left;
+    text-decoration: none;
+    text-transform: capitalize;
+    font-size: 14px;
+    font-weight: normal;
+    vertical-aling:middle;
+    color:white;
+}
+nav li a:hover {
+    background: #666;
+    text-decoration: none;
+}
+
+#logo {
+    width: 220px;
+    height: 140px;
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+#logo h1 {
+    margin: 0;
+    padding: 20px 0px 0px 0px;
+    font-size: 2rem;
+    font-weight:normal;
+}
+
+#logo p, #logo h1 sup {
+    margin: 0px;
+    font-size: 1rem;
+    line-height:120%;
+}
+#logo p {
+    color: #eee;
+}
+
+#logo h1, #logo p {
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0px;
+    text-align: center;
+    text-transform: lowercase;
+    font-family: 'Roboto', sans-serif;
+    font-weight:400;
+}
+
+#content {
+    float: right;
+    width: 520px;
+    padding: 70px 30px 0px 60px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 0px 15px 5px rgba(0, 0, 0, .2);
+}
+
+#content section {
+    margin-top:30px;
+    margin-bottom:40px;
+}
+/*
+#content section h2 {
+    color: #79350A;
+    border: none;
+    text-transform: lowercase;
+    font-family: Georgia, "Times New Roman", Times, serif;
+    letter-spacing: -.5px;
+    font-size: 2.8em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+    display: block;
+    font-size: 1.5em;
+    -webkit-margin-before: 0.83em;
+    -webkit-margin-after: 0.83em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    font-weight: bold;
+}*/
+
+#content a {
+    text-decoration: none;
+    color: #A13B30;
+}
+
+td.datatype {
+    text-align:right;
+    padding-right:10px;
+}
+
+p.brief {
+    overflow: hidden;
+    margin-bottom: 30px;
+    padding: 5px 10px 5px 30px;
+    text-align: left;
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+}
+
+p, ul, ol {
+    margin-top: 0;
+    line-height: 180%;
+}
+
+footer {
+    width: 920px;
+    height: 80px;
+    margin: 0 auto;
+    padding: 0px 0 15px 310px;
+}
+
+footer p {
+    margin: 0;
+    padding-top: 20px;
+    line-height: normal;
+    font-size: 14px;
+    text-align: center;
+    color: white;
+}
+
+footer a {
+    color: white;
+    text-decoration:none;
+}

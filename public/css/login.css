@@ -1,0 +1,8 @@
+#login {
+    position:fixed;
+    right:10px;
+	height:2em;
+	vertical-align:middle;
+	background-color:rgba(250,250,250,0.0);
+	z-index:11;
+}

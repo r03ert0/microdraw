@@ -1,0 +1,135 @@
+<html>
+
+<head>
+    <title>{{title}}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no" />
+    <link rel="stylesheet" href="css/microdraw.css" type="text/css" />
+    <link rel="stylesheet" href="css/login.css" type="text/css" />
+    </style>
+</head>
+
+<body>
+
+<div id="login">{{{login}}}</div>
+
+<div id="menuButton">
+    <img class="button" id="openMenu" title="Menu" src="img/openMenu.svg" />
+</div>
+
+<!-- Toolbar -->
+<div id="menuBar" class="table">
+
+    <div class="row">
+        <img class="button" id="closeMenu" title="Close Menu" src="img/closeMenu.svg" />
+    </div>
+
+    <div class="row">
+        <div id="myNavigator"></div>
+    </div>
+
+    <div class="row">
+        <div class="cell" style="text-align:center">
+            <div class="buttonGroup">
+                <img class="button" id="navigate"       title="Navigator"              src="img/navigate.svg" />
+                <img class="button" id="home"           title="Home"                   src="img/home.svg" />
+                <img class="button" id="zoomIn"         title="Zoom in"                src="img/zoomIn.svg" />
+                <img class="button" id="zoomOut"        title="Zoom out"               src="img/zoomOut.svg" />
+                <div class="section-nav">
+                    <img class="button" id="previous"   title="Previous section"         src="img/previous.svg" />
+                    <input id="sectionName" list="section-names" style="width:80px" />
+                    <img class="button" id="next"       title="Next section"             src="img/next.svg" />
+                </div>
+                <input type="range" id="slider" />
+            </div>
+            <div class="buttonGroup">
+                <img class="button" id="select"         title="Select"                 src="img/select.svg" />
+                <img class="button" id="draw"           title="Draw"                   src="img/draw.svg" />
+                <img class="button" id="drawPolygon"    title="Draw polygon"           src="img/drawPolygon.svg" />
+                <img class="button" id="drawLine"    title="Draw line"           src="img/drawLine.svg" />
+                <img class="button" id="simplify"       title="Simplify"               src="img/simplify.svg" />
+                <img class="button" id="addPoint"       title="Add point"              src="img/addPoint.svg" />
+                <img class="button" id="deletePoint"    title="Delete point"           src="img/deletePoint.svg" />
+                <img class="button" id="addRegion"      title="Union of regions"       src="img/addRegion.svg" />
+                <img class="button" id="subtractRegion" title="Subtraction of regions" src="img/subtractRegion.svg" />
+                <img class="button" id="splitRegion"    title="Split region"           src="img/splitRegion.svg" />
+                <img class="button" id="rotate"         title="Rotate region"          src="img/rotate.svg" />
+                <img class="button" id="flip"           title="Flip region"            src="img/flip.svg" />
+                <img class="button" id="toPolygon"      title="Bezier to polygon"      src="img/toPolygon.svg" />
+                <img class="button" id="toBezier"       title="Polygon to Bezier"      src="img/toBezier.svg" />
+                <img class="button" id="copy"           title="Copy path"              src="img/copy.svg" />
+                <img class="button" id="paste"          title="Paste path"             src="img/paste.svg" />
+            </div>
+            <div class="buttonGroup">
+                <img class="button" id="save"           title="Save annotations"       src="img/save.svg" />
+                <img class="button" id="screenshot"     title="Screenshot"             src="img/screenshot.svg" />
+                <img class="button" id="delete"         title="Delete"                 src="img/delete.svg" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="cell">
+            <br />
+            Regions
+            <div id="regionList"></div>
+        </div>
+    </div>
+</div>
+
+<div id="colorSelector">
+    stroke color
+    <select id="selectStrokeColor" onChange="onSelectStrokeColor();">
+        <option value="0">black</option>
+        <option value="1">white</option>
+        <option value="2">red</option>
+        <option value="3">green</option>
+        <option value="4">blue</option>
+        <option value="5">yellow</option>
+    </select>
+    <br>
+    <br>
+    stroke width
+    <input type="button" id="strokeWidthDec" value="-" onClick="onStrokeWidthDec();"><input type="button" id="strokeWidthInc" value="+" onClick="onStrokeWidthInc();">
+    <br>
+    <br>
+    fill color
+    <input type="color" id="fillColorPicker" value="#ff0000" onChange="onFillColorPicker(this.value);" >
+    <br>
+    <br>
+    &alpha;<input type="range" min="0" max="100" id="alphaSlider" onInput="onAlphaSlider(this.value);" ><input id="alphaFill" onInput="onAlphaInput(this.value);" >
+    <br>
+    <br>
+    <input type="button" id="okStrokeColor" value="ok" onClick="setRegionColor();">
+</div>
+
+<!-- Region Picker -->
+<div id="regionPicker">
+</div>
+
+<!-- OpenSeadragon viewer -->
+<div id="openseadragon1" style="width:100%">
+</div>
+
+<!-- alert/info box after saving -->
+<div id="saveDialog"></div>
+
+<!-- naat logo -->
+<a id="logo" href="http://neuroanatomy.github.io">
+    <img src="img/naat.svg" style="width:2.5em" />
+</a>
+
+<!-- Load javascript -->
+<script src="lib/paper-full-0.9.25.min.js"></script>
+<script src="lib/openseadragon/openseadragon.js"></script>
+<script src="lib/openseadragon-viewerinputhook.min.js"></script>
+<script src="lib/OpenSeadragonScalebar/openseadragon-scalebar.js"></script>
+<script src="lib/openseadragon-screenshot/openseadragonScreenshot.min.js"></script>
+<script src="lib/FileSaver.js/FileSaver.min.js"></script>
+<script src="lib/jquery-1.11.0.min.js"></script>
+<script src="js/neurolex-ontology.js"></script>
+<script src="js/base.js"></script>
+<script src="js/microdraw.js"></script>
+</body>
+
+</html>
