@@ -2149,7 +2149,7 @@ var Microdraw = (function () {
                 }
 
                 $(window).resize(function() {
-                    $("#regionList").height($(window).height() - $("#regionList").offset().top);
+                    // $("#regionList").height($(window).height() - $("#regionList").offset().top);
                     me.resizeAnnotationOverlay();
                 });
 
