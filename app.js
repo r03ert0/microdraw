@@ -80,6 +80,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// { App-wide variables
+app.use((req, res, next) => {
+    req.dirname = dirname;
+    req.db = db;
+    req.tokenDuration = 24 * (1000 * 3600); // Token duration in milliseconds
+
+    next();
+});
+// }
+
 //{-----passport
 var session = require('express-session');
 var passport = require('passport');
@@ -182,6 +192,8 @@ app.use('/data', (req, res, next) => {
     req.warningGithubConfig = warningGithubConfig;
     next();
 }, require('./controller/data/'));
+
+app.use('/user', require('./controller/user/'));
 
 app.get('/getTile',function (req,res){
     fetch(req.query.source)
