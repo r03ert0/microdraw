@@ -296,9 +296,6 @@ app.post('/api', function (req, res) {
         case 'host':
             console.log(req.get('host'));
             break;
-        case 'detente':
-            process.exit();
-            break;
     }
     res.send({});
 });
