@@ -744,7 +744,7 @@ var Microdraw = (function () {
                 me.commitMouseUndo();
             } else if (me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
                 me.tools[me.selectedTool].mouseDrag(point,dpoint);
-            }  
+            }
             paper.view.draw();
         },
 
@@ -2001,7 +2001,7 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolSplitRegion);
                     $.extend(me.tools, ToolDrawLine);
                     $.extend(me.tools, ToolSelect);
-                    
+
                     $.extend(me.tools, ToolAddPoint);
                     $.extend(me.tools, ToolAddRegion);
                     $.extend(me.tools, ToolCloseMenu);

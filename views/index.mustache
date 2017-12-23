@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    <!-- Content  -->            
+    <!-- Content  -->
     <div class="slide" style="background:#222">
     <!-- Slide: Landing -->
         <div class="content">
@@ -55,7 +55,7 @@
 
     <!-- Footer (fixed height) -->
     <div id="footer">
-        <p style="width:100%;font-size:small;text-align:center"> 
+        <p style="width:100%;font-size:small;text-align:center">
             <a target="_blank" href="http://neuroanatomy.github.io">
                 <img src="/img/naat-bw.svg" style="width:28px;height:28px;margin-right:4px;display:inline-block;vertical-align:middle"/></a>
             <a target="_blank" href="http://neuroanatomy.github.io" class="linkNoULine">
@@ -63,7 +63,7 @@
             </a>
         </p>
     </div>
-    <!-- End Footer -->    
+    <!-- End Footer -->
 
 <!--
     <main id="content" class="content">
@@ -108,51 +108,51 @@
     </main>
 -->
 
-    <script>
-    $(".download>a").each(function(){
-        $(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));
-    })
+<script>
+$(".download>a").each(function(){
+    $(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));
+})
 
+$(".slide").height(window.innerHeight);
+$(window).on('resize',function() {
     $(".slide").height(window.innerHeight);
-    $(window).on('resize',function() {
-        $(".slide").height(window.innerHeight);
-        $("#neurons").css({width:window.innerWidth});
-    });
+    $("#neurons").css({width:window.innerWidth});
+});
 
-    // List of brains
-    $("#list").change(function(e) {
-        $("#url").val($("#list").val());
-    });
+// List of brains
+$("#list").change(function(e) {
+    $("#url").val($("#list").val());
+});
 
-    var menuShowing = true;
-    $(window).on('scroll',function() {
-        var y = window.pageYOffset;
-        if(y>100 && menuShowing) {
-            $("#menu").css({top:-32, opacity:0});
-            menuShowing = false;
-        
-            $("#footer").show();
-        }
-        if(y<100 && !menuShowing) {
-            $("#menu").css({top:0, opacity:1});
-            menuShowing = true;
-        }
-    });
+var menuShowing = true;
+$(window).on('scroll',function() {
+    var y = window.pageYOffset;
+    if(y>100 && menuShowing) {
+        $("#menu").css({top:-32, opacity:0});
+        menuShowing = false;
 
-    $("h2").css({marginLeft:0,opacity:1});
-
-    function goToURL(e) {
-        var url=$("#url").val();
-        location="/data?source="+url;
+        $("#footer").show();
     }
+    if(y<100 && !menuShowing) {
+        $("#menu").css({top:0, opacity:1});
+        menuShowing = true;
+    }
+});
 
-    // Add URL loading
-    $("#url").keyup(function(e) {
-        //console.log(e,e.target);
-        if (e.keyCode == 13) {
-            goToURL(e);
-        }
-    });
-    </script>
+$("h2").css({marginLeft:0,opacity:1});
+
+function goToURL(e) {
+    var url=$("#url").val();
+    location="/data?source="+url;
+}
+
+// Add URL loading
+$("#url").keyup(function(e) {
+    //console.log(e,e.target);
+    if (e.keyCode == 13) {
+        goToURL(e);
+    }
+});
+</script>
 </body>
 </html>
