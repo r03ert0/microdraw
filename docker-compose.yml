@@ -12,6 +12,8 @@ services:
             - 'mongo'
         build: .
         image: microdraw
+        volumes : 
+            - './public:/microdraw/public'
         ports:
             - '3000:3000'
         environment:

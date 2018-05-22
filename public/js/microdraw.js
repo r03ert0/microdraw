@@ -252,7 +252,8 @@ var Microdraw = (function () {
             });
 
             // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit
-            var tag = document.querySelector("#regionList > .region-tag#\\3" + reg.uid);
+            var tag = document.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
+            
             tag.classList.remove("deselected");
             tag.classList.add("selected");
 
