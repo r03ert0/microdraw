@@ -301,7 +301,7 @@ app.post('/api', function (req, res) {
                 }
                 */
 
-            break;.
+            break;
         case 'delete':
             var annotations = JSON.parse(req.body.annotations);
             const allDeletions = annotations.map(annotation=>
