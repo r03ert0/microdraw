@@ -320,9 +320,9 @@ app.post('/api', function (req, res) {
             var annotations = JSON.parse(req.body.annotations);
             const allUndeletions = annotations.map(annotation=>
                 db.get('annotations').update({
-                    annotationID : annotations.annotationID
+                    annotationID : annotation.annotationID
                 },{
-                    $unset:{ deleted : '' }
+                    $unset:{ deleted : false }
                 },{
                     multi : true
                 }))
