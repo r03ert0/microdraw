@@ -516,11 +516,11 @@ var Microdraw = (function () {
             var reg = {};
 
             reg.uid = me.regionUID();
-            if( arg.name ) {
-                reg.name = arg.name;
-            } else {
-                reg.name = "Untitled " + reg.uid;
-            }
+            reg.name = arg.name ? 
+                arg.name :
+                (typeof persistentRegionName !== 'undefined' && persistentRegionName) ? 
+                    persistentRegionName :
+                    "Untitled " + reg.uid;
             // annotationID is undefined for new Regions, except when we pass it in arg
             reg.annotationID = arg.annotationID;
 
@@ -707,7 +707,8 @@ var Microdraw = (function () {
         dragHandler: function dragHandler(event) {
             if( me.debug > 1 ) { console.log("> dragHandler"); }
 
-            if( !me.navEnabled ) {
+            /* allow movement of canvas in select mode */
+            if( !me.navEnabled && me.region ) {
                 event.stopHandlers = true;
                 me.mouseDrag(event.originalEvent.layerX, event.originalEvent.layerY, event.delta.x, event.delta.y);
             }
@@ -725,6 +726,13 @@ var Microdraw = (function () {
                 event.stopHandlers = true;
                 me.mouseUp();
             }
+        },
+
+        scrollHandler: function scrollHandler(ev){
+            if( me.debug ) { console.log("> scrollHandler") }
+
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].scrollHandler ) me.tools[me.selectedTool].scrollHandler(ev);
+            paper.view.draw()
         },
 
         /**
@@ -1214,7 +1222,7 @@ var Microdraw = (function () {
             var prevTool = me.selectedTool;
             me.selectedTool = $(this).attr("id");
             me.selectTool();
-
+            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) me.tools[prevTool].onDeselect()
             if( me.tools[me.selectedTool] && me.tools[me.selectedTool].click ) me.tools[me.selectedTool].click()
         },
 
@@ -2130,7 +2138,12 @@ var Microdraw = (function () {
                     me.loadScript('/js/tools/simplify.js'),
                     me.loadScript('/js/tools/subtractRegion.js'),
                     me.loadScript('/js/tools/zoomIn.js'),
-                    me.loadScript('/js/tools/zoomOut.js')
+                    me.loadScript('/js/tools/zoomOut.js'),
+
+                    me.loadScript('/js/tools/paintbrush.js'),
+                    me.loadScript('/js/tools/eraser.js'),
+                    me.loadScript('/js/tools/fixNewRegion.js')
+                    
                 ]).then(function () {
                     me.tools = {};
                     $.extend(me.tools, ToolDraw);
@@ -2161,6 +2174,10 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolSubtractRegion);
                     $.extend(me.tools, ToolZoomIn);
                     $.extend(me.tools, ToolZoomOut);
+
+                    $.extend(me.tools, ToolFixNewRegion);
+                    $.extend(me.tools, ToolEraser);
+                    $.extend(me.tools, ToolPaintbrush);
                 });
 
                 // Enable click on toolbar buttons
@@ -2490,11 +2507,13 @@ var Microdraw = (function () {
             me.viewer.addHandler("page", function (data) {
                 console.log(data.page, me.params.tileSources[data.page]);
             });
+
             me.viewer.addViewerInputHook({hooks: [
                 {tracker: 'viewer', handler: 'clickHandler', hookHandler: me.clickHandler},
                 {tracker: 'viewer', handler: 'pressHandler', hookHandler: me.pressHandler},
                 {tracker: 'viewer', handler: 'dragHandler', hookHandler: me.dragHandler},
-                {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler}
+                {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler},
+                {tracker: 'viewer', handler: 'scrollHandler', hookHandler: me.scrollHandler}
             ]});
 
             if( me.debug ) {

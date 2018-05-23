@@ -22,3 +22,4 @@ vervet.zip
 server_config.json
 test/*.png
 .DS_Store
+.vscode

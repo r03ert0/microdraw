@@ -191,7 +191,7 @@ html,body {
     display:table;
     table-layout:fixed;
 }
-.row {
+.microdrawRow {
     display:table-row;
 }
 .cell {
