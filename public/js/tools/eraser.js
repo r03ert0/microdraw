@@ -40,6 +40,18 @@ var ToolEraser = {
           Microdraw.backToSelect()
           return
         }
+
+        let newCircle = new paper.Path.Circle({
+          center : point,
+          radius : paintBrushDefaultSize*paintBrushScale
+        })
+        let tmp = Microdraw.region.path.subtract(newCircle)
+        Microdraw.region.path.remove()
+        Microdraw.region.path = tmp
+
+        /* move the eraser indicator during mousedrag */
+        paintBrushCircle.setPosition(point)
+        newCircle.remove()
       },
   
       /**
