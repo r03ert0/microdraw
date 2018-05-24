@@ -88,11 +88,6 @@ var ToolRotateCanvas = {
 
             return new OpenSeadragon.Point(x + this.xOffset, y - this.yOffset);
         }
-        console.warn('none applies, uh oh',effectiveRotation,
-          OpenSeadragon.ScalebarLocation.TOP_LEFT,
-          OpenSeadragon.ScalebarLocation.TOP_RIGHT,
-          OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT,
-          OpenSeadragon.ScalebarLocation.BOTTOM_LEFT)
       }).bind(Microdraw.viewer.scalebarInstance);
     }
     var tool = {
