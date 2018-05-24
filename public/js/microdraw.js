@@ -2142,7 +2142,8 @@ var Microdraw = (function () {
 
                     me.loadScript('/js/tools/paintbrush.js'),
                     me.loadScript('/js/tools/eraser.js'),
-                    me.loadScript('/js/tools/fixNewRegion.js')
+                    me.loadScript('/js/tools/fixNewRegion.js'),
+                    me.loadScript('/js/tools/rotateCanvas.js')
                     
                 ]).then(function () {
                     me.tools = {};
@@ -2178,6 +2179,7 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolFixNewRegion);
                     $.extend(me.tools, ToolEraser);
                     $.extend(me.tools, ToolPaintbrush);
+                    $.extend(me.tools, ToolRotateCanvas);
                 });
 
                 // Enable click on toolbar buttons
@@ -2261,12 +2263,12 @@ var Microdraw = (function () {
                 }))
                     .then(() => resolve())
                     .catch((e) => {
-                        console.log('direct fetching of source failed ... ', e, 'attempting to fetch via microdraw server');
+                        console.warn('direct fetching of source failed ... ', e, 'attempting to fetch via microdraw server');
                         //fetch json via microdraw server
                         fetch('/getJson?source='+me.params.source)
                         .then((data) => data.json())
                         .then((json) => {
-                            console.log('getjson success', json);
+                            console.log('getjson by microdraw server success', json);
                             me.initMicrodraw2(json);
                         })
                         .catch((err) => console.log(err));
