@@ -130,7 +130,7 @@ var ToolEraser = {
 
         eraserFlag = true
 
-        paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize);
+        paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize*paintBrushScale);
         paintBrushCircle.fillColor =  new paper.Color(1,0,0,0.5);
 
         /* only need to attacch the traccker once */

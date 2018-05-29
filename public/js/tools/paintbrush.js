@@ -104,9 +104,9 @@ var ToolPaintbrush = {
         Microdraw.navEnabled = false;
         paintbrushFlag = true
 
-        paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize);
+        paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize*paintBrushScale);
         paintBrushCircle.fillColor =  new paper.Color(0,0,1,0.5);
-        
+
         /** only need to attach the mouse tracker once per instance of microdraw */
         if(typeof osdMTracker === 'undefined' || osdMTracker === null){
 
