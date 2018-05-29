@@ -101,8 +101,7 @@ var ToolRotateCanvas = {
         Microdraw.viewer.viewport.setRotation( r >= 270 ? 0 : (r + 90) )
 
         /* rotate all the annotations */
-        // const canvas = paper.view._element
-        paper.view._matrix.rotate(r >= 270 ? -270 : 90)
+        paper.projects.forEach(project=>project.view._matrix.rotate(r >= 270 ? -270 : 90))
 
         /* if not, bugs where unless user pan, the annotations will not be flipped */
         const center = paper.view.center
