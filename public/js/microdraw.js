@@ -2213,6 +2213,7 @@ var Microdraw = (function () {
                 // attempt to fetch json file directly from browser first
                 (new Promise((resolveDirectFetch, rejectDirectFetch) => {
                     // decide between json (local) and jsonp (cross-origin)
+                    
                     var ext = me.params.source.split(".");
                     ext = ext[ext.length - 1];
                     if( ext === "jsonp" ) {
@@ -2333,7 +2334,6 @@ var Microdraw = (function () {
             }
 
             // set up the ImageInfo array and me.imageOrder array
-            console.log(obj);
             var i;
             for( i = 0; i < obj.tileSources.length; i += 1 ) {
                 // name is either the index of the tileSource or a named specified in the json file
@@ -2345,7 +2345,7 @@ var Microdraw = (function () {
                 };
                 // if getTileUrl is specified, we might need to eval it to get the function
                 if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
-                    me.ImageInfo[name].source.getTileUrl = obj.tileSources[i].getTileUrl;
+                    eval(`me.ImageInfo[name].source.getTileUrl = ${obj.tileSources[i].getTileUrl}`)
                 }
             }
 
