@@ -227,7 +227,20 @@ app.get('/getJson',function (req,res) {
     }))
         .then(data=>data.json())
         .then(json=>{
-            json.tileSources = json.tileSources.map(tileSource=>(new RegExp('^http')).test(tileSource) ? tileSource : tileSource[0] == '/' ? thisHostname + '/getTile?source=' + sourceHostname + tileSource : thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource );
+            // console.log('/getjson',json)
+            json.tileSources = json.tileSources.map(tileSource=>
+                typeof tileSource === 'string' ? 
+                    (new RegExp('^http')).test(tileSource) ? 
+                        tileSource : 
+                        tileSource[0] == '/' ? 
+                            thisHostname + '/getTile?source=' + sourceHostname + tileSource : 
+                            thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource :
+                    typeof tileSource === 'object' ? 
+                        tileSource :
+                        tileSource
+                    )
+            
+            console.log('sending /getjson',json)
             res.send(JSON.stringify(json));
         })  
         .catch(e=>{
