@@ -1264,7 +1264,7 @@ var Microdraw = (function () {
                     name : re.name,
                     annotationID : re.annotationID,
                     type : 'Region',
-                    fileID : me.fileID,
+                    fileID : me.section,
                     hash : me.annotationHash(re,'Region'),
                     
                     originalRe : re
@@ -1447,7 +1447,7 @@ var Microdraw = (function () {
 
                 $.getJSON(me.dbroot, {
                     action: "load_last",
-                    fileID: me.fileID
+                    fileID: me.section
                 }).success(function (data) {
                     var i, json, reg;
                     me.annotationLoadingFlag = false;

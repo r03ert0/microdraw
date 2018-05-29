@@ -130,11 +130,11 @@ var ToolEraser = {
 
         eraserFlag = true
 
-        if(typeof osdMTracker === 'undefined' || osdMTracker === null){
-          
-          paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize);
+        paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize);
+        paintBrushCircle.fillColor =  new paper.Color(1,0,0,0.5);
 
-          paintBrushCircle.fillColor =  new paper.Color(1,0,0,0.5);
+        /* only need to attacch the traccker once */
+        if(typeof osdMTracker === 'undefined' || osdMTracker === null){
 
           osdMTracker = new OpenSeadragon.MouseTracker({
             element : Microdraw.viewer.container,
@@ -147,6 +147,7 @@ var ToolEraser = {
               // console.log(webPoint,viewportPoint,imagePoint,event)
               paintBrushCircle.setPosition( point )
               paintBrushCircle.fillColor =  new paper.Color(0.5,0.1,0,0.5);
+              paper.view.draw();
               
             }
           })

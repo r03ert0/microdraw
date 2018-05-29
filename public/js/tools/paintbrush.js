@@ -11,13 +11,6 @@ var ToolPaintbrush = {
     var paintBrushScale = 1.0
     var paintbrushFlag = false
 
-    var finishedPainting = function(){
-      paintBrushCircle.setPosition(-10000,-1000)
-      Microdraw.region.fullySelected = true
-      Microdraw.commitMouseUndo()
-      Microdraw.backToSelect()
-    }
-
     var tool = {
 
       /**
@@ -38,8 +31,8 @@ var ToolPaintbrush = {
         paintBrushCircle.fillColor = new paper.Color(0,0,0,0)
 
         paintBrushPreview = new paper.Path.Circle({
-            center : point,
-            radius : paintBrushDefaultSize*paintBrushScale, /* configurable */
+          center : point,
+          radius : paintBrushDefaultSize*paintBrushScale, /* configurable */
         })
 
         Microdraw.region = Microdraw.newRegion({path:paintBrushPreview})
@@ -110,10 +103,13 @@ var ToolPaintbrush = {
       click: function click(prevTool) {
         Microdraw.navEnabled = false;
         paintbrushFlag = true
+
+        paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize);
+        paintBrushCircle.fillColor =  new paper.Color(0,0,1,0.5);
+        
+        /** only need to attach the mouse tracker once per instance of microdraw */
         if(typeof osdMTracker === 'undefined' || osdMTracker === null){
 
-          paintBrushCircle = new paper.Path.Circle([0,0],paintBrushDefaultSize);
-          paintBrushCircle.fillColor =  new paper.Color(0,0,1,0.5);
           
           osdMTracker = new OpenSeadragon.MouseTracker({
             element : Microdraw.viewer.container,
@@ -123,10 +119,9 @@ var ToolPaintbrush = {
               }
               var point = paper.view.viewToProject( new paper.Point(event.originalEvent.layerX,event.originalEvent.layerY) )
 
-              // console.log(webPoint,viewportPoint,imagePoint,event)
               paintBrushCircle.setPosition( point )
               paintBrushCircle.fillColor =  new paper.Color(0.1,0.1,0.5,0.5);
-              
+              paper.view.draw();
             }
           })
           osdMTracker.setTracking(true)
