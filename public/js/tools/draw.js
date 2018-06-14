@@ -40,10 +40,11 @@ var ToolDraw = { draw: (function () {
 
         /**
          * @function mouseDrag
-         * @param {object} point The point where you click (x,y)
+         * @param {object} point The point where you moved to (x,y)
+         * @param {object} dpoint The movement of the point
          * @return {void}
         */
-        mouseDrag: function mouseDrag(point) {
+        mouseDrag: function mouseDrag(point,dpoint) {
             Microdraw.region.path.add(point);
         },
 
@@ -55,6 +56,7 @@ var ToolDraw = { draw: (function () {
             if( Microdraw.newRegionFlag === true ) {
                 Microdraw.region.path.closed = true;
                 Microdraw.region.path.fullySelected = true;
+                Microdraw.newRegionFlag = false
 
                 // to delete all unnecessary segments while preserving the form of the
                 // region to make it modifiable; & adding handles to the segments
@@ -89,7 +91,7 @@ var ToolDraw = { draw: (function () {
             paper.view.draw();
         },
 
-        /*
+        /**
         * @function click
         * @desc Convert polygon path to bezier curve
         * @param {string} prevTool The previous tool to which the selection goes back

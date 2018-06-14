@@ -1,56 +1,49 @@
-html,body {
-	margin:0px;
-}
-* {
-	font-family: sans-serif;
-	font-size:1rem;
-	color:#333;
-}
 #info {
-	position:absolute;
-	width:200px;
-	height:41px;
-	top:0px;
-	left:0px;
-	background-color:rgba(200,200,200,0.5);
-	z-index:10;
+    position:absolute;
+    width:200px;
+    height:41px;
+    top:0px;
+    left:0px;
+    background-color:rgba(200,200,200,0.5);
+    z-index:10;
 }
 #myNavigator {
-	position:absolute;
-	width:200px;
-	height:150px;
-	top:0px;
-	left:0px;
-	z-index:10;
+    position:absolute;
+    width:200px;
+    height:150px;
+    top:0px;
+    left:0px;
+    z-index:10;
 }
 #menuButton {
-	position:absolute;
-	top:1px;
-	left:1px;
-	z-index:11;
-	display:none;
+    position:absolute;
+    top:1px;
+    left:1px;
+    z-index:11;
+    display:none;
 }
 #openMenu,#closeMenu {
-	position:absolute;
-	top:2px;
-	width:32px;
-	height:2em;
+    position:absolute;
+    top:2px;
+    width:32px;
+    height:2em;
 }
 #openMenu {
-	left:2px;
+    left:2px;
 }
 #closeMenu {
-	right:2px;
+    right:2px;
 }
 #menuBar {
-	position:absolute;
-	width:200px;
-	height: 100%;
-	top:0;
-	left:0;
-	background-color:rgba(200,200,200,0.5);
-	z-index:10;
-	display:block;
+    display:table;
+    box-sizing: border-box;
+    position:absolute;
+    width: 200px;
+    height: 100%;
+    top:0;
+    left:0;
+    background-color:rgba(200,200,200,0.5);
+    z-index:10;
 }
 #saveDialog {
     display: none;
@@ -60,153 +53,155 @@ html,body {
     background-color:white;
     color:black;
     text-align:center;
-	border:thin solid lightgrey;
+    border:thin solid lightgrey;
     z-index:20;
     line-height:20px;
     padding:20px;
 }
-
+.button {
+    vertical-align: middle;
+}
 .buttonGroup {
-	background-color:rgba(127,127,127,0.0);
-	margin:1px 1rem;
-	padding:1px;
+    background-color:rgba(127,127,127,0.0);
+    margin:1px 1rem;
+    padding:1px;
 }
 .selected {
-	background-color:#57d1df;
-	border-radius:100px;
+    background-color:#57d1df;
+    border-radius:100px;
 }
 
 .slice-nav * {
-	vertical-align:middle;
+    vertical-align:middle;
 }
 #slider {
-	width: calc( 100% - 4px); /* 100% - 2*margin */
+    width: calc( 100% - 4px); /* 100% - 2*margin */
 }
 
 #regionList {
-	position:relative;
-	min-height:30px;
-	height:auto;
-	width:200px;
-	background-color:rgba(250,250,250,0.3);
-	border:0;
-	margin-bottom:0;
-	bottom:0px;
-	overflow-y:auto;
+    position:relative;
+    min-height:30px;
+    height:auto;
+    width:200px;
+    background-color:rgba(250,250,250,0.3);
+    border:0;
+    margin-bottom:0;
+    bottom:0px;
+    overflow-y:auto;
 }
 
 #colorSelector {
-	position:absolute;
-	width:170px;
+    position:absolute;
+    width:170px;
     height:11.5em;
-	top:371px;
-	left:200px;
-	background-color:rgba(200,200,200,0.5);
-	display:none;
-	z-index:10;
+    top:371px;
+    left:200px;
+    background-color:rgba(200,200,200,0.5);
+    display:none;
+    z-index:10;
 }
 #fillColorPicker {
-	position:absolute;
-	width:4.95em;
-	height:1.5em;
-	right:0px;
-	vertical-align:middle;
-	background-color:rgba(255,255,255,0.7);
-	border:thin solid lightgrey;
-	border-radius:5px;
+    position:absolute;
+    width:4.95em;
+    height:1.5em;
+    right:0px;
+    vertical-align:middle;
+    background-color:rgba(255,255,255,0.7);
+    border:thin solid lightgrey;
+    border-radius:5px;
     box-shadow: none !important;
-	z-index:10;
+    z-index:10;
 }
 #alphaSlider {
-	width:7.5em;
-	vertical-align:middle;
+    width:7.5em;
+    vertical-align:middle;
 }
 #alphaFill {
-	position:absolute;
-	right:0px;
-	width:2.15em;
-	vertical-align:middle;
-	text-align:right;
-	padding-right:5px;
-	border-radius:5px;
-	border:thin solid lightgrey;
-	background-color:rgba(255,255,255,0.7);
+    position:absolute;
+    right:0px;
+    width:2.15em;
+    vertical-align:middle;
+    text-align:right;
+    padding-right:5px;
+    border-radius:5px;
+    border:thin solid lightgrey;
+    background-color:rgba(255,255,255,0.7);
 }
 #selectStrokeColor {
-	/*width:4.4em;*/
-	position:absolute;
-	/*left:89px;*/
-	right:0px;
-	border-radius:0px;
-	border:thin solid lightgrey;
-	background-color:rgba(255,255,255,0.7);
+    /*width:4.4em;*/
+    position:absolute;
+    /*left:89px;*/
+    right:0px;
+    border-radius:0px;
+    border:thin solid lightgrey;
+    background-color:rgba(255,255,255,0.7);
 }
 #okStrokeColor {
-	position:absolute;
-	right:0px;
-	width:2.15em;
-	text-align:right;
-	border-radius:5px;
-	border:thin solid lightgrey;
-	background-color:rgba(255,255,255,0.7);
+    position:absolute;
+    right:0px;
+    width:2.15em;
+    text-align:right;
+    border-radius:5px;
+    border:thin solid lightgrey;
+    background-color:rgba(255,255,255,0.7);
 }
 
 #regionPicker {
-	position:absolute;
-	width:200px;
-	height:auto;
-	/*height:100%; if you want it grey all the way down*/
-	top:0;
-	left:200px;
-	background-color:rgba(200,200,200,0.5);
-	padding:5px;
-	display:none;
-	overflow-y:scroll;
+    position:absolute;
+    width:200px;
+    height:auto;
+    /*height:100%; if you want it grey all the way down*/
+    top:0;
+    left:200px;
+    background-color:rgba(200,200,200,0.5);
+    padding:5px;
+    display:none;
+    overflow-y:scroll;
 }
 .region-tag {
-	position: relative;
+    position: relative;
 }
 .region-color {
-	width:1.5rem;
-	height:1.5rem;
-	border:thin solid grey;
-	display:inline-block;
-	vertical-align:middle;
+    width:1.5rem;
+    height:1.5rem;
+    border:thin solid grey;
+    display:inline-block;
+    vertical-align:middle;
 }
 .eye {
-	display:inline-block;
-	vertical-align:middle;
-	z-index:10;
+    display:inline-block;
+    vertical-align:middle;
+    z-index:10;
 }
 .region-tag.selected {
-	background-color:rgba(255,255,255,0.75);
-	border-radius:0px;
+    background-color:rgba(255,255,255,0.75);
+    border-radius:0px;
 }
 .region-tag.deselected {
-	background-color:transparent;
+    background-color:transparent;
 }
 .table {
-	display:table;
-	table-layout:fixed;
+    display:table;
+    table-layout:fixed;
 }
 .row {
-	display:table-row;
+    display:table-row;
 }
 .cell {
-	display:table-cell;
-	width:100%;
+    display:table-cell;
+    width:100%;
 }
 .overlay {
-	position:absolute;
-	top:0;
-	left:0;
-	pointer-events:none;
+    position:absolute;
+    top:0;
+    left:0;
+    pointer-events:none;
 }
 
 #logo {
-	position:absolute;
-	bottom:5px;
-	right:5px;
+    position:absolute;
+    bottom:5px;
+    right:5px;
     -webkit-filter: drop-shadow( 2px 2px 2px #777 );
     -moz-filter: drop-shadow( 2px 2px 2px #777 );
     filter: drop-shadow( 2px 2px 2px #777 );

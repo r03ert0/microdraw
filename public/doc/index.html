@@ -20,18 +20,18 @@
     	width: 305px;
     	overflow-y: auto;
     }
-    
+
     #toc {
     	height: 100%;
     	padding-top: 40px;
     	overflow-y: scroll;
     }
-    
+
     .a {
     	color: #000000;
     	text-decoration: none;
     }
-    
+
     .link {
     	color: #000000;
     	text-decoration: none;
@@ -69,7 +69,7 @@
     req.onreadystatechange = function() {
         var converter = new showdown.Converter();
         var text      = this.responseText;
-    
+
         showdown.setOption('tables', true);
         var html      = converter.makeHtml(text);
         document.body.innerHTML=html;
