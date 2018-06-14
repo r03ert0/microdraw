@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:6
 
 RUN apt-get update && apt-get -y upgrade
 RUN apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 \
@@ -18,10 +18,10 @@ RUN echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
 
 ENV PATH /opt/conda/bin:$PATH
 
-RUN conda install -y scikit-image && pip install pytest
+RUN pip install pytest
 COPY . /microdraw
 WORKDIR /microdraw
 RUN npm install puppeteer
 RUN npm install
-RUN echo '#!/bin/bash\nnpm start &> server.log &\nnode host.js\nnpm test\npy.test' > test.sh && chmod u+x test.sh && ln -s /microdraw/test.sh /usr/local/bin/tests
+RUN echo '#!/bin/bash\nnpm start &> server.log &\nsleep 5\nnode host.js\nnpm test\npy.test' > test.sh && chmod u+x test.sh && ln -s /microdraw/test.sh /usr/local/bin/tests
 CMD ["npm", "start"]

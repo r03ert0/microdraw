@@ -111,7 +111,7 @@ fs.readFile("github-keys.json", "utf8", (err, githubKeys) => {
 });
 
 app.use(session({
-    secret: "a mi no me gusta la sémola",
+    secret: process.env.SESSION_SECRET || "a mi no me gusta la sémola",
     resave: false,
     saveUninitialized: false
 }));
