@@ -103,7 +103,7 @@ var ToolSave = { save : (function(){
          * @returns {void}
          */
         click : function click(prevTool) {
-            Microdraw.microdrawDBSave();
+            microdrawDBSave();
             Microdraw.backToPreviousTool(prevTool);
         }
     }
