@@ -28,11 +28,6 @@ if( fs.existsSync(dirname + '/github-keys.json') === false ) {
     process.exit(1);
 }
 // Client-side
-if( fs.existsSync(dirname + '/public/js/base.js') === false ) {
-    console.error("ERROR: The file /public/js/base.js is not present.");
-    console.error("Maybe /public/js/base.js.example was not instantiated?");
-    process.exit(1);
-}
 if( fs.existsSync(dirname + '/public/js/configuration.json') === false ) {
     console.error("ERROR: The file /public/js/configuration.json is not present.");
     console.error("Maybe /public/js/configuration.json.example was not instantiated?");

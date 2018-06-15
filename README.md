@@ -27,7 +27,6 @@ as of 2017-08-15
        * Homepage URL: http://localhost:3000
        * Authorization callback URL: http://localhost:3000/auth/github/callback
        * copy paste **client id**, **client secret** and **callback URL** into `github-keys.json`
-  * `public/js/base.js.example -> public/js/base.js`
      (default should be `var localhost = "http://localhost:3000";`)
   * `public/js/configuration.json.example -> public/js/configuration.json`
   * `server_config.json.example -> server_config.json`
