@@ -1500,8 +1500,8 @@ var Microdraw = (function () {
         resizeAnnotationOverlay: function resizeAnnotationOverlay() {
             if( me.debug ) { console.log("> resizeAnnotationOverlay"); }
 
-            var width = $("body").width();
-            var height = $("body").height();
+            var width = $("#paperjs-container").width();
+            var height = $("#paperjs-container").height();
             $("canvas.overlay").width(width);
             $("canvas.overlay").height(height);
             paper.view.viewSize = [
@@ -1547,7 +1547,7 @@ var Microdraw = (function () {
 
                 // create canvas
                 var canvas = $("<canvas class='overlay' id='" + me.currentImage + "'>");
-                $("body").append(canvas);
+                $("#paperjs-container").append(canvas);
 
                 // create project
                 paper.setup(canvas[0]);
@@ -1572,8 +1572,8 @@ var Microdraw = (function () {
             $(paper.project.view.element).show();
 
             // resize the view to the correct size
-            var width = $("body").width();
-            var height = $("body").height();
+            var width = $("#paperjs-container").width();
+            var height = $("#paperjs-container").height();
             paper.view.viewSize = [
                 width,
                 height
