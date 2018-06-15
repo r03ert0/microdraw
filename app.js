@@ -14,6 +14,7 @@ var fs = require('fs');
 
 var dirname = __dirname; // local directory
 var serverConfig;
+var isWin = false
 
 // Check if .example files have been instantiated
 // Server-side
@@ -33,6 +34,8 @@ if( fs.existsSync(dirname + '/public/js/configuration.json') === false ) {
     console.error("Maybe /public/js/configuration.json.example was not instantiated?");
     process.exit(1);
 }
+
+isWin = !fs.statSync(dirname + '/public/lib/openseadragon').isDirectory()
 
 serverConfig = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
 
@@ -59,6 +62,16 @@ db
 //var index = require('./routes/index');
 
 var app = express();
+if( isWin ){
+    console.warn('Dev machine does not recognise symlinks ...')
+    var reroute = ['/lib/openseadragon/','/lib/FileSaver.js/','/lib/openseadragon-screenshot/']
+    reroute.forEach(file=>{
+        var readFile = fs.readFileSync(dirname+'/public'+file,'utf8')
+        app.get(file+'*',(req,res)=>{
+            res.sendFile(dirname+'/public/lib/'+req.path.replace(file,readFile+'/'))
+        })
+    })
+}
 app.engine('mustache', mustacheExpress());
 
 // view engine setup
