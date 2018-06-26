@@ -14,7 +14,7 @@
         * right and up arrow key or left and down arrow key
             - [ ] jump to next or previous slice respectively
             - [ ] update the slider accordingly
-            - [ ] update the slice number accordingly 
+            - [ ] update the slice number accordingly
         * cmd z undoes
             - [ ] any step back that you have done in their chronological order including
             - [ ] translation of region
@@ -23,10 +23,10 @@
             - [ ] deleting point
         to be completed (maybe it is implemented and working for all functions, so we can delete the single step checks)
     * **TOOL BUTTONS**
-        * red rectangle in navigation window 
+        * red rectangle in navigation window
             - [ ] corresponds to tissue piece selected in viewer
             - [ ] can be navigated upon mouse down drag
-        * navigation tool 
+        * navigation tool
             - [ ] navigates the slice inside the viewer upon mouse down drag
         * home button
             - [ ] zooms out to view the data in full screen size view
@@ -80,8 +80,8 @@
             - [ ] shows the menu bar upon click
         * undo tool
             - [ ] undoes the user's actions in reverse chronological order
-        
-            
+
+
 <!-- Either: -->
 - [ ] I implemented tests for these changes OR
 - [ ] These changes do not require tests because _____

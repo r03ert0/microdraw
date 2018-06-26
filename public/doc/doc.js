@@ -1,9 +1,9 @@
 /**
  * @page About
  * If you want to know how to USE doc.js, please see the [Github page](https://github.com/schteppe/doc.js).
- * 
+ *
  * The code for doc.js follows this algorithm:
- * 
+ *
  * 1. Load files
  * 2. Parse and construct DOCJS.Block objects
  * 3. Parse commands from the blocks, get a list of DOCJS.Command objects
@@ -548,7 +548,7 @@ DOCJS.Generate = function(urls, opt) {
                 if (a.getName() < b.getName()) return -1;
                 else return 0;
             };
-            
+
             /*
             that.pages.sort(sortbyname);
             that.classes.sort(sortbyname);

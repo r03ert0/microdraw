@@ -18,9 +18,6 @@ jobs:
            name: Instantiate github-keys.json
            command: 'echo "{ \"clientID\": \"$GITHUB_CLIENT_ID\", \"clientSecret\": \"$GITHUB_CLIENT_SECRET\", \"callbackURL\": \"$GITHUB_CALLBACK_URL\"}">github-keys.json'
        - run:
-           name: Instantiate base.js
-           command: 'cp public/js/base.js.example public/js/base.js'
-       - run:
            name: Instantiate configuration.json
            command: 'cp public/js/configuration.json.example public/js/configuration.json'
        - run:

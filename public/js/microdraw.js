@@ -22,7 +22,6 @@
 var Microdraw = (function () {
     var me = {
         debug: 1,
-        dbroot: localhost + "/api",
         ImageInfo: {},               // regions, and projectID (for the paper.js canvas) for each sections, can be accessed by the section name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
                                      // regions contain a paper.js path, a unique ID and a name
         imageOrder: [],              // names of sections ordered by their openseadragon page numbers
@@ -744,7 +743,7 @@ var Microdraw = (function () {
                 me.commitMouseUndo();
             } else if (me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
                 me.tools[me.selectedTool].mouseDrag(point,dpoint);
-            }  
+            }
             paper.view.draw();
         },
 
@@ -1206,167 +1205,17 @@ var Microdraw = (function () {
         */
 
         /**
-         * @function microdrawDBSave
-         * @desc Save SVG overlay to microdrawDB
-         * @returns {void}
-         */
-        microdrawDBSave: function microdrawDBSave() {
-            if( me.debug ) {
-                console.log("> save promise");
-            }
-
-            var i;
-            var promiseArray = [];
-            var savedSections = "Saving sections: ";
-
-            Object.keys(me.ImageInfo).forEach(function(sl) {
-                if ((me.config.multiImageSave === false) && (sl !== me.currentImage)) {
-                    return;
-                }
-                // configure value to be saved
-                var section = me.ImageInfo[sl];
-                var value = {};
-                value.Regions = [];
-                for( i = 0; i < section.Regions.length; i += 1 ) {
-                    var el = {};
-                    el.path = JSON.parse(section.Regions[i].path.exportJSON());
-                    el.name = section.Regions[i].name;
-                    value.Regions.push(el);
-                }
-
-                // check if the section annotations have changed since loaded by computing a hash
-                var h = me.hash(JSON.stringify(value.Regions)).toString(16);
-                if( me.debug > 1 ) { console.log("hash:", h, "original hash:", section.Hash); }
-                // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
-                if( typeof section.Hash === "undefined" || h === section.Hash ) {
-                    if( me.debug > 1 ) { console.log("No change, no save"); }
-                    value.Hash = h;
-
-                    return;
-                }
-                value.Hash = h;
-                savedSections += sl.toString() + " ";
-
-                // post data to database
-                var pr = new Promise(function(resolve, reject) {
-                    (function(sl2, h2) {
-                        $.ajax({
-                            url:me.dbroot,
-                            type:"POST",
-                            data: {
-                                action: "save",
-                                fileID: me.fileID,
-                                annotationHash: h2,
-                                annotation: JSON.stringify(value)
-                            },
-                            success: function(result) {
-                                console.log("< microdrawDBSave. Successfully saved regions:",
-                                    me.ImageInfo[sl2].Regions.length,
-                                    "section: " + sl2.toString(),
-                                    "response:",
-                                    result
-                                );
-                                //update hash
-                                me.ImageInfo[sl2].Hash = h2;
-                                resolve("section " + sl2);
-                            },
-                            error: function(jqXHR, textStatus, err) {
-                                console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "section: " + sl2.toString());
-                                reject(err);
-                            }
-                        });
-                    }(sl, h));
-                });
-                promiseArray.push(pr);
-            });
-            Promise.all(promiseArray).then(function(values) {
-                console.log(values);
-            });
-
-            //show dialog box with timeout
-            $('#saveDialog')
-                .html(savedSections)
-                .fadeIn();
-            setTimeout(function() {
-                $("#saveDialog")
-                .fadeOut(500);
-            }, 2000);
-        },
-
-        /**
          * @function microdrawDBLoad
          * @desc Load SVG overlay from microdrawDB
-         * @returns {Promise} A promise fulfilled when data is loaded from the DB
+         * @returns {Promise} A promise to return an array of paths of the current section.
+         * @default returns an empty array. Can/should be overwritten in save.js. Users can use their own save.js for different backend.
          */
         microdrawDBLoad: function microdrawDBLoad() {
             return new Promise(function(resolve, reject) {
                 if( me.debug ) {
-                    console.log("> microdrawDBLoad promise");
+                    console.log("> default microdrawDBLoad promise, returning an empty array. Overwrite Microdraw.microdrawDBLoad() to load annotations.");
                 }
-
-                $.getJSON(me.dbroot, {
-                    action: "load_last",
-                    fileID: me.fileID
-                }).success(function (data) {
-                    var i, json, reg;
-                    me.annotationLoadingFlag = false;
-
-                    // Because of asynchrony, the section that just loaded may not be the one that the user
-                    // intended to get. If the section that was just loaded does not correspond to the current section,
-                    // do not display this one and load the current section.
-                    if( me.section !== me.currentImage ) {
-                        me.microdrawDBLoad()
-                        .then(function() {
-                            $("#regionList").height($(window).height()-$("#regionList").offset().top);
-                            me.updateRegionList();
-                            paper.view.draw();
-                        });
-                        resolve("Loaded section does not correspond with the current section.");
-
-                        return;
-                    }
-
-                    // if there is no data on the current section
-                    // save hash for the image none the less
-                    if( $.isEmptyObject(data) ) {
-                        me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
-                        resolve("No data for the current section");
-
-                        return;
-                    }
-
-                    // parse the data and add to the current canvas
-                    // console.log("[", data, "]");
-                    //obj = JSON.parse(data);
-                    //obj = data;
-                    //if( obj ) {
-                    for( i = 0; i < data.length; i += 1 ) {
-                        reg = {};
-                        reg.name = data[i].annotation.name;
-                        //reg.page = data[i].annotation.page;
-                        json = data[i].annotation.path;
-                        reg.path = new paper.Path();
-
-                        /** @todo Remove workaround once paperjs will be fixed */
-                        var {insert} = reg.path.insert;
-                        reg.path.importJSON(json);
-                        reg.path.insert = insert;
-
-                        me.newRegion({name:reg.name, path:reg.path});
-                    }
-                    paper.view.draw();
-                    // if image has no hash, save one
-                    me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
-
-
-                    if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
-                    resolve();
-                })
-                .error(function(jqXHR, textStatus, err) {
-                    console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + err);
-                    me.annotationLoadingFlag = false;
-                    reject(err);
-                });
+                resolve([])
             });
         },
 
@@ -1500,8 +1349,8 @@ var Microdraw = (function () {
         resizeAnnotationOverlay: function resizeAnnotationOverlay() {
             if( me.debug ) { console.log("> resizeAnnotationOverlay"); }
 
-            var width = $("body").width();
-            var height = $("body").height();
+            var width = $("#paperjs-container").width();
+            var height = $("#paperjs-container").height();
             $("canvas.overlay").width(width);
             $("canvas.overlay").height(height);
             paper.view.viewSize = [
@@ -1547,7 +1396,7 @@ var Microdraw = (function () {
 
                 // create canvas
                 var canvas = $("<canvas class='overlay' id='" + me.currentImage + "'>");
-                $("body").append(canvas);
+                $("#paperjs-container").append(canvas);
 
                 // create project
                 paper.setup(canvas[0]);
@@ -1556,11 +1405,34 @@ var Microdraw = (function () {
                 // load regions from database
                 if( me.config.useDatabase ) {
                     me.microdrawDBLoad()
-                    .then(function() {
-                        $("#regionList").height($(window).height() - $("#regionList").offset().top);
-                        me.updateRegionList();
-                        paper.view.draw();
-                    });
+                        .then(function(data){
+                            for( i = 0; i < data.length; i += 1 ) {
+                                reg = {};
+                                reg.name = data[i].annotation.name;
+                                //reg.page = data[i].annotation.page;
+                                json = data[i].annotation.path;
+                                reg.path = new paper.Path();
+
+                                /** @todo Remove workaround once paperjs will be fixed */
+                                var {insert} = reg.path.insert;
+                                reg.path.importJSON(json);
+                                reg.path.insert = insert;
+
+                                me.newRegion({name:reg.name, path:reg.path});
+                            }
+                            paper.view.draw();
+                            // if image has no hash, save one
+                            me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
+
+                            $("#regionList").height($(window).height() - $("#regionList").offset().top);
+                            me.updateRegionList();
+                            paper.view.draw();
+
+                            if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
+                        })
+                        .catch(function(error){
+                            console.error('< microdrawDBLoad resolve error',error)
+                        })
                 }
 
                 if( me.debug ) { console.log('Set up new project, currentImage: ' + me.currentImage + ', ID: ' + me.ImageInfo[me.currentImage].projectID); }
@@ -1572,8 +1444,8 @@ var Microdraw = (function () {
             $(paper.project.view.element).show();
 
             // resize the view to the correct size
-            var width = $("body").width();
-            var height = $("body").height();
+            var width = $("#paperjs-container").width();
+            var height = $("#paperjs-container").height();
             paper.view.viewSize = [
                 width,
                 height
@@ -1884,38 +1756,24 @@ var Microdraw = (function () {
         loadConfiguration: function loadConfiguration() {
             return fetch("js/configuration.json").then((r) => r.json())
                 .then(function(data) {
-                    var i;
                     me.config = data;
+                    
+                    data.presets.default.forEach(function(item){
 
-                    var drawingTools = [
-                                    "select",
-                                    "draw",
-                                    "drawPolygon",
-                                    "drawLine",
-                                    "simplify",
-                                    "addPoint",
-                                    "deletePoint",
-                                    "addRegion",
-                                    "splitRegion",
-                                    "rotate",
-                                    "save",
-                                    "copy",
-                                    "paste",
-                                    "delete"
-                    ];
-                    if( me.config.drawingEnabled === false ) {
-                        // remove drawing tools from ui
-                        for( i = 0; i < drawingTools.length; i += 1 ) {
-                            $("#" + drawingTools[i]).remove();
-                        }
+                        /* attachDom */
+                        $('#toolsContainer').append(
+                            `<img class="button" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
+                        )
 
-                    }
-                    for( i = 0; i < me.config.removeTools.length; i += 1 ) {
-                        $("#" + me.config.removeTools[i]).remove();
-                    }
-                    if( me.config.useDatabase === false ) {
-                        $("#save").remove();
-                    }
+                        /* load script + extend me.tools */
+                        me.loadScript(item.scriptPath)
+                            .then(function(){
+                                item.exportedVar.forEach(function(variable){
+                                    /* TODO use ES 6 for proper module import. eval should be avoided when possible */
+                                    eval(`$.extend(me.tools,${variable})`)
+                                })
+                            })
+                    })
                 });
         },
 
@@ -1951,6 +1809,9 @@ var Microdraw = (function () {
          * @returns {void}
          */
         initMicrodraw: function initMicrodraw() {
+
+            /* define the tools object first */
+            me.tools = {};
             return new Promise(function(resolve, reject) {
                 if( me.debug ) {
                     console.log("> initMicrodraw promise");
@@ -1962,64 +1823,23 @@ var Microdraw = (function () {
                 // extend Microdraw with tools
                 // load scripts dynamically since import is not currently supported by browsers
                 Promise.all([
-                    me.loadScript('/js/tools/draw.js'),
-                    me.loadScript('/js/tools/drawPolygon.js'),
-                    me.loadScript('/js/tools/drawLine.js'),
-                    me.loadScript('/js/tools/flipRegion.js'),
-                    me.loadScript('/js/tools/screenshot.js'),
-                    me.loadScript('/js/tools/toBezier.js'),
-                    me.loadScript('/js/tools/toPolygon.js'),
-                    me.loadScript('/js/tools/splitRegion.js'),
-                    me.loadScript('/js/tools/select.js'),
-
-                    me.loadScript('/js/tools/addPoint.js'),
-                    me.loadScript('/js/tools/addRegion.js'),
-                    me.loadScript('/js/tools/closeMenu.js'),
-                    me.loadScript('/js/tools/copy.js'),
-                    me.loadScript('/js/tools/delete.js'),
-                    me.loadScript('/js/tools/deletePoint.js'),
                     me.loadScript('/js/tools/home.js'),
                     me.loadScript('/js/tools/navigate.js'),
-                    me.loadScript('/js/tools/next.js'),
-                    me.loadScript('/js/tools/openMenu.js'),
-                    me.loadScript('/js/tools/paste.js'),
-                    me.loadScript('/js/tools/previous.js'),
-                    me.loadScript('/js/tools/rotate.js'),
-                    me.loadScript('/js/tools/save.js'),
-                    me.loadScript('/js/tools/simplify.js'),
-                    me.loadScript('/js/tools/subtractRegion.js'),
                     me.loadScript('/js/tools/zoomIn.js'),
-                    me.loadScript('/js/tools/zoomOut.js')
+                    me.loadScript('/js/tools/zoomOut.js'),
+                    me.loadScript('/js/tools/previous.js'),
+                    me.loadScript('/js/tools/next.js'),
+                    me.loadScript('/js/tools/closeMenu.js'),
+
                 ]).then(function () {
-                    me.tools = {};
-                    $.extend(me.tools, ToolDraw);
-                    $.extend(me.tools, ToolDrawPolygon);
-                    $.extend(me.tools, ToolFlipRegion);
-                    $.extend(me.tools, ToolScreenshot);
-                    $.extend(me.tools, ToolToBezier);
-                    $.extend(me.tools, ToolToPolygon);
-                    $.extend(me.tools, ToolSplitRegion);
-                    $.extend(me.tools, ToolDrawLine);
-                    $.extend(me.tools, ToolSelect);
-                    
-                    $.extend(me.tools, ToolAddPoint);
-                    $.extend(me.tools, ToolAddRegion);
-                    $.extend(me.tools, ToolCloseMenu);
-                    $.extend(me.tools, ToolCopy);
-                    $.extend(me.tools, ToolDelete);
-                    $.extend(me.tools, ToolDeletePoint);
                     $.extend(me.tools, ToolHome);
                     $.extend(me.tools, ToolNavigate);
-                    $.extend(me.tools, ToolNext);
-                    $.extend(me.tools, ToolCloseMenu);
-                    $.extend(me.tools, ToolPaste);
-                    $.extend(me.tools, ToolPrevious);
-                    $.extend(me.tools, ToolRotate);
-                    $.extend(me.tools, ToolSave);
-                    $.extend(me.tools, ToolSimplify);
-                    $.extend(me.tools, ToolSubtractRegion);
                     $.extend(me.tools, ToolZoomIn);
                     $.extend(me.tools, ToolZoomOut);
+                    $.extend(me.tools, ToolPrevious);
+                    $.extend(me.tools, ToolNext);
+                    $.extend(me.tools, ToolCloseMenu);
+
                 });
 
                 // Enable click on toolbar buttons
@@ -2053,6 +1873,7 @@ var Microdraw = (function () {
                 // attempt to fetch json file directly from browser first
                 (new Promise((resolveDirectFetch, rejectDirectFetch) => {
                     // decide between json (local) and jsonp (cross-origin)
+                    
                     var ext = me.params.source.split(".");
                     ext = ext[ext.length - 1];
                     if( ext === "jsonp" ) {
@@ -2149,7 +1970,7 @@ var Microdraw = (function () {
                 }
 
                 $(window).resize(function() {
-                    $("#regionList").height($(window).height() - $("#regionList").offset().top);
+                    // $("#regionList").height($(window).height() - $("#regionList").offset().top);
                     me.resizeAnnotationOverlay();
                 });
 
@@ -2173,7 +1994,6 @@ var Microdraw = (function () {
             }
 
             // set up the ImageInfo array and me.imageOrder array
-            console.log(obj);
             var i;
             for( i = 0; i < obj.tileSources.length; i += 1 ) {
                 // name is either the index of the tileSource or a named specified in the json file
@@ -2185,7 +2005,7 @@ var Microdraw = (function () {
                 };
                 // if getTileUrl is specified, we might need to eval it to get the function
                 if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
-                    me.ImageInfo[name].source.getTileUrl = obj.tileSources[i].getTileUrl;
+                    eval(`me.ImageInfo[name].source.getTileUrl = ${obj.tileSources[i].getTileUrl}`)
                 }
             }
 

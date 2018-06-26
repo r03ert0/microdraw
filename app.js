@@ -14,6 +14,7 @@ var fs = require('fs');
 
 var dirname = __dirname; // local directory
 var serverConfig;
+var isWin = false
 
 // Check if .example files have been instantiated
 // Server-side
@@ -28,16 +29,13 @@ if( fs.existsSync(dirname + '/github-keys.json') === false ) {
     process.exit(1);
 }
 // Client-side
-if( fs.existsSync(dirname + '/public/js/base.js') === false ) {
-    console.error("ERROR: The file /public/js/base.js is not present.");
-    console.error("Maybe /public/js/base.js.example was not instantiated?");
-    process.exit(1);
-}
 if( fs.existsSync(dirname + '/public/js/configuration.json') === false ) {
     console.error("ERROR: The file /public/js/configuration.json is not present.");
     console.error("Maybe /public/js/configuration.json.example was not instantiated?");
     process.exit(1);
 }
+
+isWin = !fs.statSync(dirname + '/public/lib/openseadragon').isDirectory()
 
 serverConfig = JSON.parse(fs.readFileSync(dirname + '/server_config.json'));
 
@@ -64,6 +62,16 @@ db
 //var index = require('./routes/index');
 
 var app = express();
+if( isWin ){
+    console.warn('Dev machine does not recognise symlinks ...')
+    var reroute = ['/lib/openseadragon/','/lib/FileSaver.js/','/lib/openseadragon-screenshot/']
+    reroute.forEach(file=>{
+        var readFile = fs.readFileSync(dirname+'/public'+file,'utf8')
+        app.get(file+'*',(req,res)=>{
+            res.sendFile(dirname+'/public/lib/'+req.path.replace(file,readFile+'/'))
+        })
+    })
+}
 app.engine('mustache', mustacheExpress());
 
 // view engine setup
@@ -79,6 +87,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// { App-wide variables
+app.use((req, res, next) => {
+    req.dirname = dirname;
+    req.db = db;
+    req.tokenDuration = 24 * (1000 * 3600); // Token duration in milliseconds
+
+    next();
+});
+// }
 
 //{-----passport
 var session = require('express-session');
@@ -183,6 +201,8 @@ app.use('/data', (req, res, next) => {
     next();
 }, require('./controller/data/'));
 
+app.use('/user', require('./controller/user/'));
+
 app.get('/getTile',function (req,res){
     fetch(req.query.source)
         .then(img=>img.body.pipe(res))
@@ -215,7 +235,20 @@ app.get('/getJson',function (req,res) {
     }))
         .then(data=>data.json())
         .then(json=>{
-            json.tileSources = json.tileSources.map(tileSource=>(new RegExp('^http')).test(tileSource) ? tileSource : tileSource[0] == '/' ? thisHostname + '/getTile?source=' + sourceHostname + tileSource : thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource );
+            // console.log('/getjson',json)
+            json.tileSources = json.tileSources.map(tileSource=>
+                typeof tileSource === 'string' ? 
+                    (new RegExp('^http')).test(tileSource) ? 
+                        tileSource : 
+                        tileSource[0] == '/' ? 
+                            thisHostname + '/getTile?source=' + sourceHostname + tileSource : 
+                            thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource :
+                    typeof tileSource === 'object' ? 
+                        tileSource :
+                        tileSource
+                    )
+            
+            console.log('sending /getjson',json)
             res.send(JSON.stringify(json));
         })  
         .catch(e=>{
@@ -283,9 +316,6 @@ app.post('/api', function (req, res) {
             break;
         case 'host':
             console.log(req.get('host'));
-            break;
-        case 'detente':
-            process.exit();
             break;
     }
     res.send({});
