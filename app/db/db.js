@@ -4,7 +4,7 @@ const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.
 module.exports = (function(){
     console.log(`connecting to mongodb at: ${MONGODB}`)
     const db = monk(MONGODB)
-
+    console.log('connection successful')
     /* add user */
     const addUser = (user)=>new Promise((resolve,reject)=>{
         db.get('users').insert(user)

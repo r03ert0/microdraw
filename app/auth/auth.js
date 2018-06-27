@@ -15,7 +15,7 @@ const ensureAuthenticated = (req,res,next)=>{
 }
 
 module.exports = (app)=>{
-    
+    console.log(`loading auth module`)
     app.use(session({
         secret : SESSION_SECRETE,
         resave : false,

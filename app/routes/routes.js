@@ -29,9 +29,9 @@ module.exports = (app)=>{
 
     app.use('/data', (req, res, next) => {
       next();
-    }, decorateMiddleware, require('../controller/data/'));
+    }, decorateMiddleware, require(path.join('..','controller/data/')));
 
-    app.use('/user', decorateMiddleware, require('../controller/user/'));
+    app.use('/user', decorateMiddleware, require(path.join('..','controller/user/')));
 
     // API routes
     app.get('/api', function (req, res) {
