@@ -2,6 +2,8 @@ const session = require('express-session')
 const passport = require('passport')
 const SESSION_SECRETE = process.env.SESSION_SECRETE || 'a mi no me gusta la sémola'
 
+const github = require('./github')
+
 module.exports = (app)=>{
     app.use(session({
         secret : SESSION_SECRETE,
@@ -31,6 +33,9 @@ module.exports = (app)=>{
         delete req.session.returnTo
     })
 
+    /* Strategies */
+    github(app)
+
     /* TODO simple a demo */
     app.get('/secure-route-example', ensureAuthenticated, function (req, res) { res.send("access granted"); });
 
@@ -42,6 +47,7 @@ module.exports = (app)=>{
                 res.send({loggedIn: false});
         }
     })
+
 
     /* middle to ensure authenticated */
     const ensureAuthenticated = (req,res,next)=>{

@@ -12,11 +12,40 @@ module.exports = (function(){
             .catch(e=>reject(e))
     })
 
+    const updateUser = (user)=>new Promise((resolve,reject)=>{
+        db.get('user').update({
+            name : user.nickname
+        },{
+            $set : {
+                name : user.displayName,
+                url : user._json.blog,
+                avatarURL : user._json.avatar_url
+            }
+        }).then(()=>resolve())
+            .catch(e=>reject(e))
+    })
+
     /* find user */
     const queryUser = (searchQuery)=>new Promise((resolve,reject)=>{
         db.get('users').findOne(searchQuery)
             .then((user)=>user ? resolve(user) : reject({message:'error find one user',result:user}))
             .catch(e=>reject(e))
+    })
+
+    const upsertUser = (user)=> new Promise((resolve,reject)=>{
+        queryUser({
+            nickname : user.username
+        })
+            .then(()=>updateUser(user))
+            .then(()=>resolve())
+            .catch(e=>{
+                e.message === 'error find one user' ?
+                    addUser(user)
+                        .then(()=>resolve())
+                        .catch(e=>reject(e)) :
+                reject(e)
+            })
+            
     })
 
     const queryAllUsers = (pagination)=>new Promise((resolve,reject)=>{
@@ -77,6 +106,8 @@ module.exports = (function(){
         queryAllUsers,
         findAnnotations,
         updateAnnotation,
+        updateUser,
+        upsertUser,
         db 
     }
     /* should discourage the use of db.db ... this renders it db specific ... */
