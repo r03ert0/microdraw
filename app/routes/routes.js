@@ -30,9 +30,9 @@ module.exports = (app)=>{
 
     app.use('/data', (req, res, next) => {
       next();
-    }, decorateMiddleware, require(path.join('..','controller/data/')));
+    }, decorateMiddleware, require(path.join(__dirname,'../controller/data')));
 
-    app.use('/user', decorateMiddleware, require(path.join('..','controller/user/')));
+    app.use('/user', decorateMiddleware, require(path.join(__dirname,'../controller/user')));
 
     // API routes
     app.get('/api', function (req, res) {
