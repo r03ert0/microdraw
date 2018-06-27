@@ -4,10 +4,6 @@ jobs:
     docker:
       - image: circleci/node:6.10.3
       - image: circleci/mongo:3.4
-    node:
-      version: 6.3.1
-    hosts:
-      localhost: 127.0.0.1
     steps:
       - checkout
       - run: npm install
