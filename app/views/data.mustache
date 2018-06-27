@@ -1,0 +1,146 @@
+<html>
+
+<head>
+    <title>{{title}}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="css/microdraw.css" type="text/css" />
+    <link rel="stylesheet" href="css/shared-style.css" type="text/css" />
+    <link rel="stylesheet" href="css/data-style.css" type="text/css" />
+    <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+    </style>
+</head>
+
+<body>
+
+<!-- Header (fixed height) -->
+<div id="header">
+    <!-- Top-right menu bar -->
+    <div id="menu">
+        <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
+        <a href="https://github.com/r03ert0/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
+        <a href="https://github.com/r03ert0/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
+        <div id="MyLogin">
+            <span>{{{login}}}</span>
+        </div>
+    </div>
+
+    <!-- Small left-top logo -->
+    <div style="display:inline-block;margin:10px">
+        <a href='/' style="text-decoration:none">
+            <img style='height:28px;vertical-align:middle' src='/img/microdraw-white.svg'/>
+        </a><span id="fontLogo">
+            <a href='/' style="font-family: Roboto, sans-serif; font-size: 28px; font-weight:100; text-decoration:none;vertical-align:middle">MicroDraw</a>
+        </span>
+    </div>
+</div>
+
+<div id="microdrawView">
+    <!-- Menu button -->
+    <div id="menuButton">
+        <img class="button" id="openMenu" title="Menu" src="img/openMenu.svg" />
+    </div>
+
+    <!-- Toolbar -->
+    <div id="menuBar" class="table">
+
+        <div class="row">
+            <img class="button" id="closeMenu" title="Close Menu" src="img/closeMenu.svg" />
+        </div>
+
+        <div class="row">
+            <div id="myNavigator"></div>
+        </div>
+
+        <div class="row">
+            <div class="cell" style="text-align:center">
+                
+                <!-- Built in buttons always shown -->
+                <div class="buttonGroup">
+                    <img class="button" id="navigate"       title="Navigator"              src="img/navigate.svg" />
+                    <img class="button" id="home"           title="Home"                   src="img/home.svg" />
+                    <img class="button" id="zoomIn"         title="Zoom in"                src="img/zoomIn.svg" />
+                    <img class="button" id="zoomOut"        title="Zoom out"               src="img/zoomOut.svg" />
+                    <div class="section-nav">
+                        <img class="button" id="previous"   title="Previous section"         src="img/previous.svg" />
+                        <input id="sectionName" list="section-names" style="width:80px" />
+                        <img class="button" id="next"       title="Next section"             src="img/next.svg" />
+                    </div>
+                    <input type="range" id="slider" />
+                </div>
+
+                <!-- Imported buttons -->
+                <div class = "buttonGroup" id = "toolsContainer">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="cell">
+                <br />
+                Regions
+                <div id="regionList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="colorSelector">
+        stroke color
+        <select id="selectStrokeColor" onChange="onSelectStrokeColor();">
+            <option value="0">black</option>
+            <option value="1">white</option>
+            <option value="2">red</option>
+            <option value="3">green</option>
+            <option value="4">blue</option>
+            <option value="5">yellow</option>
+        </select>
+        <br>
+        <br>
+        stroke width
+        <input type="button" id="strokeWidthDec" value="-" onClick="onStrokeWidthDec();"><input type="button" id="strokeWidthInc" value="+" onClick="onStrokeWidthInc();">
+        <br>
+        <br>
+        fill color
+        <input type="color" id="fillColorPicker" value="#ff0000" onChange="onFillColorPicker(this.value);" >
+        <br>
+        <br>
+        &alpha;<input type="range" min="0" max="100" id="alphaSlider" onInput="onAlphaSlider(this.value);" ><input id="alphaFill" onInput="onAlphaInput(this.value);" >
+        <br>
+        <br>
+        <input type="button" id="okStrokeColor" value="ok" onClick="setRegionColor();">
+    </div>
+
+    <!-- Region Picker -->
+    <div id="regionPicker">
+    </div>
+
+    <!-- OpenSeadragon viewer -->
+    <div id="openseadragon1" style="width:100%">
+    </div>
+
+    <!-- paperjs container -->
+    <div id = "paperjs-container">
+    </div>
+
+    <!-- alert/info box after saving -->
+    <div id="saveDialog"></div>
+
+    <!-- naat logo -->
+    <a id="logo" href="http://neuroanatomy.github.io">
+        <img src="img/naat.svg" style="width:2.5em" />
+    </a>
+</div>
+
+<!-- Load javascript -->
+<script src="lib/paper-full-0.9.25.min.js"></script>
+<script src="lib/openseadragon/openseadragon.js"></script>
+<script src="lib/openseadragon-viewerinputhook.min.js"></script>
+<script src="lib/OpenSeadragonScalebar/openseadragon-scalebar.js"></script>
+<script src="lib/openseadragon-screenshot/openseadragonScreenshot.min.js"></script>
+<script src="lib/FileSaver.js/FileSaver.min.js"></script>
+<script src="lib/jquery-1.11.0.min.js"></script>
+<script src="js/neurolex-ontology.js"></script>
+<script src="js/microdraw.js"></script>
+</body>
+
+</html>

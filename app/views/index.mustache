@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <title>{{title}}</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="css/shared-style.css"/>
+    <link rel="stylesheet" type="text/css" href="css/index-style.css"/>
+    <link rel="stylesheet" type="text/css" href="css/ui.css" />
+    <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+    <script src="lib/jquery-1.11.0.min.js"></script>
+</head>
+
+<body>
+    <!-- Login (fixed height) -->
+    <div id="menu">
+        <div>
+            <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
+            <a href="https://github.com/r03ert0/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
+            <a href="https://github.com/r03ert0/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
+            <div id="MyLogin" style="padding-right:10px">
+                {{#user}}
+                <span><a href = "/user/{{{user.username}}}">{{{user.username}}}</span> 
+                <span>(<a href = "/logout">Log Out</a>)</span>
+                {{/user}}
+                {{^user}}
+                <span><a href='/auth/github'>Log in with GitHub</a></span>
+                {{/user}}
+            </div>
+        </div>
+    </div>
+
+    <!-- Content  -->
+    <div class="slide" style="background:#222">
+    <!-- Slide: Landing -->
+        <div class="content">
+            <img id="logo" src="img/microdraw-logo-white.svg"/>
+            <h2 style='margin-top:0'>Collaborative atlas creation</h2>
+            <p style='margin-bottom:2rem'>
+                MicroDraw is a web application to visualise and annotate
+                collaboratively high resolution histology data. Annotations are vectorial,
+                and you can use boolean operations to combine, subtract and split regions.
+                Point MicroDraw to your own DeepZoom data, or try the sample datasets below.
+            </p>
+
+            <div style="position:relative;text-align:center">
+                <input id="url" style="display:block;width:100%;margin-bottom:1rem" type="text" placeholder="Enter a DeepZoom image URL and click Go"></input>
+                <select id="list" style='width:200px;height:32px;text-align-last:center' class='pushButton'>
+                    <option value='' disabled selected hidden>&#9662; A list of datasets to try</option>
+                    <option value="http://microdraw.pasteur.fr/bigbrain/bigbrain.json">BigBrain human brain section (Many thanks to Claude Lepage, Katrin Amunts, Alan Evans)</option>
+                    <option value="http://microdraw.pasteur.fr/vervet/vervet.json">Vervet monkey brain section scanned using Polarized Light Imaging (Many thanks to Katrin Amuts, Markus Axer, Roger Woods, Karl Zilles)</option>
+                    <option value="http://microdraw.pasteur.fr/ferret/sub1.20.json">A section from a 32 days old ferret from project FIIND</option>
+                    <option value="http://umr3571.cnrs.fr/data/macaque/macaque.jsonp">Allen Institute macaque sections</option>
+                </select>
+                <div id="go" class="pushButton" style="display:inline-block;width:32px;line-height:30px" onclick="goToURL()">Go</div>
+            </div>
+
+        </div>
+    </div>
+    <!-- End Content-->
+
+    <!-- Footer (fixed height) -->
+    <div id="footer">
+        <p style="width:100%;font-size:small;text-align:center">
+            <a target="_blank" href="http://neuroanatomy.github.io">
+                <img src="/img/naat-bw.svg" style="width:28px;height:28px;margin-right:4px;display:inline-block;vertical-align:middle"/></a>
+            <a target="_blank" href="http://neuroanatomy.github.io" class="linkNoULine">
+                groupe de neuroanatomie appliquée et théorique
+            </a>
+        </p>
+    </div>
+    <!-- End Footer -->
+
+<!--
+    <main id="content" class="content">
+
+        <section class="title-intro padding-top-40">
+            <b>Collaborative Annotation</b>
+            <p class="intro">MicroDraw is a web application by <a href="http://neuroanatomy.github.io">NAAT</a> to visualise and annotate collaboratively high resolution histology data. Annotations are vectorial, and you can use boolean operations to combine, subtract and split regions. Point MicroDraw to your own DeepZoom data, or try the sample data below!</p>
+        </section>
+
+        <section class="title-intro title-intro padding-top-40 padding-bottom-60">
+            <input type="text" style="font-size:1.2rem" size="60" placeholder="Enter a DeepZoom image URL"/>
+            <button style="font-size:1.2rem" id="go">Go</button>
+        </section>
+
+        <section class="layout-2b grid2col divider-top padding-top-20 padding-bottom-20 divider-bottom">
+            <section class="column first">
+                <h2>Datasets</h2>
+                <p>MicroDraw can use ontologies such as <a href="http://neurolex.org">Neurolex</a> to create community curated atlases, but also to annotate staining artefacts. We are currently hosting DeepZoom versions of several macaque brains from the Allen Institute for Brain Research, a 1 micron resolution section of a human brain from the BigBrain project and a 1 micron resolution section from a vervet monkey.</p>
+                 <ul class="links">
+                    <li class="download"><a href="%%localhost%%/data?source=http://microdraw.pasteur.fr/bigbrain/bigbrain.json">BigBrain human brain section</a> (Many thanks to Claude Lepage, Katrin Amunts, Alan Evans)</li>
+                    <li class="download"><a href="%%localhost%%/data?source=http://microdraw.pasteur.fr/vervet/vervet.json">Vervet monkey brain section scanned using Polarized Light Imaging</a> (Many thanks to Katrin Amuts, Markus Axer, Roger Woods, Karl Zilles)</li>
+                    <li class="download"><a href="%%localhost%%/data?source=http://microdraw.pasteur.fr/ferret/sub1.20.json">A section from a 32 days old ferret from project FIIND</a> (Visit project FIIND by clicking <a href="https://neuroanatomy.github.io/FIIND">here</a>)</li>
+                    <li class="download"><a href="%%localhost%%/data?source=http://umr3571.cnrs.fr/data/macaque/macaque.jsonp">Allen Institute macaque sections</a></li>
+                </ul>
+            </section>
+            <section class="column last">
+                <h2>Application</h2>
+                <p>MicroDraw is based on open source frameworks to ensure its maintainability and extensibility. The interactive multi-resolution visualisation is based on <a href="http://openseadragon.github.io">OpenSeadragon</a>. The vectorial annotation is based on <a href="http://paperjs.org">Paper</a>. The concurrent versioning is based on Git</p>
+                <p>MicroDraw is written in JavaScript, using HTML5, CSS3 and jQuery.</p>
+                <ul class="links">
+                    <li class="download"><a href="https://github.com/neuroanatomy/microdraw">Get it on GitHub</a></li>
+                    <li class="document"><a href="https://github.com/r03ert0/microdraw/wiki">Documentation</a></li>
+                    <li class="forum-topic"><a href="https://github.com/r03ert0/microdraw/issues">Forum (GitHub issues)</a></li>
+                </ul>
+            </section>
+        </section>
+
+        <section class="padding-top-30" style="text-align:center">
+            <p>MicroDraw by <img src="img/naat.svg" style="width:2.3rem;vertical-align:middle"/></p>
+        </section>
+
+    </main>
+-->
+
+<script>
+$(".download>a").each(function(){
+    $(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));
+})
+
+$(".slide").height(window.innerHeight);
+$(window).on('resize',function() {
+    $(".slide").height(window.innerHeight);
+    $("#neurons").css({width:window.innerWidth});
+});
+
+// List of brains
+$("#list").change(function(e) {
+    $("#url").val($("#list").val());
+});
+
+var menuShowing = true;
+$(window).on('scroll',function() {
+    var y = window.pageYOffset;
+    if(y>100 && menuShowing) {
+        $("#menu").css({top:-32, opacity:0});
+        menuShowing = false;
+
+        $("#footer").show();
+    }
+    if(y<100 && !menuShowing) {
+        $("#menu").css({top:0, opacity:1});
+        menuShowing = true;
+    }
+});
+
+$("h2").css({marginLeft:0,opacity:1});
+
+function goToURL(e) {
+    var url=$("#url").val();
+    location="/data?source="+url;
+}
+
+// Add URL loading
+$("#url").keyup(function(e) {
+    //console.log(e,e.target);
+    if (e.keyCode == 13) {
+        goToURL(e);
+    }
+});
+</script>
+</body>
+</html>
