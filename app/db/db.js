@@ -2,7 +2,7 @@ const monk = require('monk')
 const MONGODB = process.env.MONGODB || '127.0.0.1:27017/microdraw'
 
 module.exports = (function(){
-    console.log(MONGODB)
+    console.log(`connecting to mongodb at: ${MONGODB}`)
     const db = monk(MONGODB)
 
     /* add user */
