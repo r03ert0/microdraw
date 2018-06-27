@@ -3,8 +3,7 @@ _rsrc
 _test
 bigbrain
 bigbrain.json
-configuration.json
-data
+./data
 favicon.ico
 ferret
 ferret1
@@ -18,6 +17,6 @@ npm-debug.log
 php/base.php
 vervet
 vervet.zip
-server_config.json
 test/*.png
 .DS_Store
+.vscode
