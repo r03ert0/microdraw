@@ -3,7 +3,7 @@ const mustacheExpress = require('mustache-express');
 const path = require('path')
 
 module.exports = (app)=>{
-    console.log(`configuring routes`)
+    console.log(`configuring routes`,__dirname)
 
     /* middleware to attach objects required by routes */
     const decorateMiddleware = (req,res,next)=>{
@@ -15,7 +15,7 @@ module.exports = (app)=>{
 
     // view engine setup
     app.engine('mustache', mustacheExpress());
-    app.set('views', path.join(__dirname, 'views'));
+    app.set('views', path.resolve(__dirname, 'views'));
     app.set('view engine', 'mustache');
 
     app.get('/', function (req, res) { // /auth/github
@@ -30,9 +30,9 @@ module.exports = (app)=>{
 
     app.use('/data', (req, res, next) => {
       next();
-    }, decorateMiddleware, require(path.join(__dirname,'../controller/data')));
+    }, decorateMiddleware, require(path.resolve(__dirname,'..','controller/data')));
 
-    app.use('/user', decorateMiddleware, require(path.join(__dirname,'../controller/user')));
+    app.use('/user', decorateMiddleware, require(path.resolve(__dirname,'..','controller/user')));
 
     // API routes
     app.get('/api', function (req, res) {
