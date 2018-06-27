@@ -4,7 +4,6 @@ _test
 base.js
 bigbrain
 bigbrain.json
-configuration.json
 data
 favicon.ico
 ferret
@@ -19,6 +18,6 @@ npm-debug.log
 php/base.php
 vervet
 vervet.zip
-server_config.json
 test/*.png
 .DS_Store
+.vscode

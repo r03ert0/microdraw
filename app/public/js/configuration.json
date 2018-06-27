@@ -1,0 +1,202 @@
+{
+    "useDatabase":true,
+    "hideToolbar":false,
+    "regionOntology":true,
+    "drawingEnabled":true,
+    "removeTools":[],
+    "multiImageSave":false,
+    "presets":{
+        "default":[
+            {
+              "name": "Select",
+              "id": "select",
+              "desc": "",
+              "exportedVar": [
+                "ToolSelect"
+              ],
+              "scriptPath": "js/tools/select.js",
+              "iconPath": "img/select.svg"
+            },
+            {
+              "name": "Draw",
+              "id": "draw",
+              "desc": "",
+              "exportedVar": [
+                "ToolDraw"
+              ],
+              "scriptPath": "js/tools/draw.js",
+              "iconPath": "img/draw.svg"
+            },
+            {
+              "name": "DrawPolygon",
+              "id": "drawPolygon",
+              "desc": "",
+              "exportedVar": [
+                "ToolDrawPolygon"
+              ],
+              "scriptPath": "js/tools/drawPolygon.js",
+              "iconPath": "img/drawPolygon.svg"
+            },
+            {
+              "name": "DrawLine",
+              "id": "drawLine",
+              "desc": "",
+              "exportedVar": [
+                "ToolDrawLine"
+              ],
+              "scriptPath": "js/tools/drawLine.js",
+              "iconPath": "img/drawLine.svg"
+            },
+            {
+              "name": "Simplify",
+              "id": "simplify",
+              "desc": "",
+              "exportedVar": [
+                "ToolSimplify"
+              ],
+              "scriptPath": "js/tools/simplify.js",
+              "iconPath": "img/simplify.svg"
+            },
+            {
+              "name": "AddPoint",
+              "id": "addPoint",
+              "desc": "",
+              "exportedVar": [
+                "ToolAddPoint"
+              ],
+              "scriptPath": "js/tools/addPoint.js",
+              "iconPath": "img/addPoint.svg"
+            },
+            {
+              "name": "DeletePoint",
+              "id": "deletePoint",
+              "desc": "",
+              "exportedVar": [
+                "ToolDeletePoint"
+              ],
+              "scriptPath": "js/tools/deletePoint.js",
+              "iconPath": "img/deletePoint.svg"
+            },
+            {
+              "name": "AddRegion",
+              "id": "addRegion",
+              "desc": "",
+              "exportedVar": [
+                "ToolAddRegion"
+              ],
+              "scriptPath": "js/tools/addRegion.js",
+              "iconPath": "img/addRegion.svg"
+            },
+            {
+              "name": "SubtractRegion",
+              "id": "subtractRegion",
+              "desc": "",
+              "exportedVar": [
+                "ToolSubtractRegion"
+              ],
+              "scriptPath": "js/tools/subtractRegion.js",
+              "iconPath": "img/subtractRegion.svg"
+            },
+            {
+              "name": "SplitRegion",
+              "id": "splitRegion",
+              "desc": "",
+              "exportedVar": [
+                "ToolSplitRegion"
+              ],
+              "scriptPath": "js/tools/splitRegion.js",
+              "iconPath": "img/splitRegion.svg"
+            },
+            {
+              "name": "Rotate",
+              "id": "rotate",
+              "desc": "",
+              "exportedVar": [
+                "ToolRotate"
+              ],
+              "scriptPath": "js/tools/rotate.js",
+              "iconPath": "img/rotate.svg"
+            },
+            {
+              "name": "Flip",
+              "id": "flip",
+              "desc": "",
+              "exportedVar": [
+                "ToolFlip"
+              ],
+              "scriptPath": "js/tools/flip.js",
+              "iconPath": "img/flip.svg"
+            },
+            {
+              "name": "ToPolygon",
+              "id": "toPolygon",
+              "desc": "",
+              "exportedVar": [
+                "ToolToPolygon"
+              ],
+              "scriptPath": "js/tools/toPolygon.js",
+              "iconPath": "img/toPolygon.svg"
+            },
+            {
+              "name": "ToBezier",
+              "id": "toBezier",
+              "desc": "",
+              "exportedVar": [
+                "ToolToBezier"
+              ],
+              "scriptPath": "js/tools/toBezier.js",
+              "iconPath": "img/toBezier.svg"
+            },
+            {
+              "name": "Copy",
+              "id": "copy",
+              "desc": "",
+              "exportedVar": [
+                "ToolCopy"
+              ],
+              "scriptPath": "js/tools/copy.js",
+              "iconPath": "img/copy.svg"
+            },
+            {
+              "name": "Paste",
+              "id": "paste",
+              "desc": "",
+              "exportedVar": [
+                "ToolPaste"
+              ],
+              "scriptPath": "js/tools/paste.js",
+              "iconPath": "img/paste.svg"
+            },
+            {
+              "name": "Save",
+              "id": "save",
+              "desc": "",
+              "exportedVar": [
+                "ToolSave"
+              ],
+              "scriptPath": "js/tools/save.js",
+              "iconPath": "img/save.svg"
+            },
+            {
+              "name": "Screenshot",
+              "id": "screenshot",
+              "desc": "",
+              "exportedVar": [
+                "ToolScreenshot"
+              ],
+              "scriptPath": "js/tools/screenshot.js",
+              "iconPath": "img/screenshot.svg"
+            },
+            {
+              "name": "Delete",
+              "id": "delete",
+              "desc": "",
+              "exportedVar": [
+                "ToolDelete"
+              ],
+              "scriptPath": "js/tools/delete.js",
+              "iconPath": "img/delete.svg"
+            }
+          ]
+    }
+}

@@ -28,7 +28,7 @@ const user = function (req, res) {
     // Store return path in case of login
     req.session.returnTo = req.originalUrl;
 
-    req.db.get('user').findOne({nickname: requestedUser}, '-_id')
+    req.db.queryUser({nickname:requestedUser})
         .then(json => {
             if (json) {
                 const context = {
@@ -53,7 +53,7 @@ const user = function (req, res) {
 };
 
 const api_user = function (req, res) {
-    req.db.get('user').findOne({nickname: req.params.userName, backup: {$exists: false}}, '-_id')
+    req.db.queryUser({nickname: req.params.userName, backup: {$exists: false}})
         .then(json => {
             if (json) {
                 if (req.query.var) {
@@ -80,12 +80,12 @@ const api_userAll = function (req, res) {
     const page = parseInt(req.query.page);
     const nItemsPerPage = 20;
 
-    req.db.get('user').find({backup: {$exists: false}}, {skip: page * nItemsPerPage, limit: nItemsPerPage, fields: {_id: 0}})
-    .then(json => {
-        res.send(json.map(o => {
-            return o.nickname;
-        }));
-    });
+    req.db.queryAllUsers({backup: {$exists: false}}, {skip: page * nItemsPerPage, limit: nItemsPerPage, fields: {_id: 0}})
+        .then(array => {
+            res.send(array.map(o => {
+                return o.nickname;
+            }));
+        });
 };
 
 /**
