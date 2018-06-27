@@ -1,5 +1,5 @@
 const monk = require('monk')
-const MONGODB = process.env.MONGODB || '127.0.0.1:27017/microdraw'
+const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw'
 
 module.exports = (function(){
     console.log(`connecting to mongodb at: ${MONGODB}`)
