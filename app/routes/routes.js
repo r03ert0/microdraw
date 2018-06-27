@@ -3,6 +3,7 @@ const mustacheExpress = require('mustache-express');
 const path = require('path')
 
 module.exports = (app)=>{
+    console.log(`configuring routes`)
 
     /* middleware to attach objects required by routes */
     const decorateMiddleware = (req,res,next)=>{
@@ -41,7 +42,7 @@ module.exports = (app)=>{
 
       app.db.findAnnotations({
           fileID : req.query.fileID,
-          user : req.user ? req.user.username : 'anonymous'
+          user : req.user ? req.user.username : 'anonymouse'
       })
           .then(annotations=>res.status(200).send(annotations))
           .catch(e=>res.state(500).send({err:JSON.stringify(e)}))
