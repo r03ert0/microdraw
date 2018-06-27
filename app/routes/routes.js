@@ -1,5 +1,6 @@
 
 const mustacheExpress = require('mustache-express');
+const path = require('path')
 
 module.exports = (app)=>{
 
@@ -28,7 +29,7 @@ module.exports = (app)=>{
 
     app.use('/data', (req, res, next) => {
       next();
-    }, decorateMiddleware, require('./controller/data/'));
+    }, decorateMiddleware, require('../controller/data/'));
 
     app.use('/user', decorateMiddleware, require('../controller/user/'));
 

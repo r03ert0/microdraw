@@ -4,7 +4,18 @@ const SESSION_SECRETE = process.env.SESSION_SECRETE || 'a mi no me gusta la sém
 
 const github = require('./github')
 
+/* middle to ensure authenticated */
+const ensureAuthenticated = (req,res,next)=>{
+    if(req.isAuthenticated()){
+        return next()
+    }
+
+    /* or login page (?) */
+    res.redirect('/')
+}
+
 module.exports = (app)=>{
+    
     app.use(session({
         secret : SESSION_SECRETE,
         resave : false,
@@ -49,13 +60,4 @@ module.exports = (app)=>{
     })
 
 
-    /* middle to ensure authenticated */
-    const ensureAuthenticated = (req,res,next)=>{
-        if(req.isAuthenticated()){
-              return next()
-        }
-
-        /* or login page (?) */
-        res.redirect('/')
-    }
 }

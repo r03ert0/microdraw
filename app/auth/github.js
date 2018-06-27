@@ -1,10 +1,11 @@
 const GithubStrategy = require('passport-github').Strategy
 const passport = require('passport')
 const fs = require('fs')
+const path = require('path')
 
 module.exports = (app)=>{
 
-  fs.readFile('github-keys.json','utf-8',(err,githubKeys)=>{
+  fs.readFile(path.join(__dirname, 'github-keys.json'),'utf-8',(err,githubKeys)=>{
     if(err) throw err
     passport.use(new GithubStrategy( JSON.parse(githubKeys) ,
       (accessToken, refreshToken, profile, done) => done(null, profile)))
