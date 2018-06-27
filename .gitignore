@@ -3,7 +3,7 @@ _rsrc
 _test
 bigbrain
 bigbrain.json
-data
+./data
 favicon.ico
 ferret
 ferret1
