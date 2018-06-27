@@ -22,6 +22,10 @@
     vertical-align:middle;
 }
 
+option {
+    background-color:#555;
+}
+
 /* svg buttons
 ----------------------- */
 .pushButton {

@@ -54,6 +54,8 @@
 
         <div class="row">
             <div class="cell" style="text-align:center">
+                
+                <!-- Built in buttons always shown -->
                 <div class="buttonGroup">
                     <img class="button" id="navigate"       title="Navigator"              src="img/navigate.svg" />
                     <img class="button" id="home"           title="Home"                   src="img/home.svg" />
@@ -66,28 +68,9 @@
                     </div>
                     <input type="range" id="slider" />
                 </div>
-                <div class="buttonGroup">
-                    <img class="button" id="select"         title="Select"                 src="img/select.svg" />
-                    <img class="button" id="draw"           title="Draw"                   src="img/draw.svg" />
-                    <img class="button" id="drawPolygon"    title="Draw polygon"           src="img/drawPolygon.svg" />
-                    <img class="button" id="drawLine"    title="Draw line"           src="img/drawLine.svg" />
-                    <img class="button" id="simplify"       title="Simplify"               src="img/simplify.svg" />
-                    <img class="button" id="addPoint"       title="Add point"              src="img/addPoint.svg" />
-                    <img class="button" id="deletePoint"    title="Delete point"           src="img/deletePoint.svg" />
-                    <img class="button" id="addRegion"      title="Union of regions"       src="img/addRegion.svg" />
-                    <img class="button" id="subtractRegion" title="Subtraction of regions" src="img/subtractRegion.svg" />
-                    <img class="button" id="splitRegion"    title="Split region"           src="img/splitRegion.svg" />
-                    <img class="button" id="rotate"         title="Rotate region"          src="img/rotate.svg" />
-                    <img class="button" id="flip"           title="Flip region"            src="img/flip.svg" />
-                    <img class="button" id="toPolygon"      title="Bezier to polygon"      src="img/toPolygon.svg" />
-                    <img class="button" id="toBezier"       title="Polygon to Bezier"      src="img/toBezier.svg" />
-                    <img class="button" id="copy"           title="Copy path"              src="img/copy.svg" />
-                    <img class="button" id="paste"          title="Paste path"             src="img/paste.svg" />
-                </div>
-                <div class="buttonGroup">
-                    <img class="button" id="save"           title="Save annotations"       src="img/save.svg" />
-                    <img class="button" id="screenshot"     title="Screenshot"             src="img/screenshot.svg" />
-                    <img class="button" id="delete"         title="Delete"                 src="img/delete.svg" />
+
+                <!-- Imported buttons -->
+                <div class = "buttonGroup" id = "toolsContainer">
                 </div>
             </div>
         </div>
@@ -135,6 +118,10 @@
     <div id="openseadragon1" style="width:100%">
     </div>
 
+    <!-- paperjs container -->
+    <div id = "paperjs-container">
+    </div>
+
     <!-- alert/info box after saving -->
     <div id="saveDialog"></div>
 
@@ -153,7 +140,6 @@
 <script src="lib/FileSaver.js/FileSaver.min.js"></script>
 <script src="lib/jquery-1.11.0.min.js"></script>
 <script src="js/neurolex-ontology.js"></script>
-<script src="js/base.js"></script>
 <script src="js/microdraw.js"></script>
 </body>
 
