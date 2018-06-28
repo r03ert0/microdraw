@@ -49,6 +49,14 @@ module.exports = (app)=>{
     github(app)
     local(app)
 
+    app.set('loginMethods',[{
+        url : '/auth/github',
+        text : 'Log in with GitHub'
+    },{
+        url : '/html/localsignin.html',
+        text: 'Log in locally'
+    }])
+
     /* TODO simple a demo */
     app.get('/secure-route-example', ensureAuthenticated, function (req, res) { res.send("access granted"); });
 
