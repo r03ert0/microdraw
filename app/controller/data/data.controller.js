@@ -13,6 +13,7 @@ function data(req, res) {
 
     res.render('data', {
         title: 'MicroDraw::Data',
+        loginMethods : app.get('loginMethods') || [],
         params: JSON.stringify(req.query),
         login: login
     });

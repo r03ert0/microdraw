@@ -27,7 +27,7 @@ module.exports = (app)=>{
         })
         .catch(e=>{
           console.log(JSON.stringify(e))
-          done(e)
+          done(null,false)
         })
     }
   ))

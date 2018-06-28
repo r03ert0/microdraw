@@ -12,7 +12,10 @@
             <span>(<a href = "/logout">Log Out</a>)</span>
             {{/user}}
             {{^user}}
-            <span><a href='/auth/github'>Log in with GitHub</a></span>
+                {{ #loginMethods }}
+                <span><a href = "{{{ url }}}">{{ text }}</a></span>
+                {{ /loginMethods }}
+            <span style = "display:none"><a href='/auth/github'>Log in with GitHub</a></span>
             {{/user}}
         </div>
     </div>

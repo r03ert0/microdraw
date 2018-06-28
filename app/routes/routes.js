@@ -24,6 +24,7 @@ module.exports = (app)=>{
       req.session.returnTo = req.originalUrl;
       res.render('index', {
           title: 'MicroDraw',
+          loginMethods : app.get('loginMethods') || [],
           user: req.user ? req.user : null
       });
     });
