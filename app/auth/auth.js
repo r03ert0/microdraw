@@ -3,6 +3,7 @@ const passport = require('passport')
 const SESSION_SECRETE = process.env.SESSION_SECRETE || 'a mi no me gusta la sémola'
 
 const github = require('./github')
+const local = require('./local')
 
 /* middle to ensure authenticated */
 const ensureAuthenticated = (req,res,next)=>{
@@ -46,6 +47,7 @@ module.exports = (app)=>{
 
     /* Strategies */
     github(app)
+    local(app)
 
     /* TODO simple a demo */
     app.get('/secure-route-example', ensureAuthenticated, function (req, res) { res.send("access granted"); });
@@ -53,9 +55,9 @@ module.exports = (app)=>{
     /* TODO use reflection */
     app.get('/loggedIn', (req, res) => {
         if (req.isAuthenticated()) {
-                res.send({loggedIn: true, username: req.user.username});
+            res.send({loggedIn: true, username: req.user.username});
         } else {
-                res.send({loggedIn: false});
+            res.send({loggedIn: false});
         }
     })
 

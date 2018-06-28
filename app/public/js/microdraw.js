@@ -104,20 +104,6 @@ var Microdraw = (function () {
 
         //TODO selected state affect hash? intended?
 
-        /**
-         * @function annotationHash
-         * @desc Calculates hash of given annotation
-         * @param {object} annotation with name, type and path (e.g. from ImageInfo[currentImage].Regions[i]
-         * @param {string} type (optional if given in annotation): type of annotation, e.g. 'Region', 'Text'...
-         * @return {number} hash
-         */
-        annotationHash: function annotationHash(annotation, type){
-            var t = type ? type : annotation.type;
-            if ( t === "Region" ) {
-                return me.hash(JSON.stringify([annotation.name, annotation.path]).toString(16));
-            }
-            return 'null';
-        },
 
         /**
          * @function regionHashColor
@@ -252,7 +238,7 @@ var Microdraw = (function () {
 
             // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit
 
-            /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector  needs to be #\\31 0 or tag will return null*/
+            /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector needs to be #\\31 0 or tag will return null*/
             var tag = document.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
             
             tag.classList.remove("deselected");
@@ -534,8 +520,8 @@ var Microdraw = (function () {
                 reg.path.selected = false;
             }
 
-            // set hash to passed value or compute it
-            reg.hash = arg.hash ? arg.hash : me.annotationHash(reg, "Region");
+            // // set hash to passed value or compute it
+            // reg.hash = arg.hash ? arg.hash : me.annotationHash(reg, "Region");
 
             if( typeof imageNumber === "undefined" ) {
                 imageNumber = me.currentImage;
