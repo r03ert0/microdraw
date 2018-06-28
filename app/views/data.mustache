@@ -1,11 +1,9 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-    <title>{{title}}</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    {{> partials/header }}
     <link rel="stylesheet" href="css/microdraw.css" type="text/css" />
-    <link rel="stylesheet" href="css/shared-style.css" type="text/css" />
     <link rel="stylesheet" href="css/data-style.css" type="text/css" />
     <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
     </style>
@@ -15,15 +13,7 @@
 
 <!-- Header (fixed height) -->
 <div id="header">
-    <!-- Top-right menu bar -->
-    <div id="menu">
-        <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
-        <a href="https://github.com/r03ert0/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
-        <a href="https://github.com/r03ert0/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
-        <div id="MyLogin">
-            <span>{{{login}}}</span>
-        </div>
-    </div>
+    {{> partials/menu }}
 
     <!-- Small left-top logo -->
     <div style="display:inline-block;margin:10px">
