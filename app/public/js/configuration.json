@@ -118,16 +118,6 @@
               "iconPath": "img/rotate.svg"
             },
             {
-              "name": "Flip",
-              "id": "flip",
-              "desc": "",
-              "exportedVar": [
-                "ToolFlip"
-              ],
-              "scriptPath": "js/tools/flip.js",
-              "iconPath": "img/flip.svg"
-            },
-            {
               "name": "ToPolygon",
               "id": "toPolygon",
               "desc": "",

@@ -11,11 +11,11 @@ var ToolSave = { save : (function(){
          * @returns {void}
          */
         var microdrawDBSave = function microdrawDBSave() {
-          if( me.debug ) {
+          if( Microdraw.debug ) {
               console.log("> save promise");
           }
 
-          me.selectRegion( null )
+          Microdraw.selectRegion( null )
           var promiseArray = [];
           var savedSections = "Saving sections: ";
 
@@ -25,23 +25,23 @@ var ToolSave = { save : (function(){
                   name : re.name,
                   annotationID : re.annotationID,
                   type : 'Region',
-                  fileID : me.section,
-                  hash : me.annotationHash(re,'Region'),
+                  fileID : Microdraw.section,
+                  hash : Microdraw.annotationHash(re,'Region'),
                   
                   originalRe : re
               })
 
           var regionHashChanged = (re) => 
-               me.annotationHash(re,'Region') != re.hash
+               Microdraw.annotationHash(re,'Region') != re.hash
           
 
-          const savingPromise = Object.keys(me.ImageInfo).map(function(sl) {
-              if ((me.config.multiImageSave === false) && (sl !== me.currentImage)) {
+          const savingPromise = Object.keys(Microdraw.ImageInfo).map(function(sl) {
+              if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
                   return Promise.resolve([[],[],[],[]]) ;
               }
 
-              var section = me.ImageInfo[sl];
-              var lastSavedStateSection = me.lastSaveState[sl];
+              var section = Microdraw.ImageInfo[sl];
+              var lastSavedStateSection = Microdraw.lastSaveState[sl];
 
               /* regions that do not currently have annotaitonIDs will be saved */
               const objsTobeSaved = section.Regions
@@ -49,7 +49,7 @@ var ToolSave = { save : (function(){
                   .map(prepareRegionForDB)
 
               const savingObjsPromise = 
-                  fetch(me.dbroot,{
+                  fetch(dbroot,{
                       method : 'POST',
                       headers : { 'Content-Type' : 'application/json' },
                       body : JSON.stringify({
@@ -84,7 +84,7 @@ var ToolSave = { save : (function(){
                   .map(prepareRegionForDB)
               
               const updateObjsPromise = 
-                  fetch(me.dbroot,{
+                  fetch(dbroot,{
                       method : 'POST',
                       headers : { 'Content-Type' : 'application/json' },
                       body : JSON.stringify({
@@ -114,7 +114,7 @@ var ToolSave = { save : (function(){
                   .map(prepareRegionForDB)
 
               const deleteObjsPromise = 
-                  fetch(me.dbroot,{
+                  fetch(dbroot,{
                       method : 'POST',
                       headers : { 'Content-Type' : 'application/json' },
                       body : JSON.stringify({
@@ -141,7 +141,7 @@ var ToolSave = { save : (function(){
                   .map(prepareRegionForDB)
                   
               const undeleteObjsPromise = 
-                  fetch(me.dbroot,{
+                  fetch(dbroot,{
                       method : 'POST',
                       headers : { 'Content-Type' : 'application/json' },
                       body : JSON.stringify({
@@ -174,9 +174,9 @@ var ToolSave = { save : (function(){
                       modifiedAnnotations[opIdx % 4] += el.length
                   }))
 
-                  for(let key in me.ImageInfo){
+                  for(let key in Microdraw.ImageInfo){
                       //make a copy of lastSaveState
-                      me.lastSaveState[key] = me.ImageInfo[key].Regions.slice(0,me.ImageInfo[key].Regions.length)
+                      Microdraw.lastSaveState[key] = Microdraw.ImageInfo[key].Regions.slice(0,Microdraw.ImageInfo[key].Regions.length)
                   }
                   // show dialog box with timeout
                   const saveDialog = `Annotations saved.<br />New : (${modifiedAnnotations[0]})<br />Updated : (${modifiedAnnotations[1]})<br />Deleted : (${modifiedAnnotations[2]})<br />Undeleted : (${modifiedAnnotations[3]})`
@@ -193,7 +193,7 @@ var ToolSave = { save : (function(){
                   //error in some operations
                   console.log(e)
               })
-      },
+      }
 
     var tool = {
 
@@ -224,77 +224,80 @@ Microdraw.microdrawDBLoad = function(){
             console.log("> save.js microdrawDBLoad promise")
         }
 
-        $.getJSON(me.dbroot, {
-          action: "load_last",
-          fileID: me.section
-      }).success(function (data) {
-          var i, json, reg;
-          me.annotationLoadingFlag = false;
+        $.getJSON(dbroot, {
+            action: "load_last",
+            fileID: Microdraw.section
+        }).success(function (data) {
+            var i, json, reg;
+            Microdraw.annotationLoadingFlag = false;
 
-          // Because of asynchrony, the section that just loaded may not be the one that the user
-          // intended to get. If the section that was just loaded does not correspond to the current section,
-          // do not display this one and load the current section.
-          if( me.section !== me.currentImage ) {
-              me.microdrawDBLoad()
-              .then(function() {
-                  $("#regionList").height($(window).height()-$("#regionList").offset().top);
-                  me.updateRegionList();
-                  paper.view.draw();
-              });
-              resolve("Loaded section does not correspond with the current section.");
+            // Because of asynchrony, the section that just loaded may not be the one that the user
+            // intended to get. If the section that was just loaded does not correspond to the current section,
+            // do not display this one and load the current section.
+            if( Microdraw.section !== Microdraw.currentImage ) {
+                Microdraw.microdrawDBLoad()
+                .then(function() {
+                    $("#regionList").height($(window).height()-$("#regionList").offset().top);
+                    Microdraw.updateRegionList();
+                    paper.view.draw();
+                });
+                resolve("Loaded section does not correspond with the current section.");
 
-              return;
-          }
+                return;
+            }
 
-          // if there is no data on the current section just return
-          // save hash for the image none the less TODO not needed anymore!
-          //if( $.isEmptyObject(data) ) {
-          //    me.ImageInfo[me.currentImage].Hash = me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16);
-          //    resolve("No data for the current section");
+            // if there is no data on the current section just return
+            // save hash for the image none the less TODO not needed anymore!
+            //if( $.isEmptyObject(data) ) {
+            //    Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
+            //    resolve("No data for the current section");
 
-          //    return;
-          //}
+            //    return;
+            //}
 
-          // parse the data and add to the current canvas
-          // console.log("[", data, "]");
-          //obj = JSON.parse(data);
-          //obj = data;
-          //if( obj ) {
-          for( i = 0; i < data.length; i += 1 ) {
-              console.log(data[i]);
-              if ( data[i].type === "Region" ) {
-                  reg = {};
-                  reg.annotationID = data[i].annotationID;
-                  reg.name = data[i].annotation.name;
+            // parse the data and add to the current canvas
+            // console.log("[", data, "]");
+            //obj = JSON.parse(data);
+            //obj = data;
+            //if( obj ) {
 
-                  //reg.page = data[i].annotation.page;
-                  json = data[i].annotation.path;
-                  reg.path = new paper.Path();
+            /* resolve the promise */
+            // for( i = 0; i < data.length; i += 1 ) {
+            //     console.log(data[i]);
+            //     if ( data[i].type === "Region" ) {
+            //         reg = {};
+            //         reg.annotationID = data[i].annotationID;
+            //         reg.name = data[i].annotation.name;
 
-                  /** @todo Remove workaround once paperjs will be fixed */
-                  var {insert} = reg.path.insert;
-                  reg.path.importJSON(json);
-                  reg.path.insert = insert;
+            //         //reg.page = data[i].annotation.page;
+            //         json = data[i].annotation.path;
+            //         reg.path = new paper.Path();
 
-                  me.newRegion({name:reg.name, path:reg.path, annotationID:reg.annotationID, hash:data[i].annotation.hash});
-              }
-          }
-          
-          for(let key in me.ImageInfo){
-              me.lastSaveState[key] = me.ImageInfo[key].Regions.slice(0,me.ImageInfo[key].Regions.length)
-          }
-          paper.view.draw();
-          // if image has no hash, save one
-          //me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
+            //         /** @todo Remove workaround once paperjs will be fixed */
+            //         var {insert} = reg.path.insert;
+            //         reg.path.importJSON(json);
+            //         reg.path.insert = insert;
 
-          if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
-          resolve();
-      })
-      .error(function(jqXHR, textStatus, err) {
-          console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + err);
-          me.annotationLoadingFlag = false;
-          reject(err);
-      });
+            //         Microdraw.newRegion({name:reg.name, path:reg.path, annotationID:reg.annotationID, hash:data[i].annotation.hash});
+            //     }
+            // }
+            // paper.view.draw();
+            
+            
+            for(let key in Microdraw.ImageInfo){
+                Microdraw.lastSaveState[key] = Microdraw.ImageInfo[key].Regions.slice(0,Microdraw.ImageInfo[key].Regions.length)
+            }
+            // if image has no hash, save one
+            //Microdraw.ImageInfo[Microdraw.currentImage].Hash = (data.Hash ? data.Hash : Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16));
+
+            if( Microdraw.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", Microdraw.ImageInfo[Microdraw.currentImage].Regions.length); }
+            resolve(data);
+        })
+        .error(function(jqXHR, textStatus, err) {
+            console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + err);
+            Microdraw.annotationLoadingFlag = false;
+            reject(err);
+        });
             
     })
 }
