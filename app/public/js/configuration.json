@@ -174,8 +174,8 @@
               "exportedVar": [
                 "ToolSave"
               ],
-              "scriptPath": "js/tools/save.js",
-              "iconPath": "img/save.svg"
+              "scriptPath": "js/tools/saveFzj.js",
+              "iconPath": "img/saveFzj.svg"
             },
             {
               "name": "Screenshot",
@@ -196,6 +196,46 @@
               ],
               "scriptPath": "js/tools/delete.js",
               "iconPath": "img/delete.svg"
+            },
+            {
+              "name": "Fix 'New Region' Functionality",
+              "id": "fixNewRegion",
+              "desc": "",
+              "exportedVar": [
+                "ToolFixNewRegion"
+              ],
+              "scriptPath": "js/tools/fixNewRegion.js",
+              "iconPath": "img/fixNewRegion.svg"
+            },
+            {
+              "name": "Paint Brush",
+              "id": "paintbrush",
+              "desc": "",
+              "exportedVar": [
+                "ToolPaintbrush"
+              ],
+              "scriptPath": "js/tools/paintbrush.js",
+              "iconPath": "img/paintbrush.svg"
+            },
+            {
+              "name": "Rotate Canvas",
+              "id": "rotateCanvas",
+              "desc": "",
+              "exportedVar": [
+                "ToolRotateCanvas"
+              ],
+              "scriptPath": "js/tools/rotateCanvas.js",
+              "iconPath": "img/rotateCanvas.svg"
+            },
+            {
+              "name": "Eraser",
+              "id": "eraser",
+              "desc": "",
+              "exportedVar": [
+                "ToolEraser"
+              ],
+              "scriptPath": "js/tools/eraser.js",
+              "iconPath": "img/eraser.svg"
             }
           ]
     }

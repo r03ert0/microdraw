@@ -53,6 +53,8 @@ var Microdraw = (function () {
         tap: false,
         currentColorRegion: null,
 
+        lastSaveState : {},
+
         /*
             Region handling functions
         */
@@ -99,6 +101,9 @@ var Microdraw = (function () {
 
             return result;
         },
+
+        //TODO selected state affect hash? intended?
+
 
         /**
          * @function regionHashColor
@@ -221,6 +226,9 @@ var Microdraw = (function () {
                 }
             }
             paper.view.draw();
+
+            /* allow null to be passed to deselect all regions */
+            if( !reg ) return
 
             // Select region name in list
             [].forEach.call(document.querySelectorAll("#regionList > .region-tag"), function(r) {
@@ -493,11 +501,13 @@ var Microdraw = (function () {
             var reg = {};
 
             reg.uid = me.regionUID();
-            if( arg.name ) {
-                reg.name = arg.name;
-            } else {
-                reg.name = "Untitled " + reg.uid;
-            }
+            reg.name = arg.name ? 
+                arg.name :
+                (typeof persistentRegionName !== 'undefined' && persistentRegionName) ? 
+                    persistentRegionName :
+                    "Untitled " + reg.uid;
+            // annotationID is undefined for new Regions, except when we pass it in arg
+            reg.annotationID = arg.annotationID;
 
             var color = me.regionHashColor(reg.name);
 
@@ -509,6 +519,9 @@ var Microdraw = (function () {
                 reg.path.fillColor = arg.path.fillColor ? arg.path.fillColor :'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',' + me.config.defaultFillAlpha + ')';
                 reg.path.selected = false;
             }
+
+            // // set hash to passed value or compute it
+            // reg.hash = arg.hash ? arg.hash : me.annotationHash(reg, "Region");
 
             if( typeof imageNumber === "undefined" ) {
                 imageNumber = me.currentImage;
@@ -679,7 +692,8 @@ var Microdraw = (function () {
         dragHandler: function dragHandler(event) {
             if( me.debug > 1 ) { console.log("> dragHandler"); }
 
-            if( !me.navEnabled ) {
+            /* allow movement of canvas in select mode */
+            if( !me.navEnabled && me.region ) {
                 event.stopHandlers = true;
                 me.mouseDrag(event.originalEvent.layerX, event.originalEvent.layerY, event.delta.x, event.delta.y);
             }
@@ -697,6 +711,13 @@ var Microdraw = (function () {
                 event.stopHandlers = true;
                 me.mouseUp();
             }
+        },
+
+        scrollHandler: function scrollHandler(ev){
+            if( me.debug ) { console.log("> scrollHandler") }
+
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].scrollHandler ) me.tools[me.selectedTool].scrollHandler(ev);
+            paper.view.draw()
         },
 
         /**
@@ -964,6 +985,7 @@ var Microdraw = (function () {
                 var el = {
                     json: JSON.parse(info[i].path.exportJSON()),
                     name: info[i].name,
+                    annotationID: info[i].annotationID,
                     selected: info[i].path.selected,
                     fullySelected: info[i].path.fullySelected
                 };
@@ -1033,7 +1055,7 @@ var Microdraw = (function () {
                 path.importJSON(el.json);
                 path.insert = insert;
 
-                reg = me.newRegion({name:el.name, path:path}, undo.imageNumber);
+                reg = me.newRegion({name:el.name, path:path, annotationID:el.annotationID, hash:el.hash}, undo.imageNumber);
                 // here order matters. if fully selected is set after selected, partially selected paths will be incorrect
                   reg.path.fullySelected = el.fullySelected;
                  reg.path.selected = el.selected;
@@ -1185,7 +1207,7 @@ var Microdraw = (function () {
             var prevTool = me.selectedTool;
             me.selectedTool = $(this).attr("id");
             me.selectTool();
-
+            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) me.tools[prevTool].onDeselect()
             if( me.tools[me.selectedTool] && me.tools[me.selectedTool].click ) me.tools[me.selectedTool].click()
         },
 
@@ -1207,6 +1229,8 @@ var Microdraw = (function () {
          Annotation storage
         */
 
+        
+
         /**
          * @function microdrawDBLoad
          * @desc Load SVG overlay from microdrawDB
@@ -1218,6 +1242,7 @@ var Microdraw = (function () {
                 if( me.debug ) {
                     console.log("> default microdrawDBLoad promise, returning an empty array. Overwrite Microdraw.microdrawDBLoad() to load annotations.");
                 }
+
                 resolve([])
             });
         },
@@ -1829,20 +1854,12 @@ var Microdraw = (function () {
                     me.loadScript('/js/tools/home.js'),
                     me.loadScript('/js/tools/navigate.js'),
                     me.loadScript('/js/tools/zoomIn.js'),
-                    me.loadScript('/js/tools/zoomOut.js'),
-                    me.loadScript('/js/tools/previous.js'),
-                    me.loadScript('/js/tools/next.js'),
-                    me.loadScript('/js/tools/closeMenu.js'),
-
+                    me.loadScript('/js/tools/zoomOut.js')
                 ]).then(function () {
                     $.extend(me.tools, ToolHome);
                     $.extend(me.tools, ToolNavigate);
                     $.extend(me.tools, ToolZoomIn);
                     $.extend(me.tools, ToolZoomOut);
-                    $.extend(me.tools, ToolPrevious);
-                    $.extend(me.tools, ToolNext);
-                    $.extend(me.tools, ToolCloseMenu);
-
                 });
 
                 // Enable click on toolbar buttons
@@ -1927,12 +1944,12 @@ var Microdraw = (function () {
                 }))
                     .then(() => resolve())
                     .catch((e) => {
-                        console.log('direct fetching of source failed ... ', e, 'attempting to fetch via microdraw server');
+                        console.warn('direct fetching of source failed ... ', e, 'attempting to fetch via microdraw server');
                         //fetch json via microdraw server
                         fetch('/getJson?source='+me.params.source)
                         .then((data) => data.json())
                         .then((json) => {
-                            console.log('getjson success', json);
+                            console.log('getjson by microdraw server success', json);
                             me.initMicrodraw2(json);
                         })
                         .catch((err) => console.log(err));
@@ -2096,11 +2113,13 @@ var Microdraw = (function () {
             me.viewer.addHandler("page", function (data) {
                 console.log(data.page, me.params.tileSources[data.page]);
             });
+
             me.viewer.addViewerInputHook({hooks: [
                 {tracker: 'viewer', handler: 'clickHandler', hookHandler: me.clickHandler},
                 {tracker: 'viewer', handler: 'pressHandler', hookHandler: me.pressHandler},
                 {tracker: 'viewer', handler: 'dragHandler', hookHandler: me.dragHandler},
-                {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler}
+                {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler},
+                {tracker: 'viewer', handler: 'scrollHandler', hookHandler: me.scrollHandler}
             ]});
 
             if( me.debug ) {

@@ -44,6 +44,8 @@
     left:0;
     background-color:rgba(200,200,200,0.5);
     z-index:10;
+    display:block;
+    margin:0;
 }
 #saveDialog {
     display: none;
@@ -188,7 +190,7 @@
     display:table;
     table-layout:fixed;
 }
-.row {
+.microdrawRow {
     display:table-row;
 }
 .cell {
