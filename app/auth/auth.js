@@ -46,15 +46,19 @@ module.exports = (app)=>{
     })
 
     /* Strategies */
+
+    /* uncommend to include local signin strategy */
+    /* or any other strategy you may like to include */
+
     github(app)
-    local(app)
+    // local(app)
 
     app.set('loginMethods',[{
         url : '/auth/github',
         text : 'Log in with GitHub'
-    },{
-        url : '/html/localsignin.html',
-        text: 'Log in locally'
+    // },{
+    //     url : '/html/localsignin.html',
+    //     text: 'Log in locally'
     }])
 
     /* TODO simple a demo */
