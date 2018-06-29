@@ -179,6 +179,10 @@
     background-color:rgba(255,255,255,0.75);
     border-radius:0px;
 }
+.region-name
+{
+    color:black;
+}
 .region-tag.deselected {
     background-color:transparent;
 }
@@ -192,6 +196,7 @@
 .cell {
     display:table-cell;
     width:100%;
+    color:black;
 }
 .overlay {
     position:absolute;

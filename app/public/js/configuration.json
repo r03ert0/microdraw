@@ -118,6 +118,16 @@
               "iconPath": "img/rotate.svg"
             },
             {
+              "name": "FlipRegion",
+              "id": "flipregion",
+              "desc": "",
+              "exportedVar": [
+                "ToolFlipRegion"
+              ],
+              "scriptPath": "js/tools/flipRegion.js",
+              "iconPath": "img/flipRegion.svg"
+            },
+            {
               "name": "ToPolygon",
               "id": "toPolygon",
               "desc": "",

@@ -237,8 +237,8 @@ var Microdraw = (function () {
             });
 
             // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit
-
-            /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector needs to be #\\31 0 or tag will return null*/
+            
+            /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector  needs to be #\\31 0 or tag will return null*/
             var tag = document.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
             
             tag.classList.remove("deselected");
@@ -2094,82 +2094,6 @@ var Microdraw = (function () {
                 xOffset:5,
                 yOffset:5
             });
-
-            OpenSeadragon.Scalebar.prototype.getScalebarLocation = (function() {
-                if (this.location === OpenSeadragon.ScalebarLocation.TOP_LEFT) {
-                    var x = 0;
-                    var y = 0;
-                    if (this.stayInsideImage) {
-                        var pixel = this.viewer.viewport.pixelFromPoint(
-                                new OpenSeadragon.Point(0, 0), true);
-                        if (!this.viewer.wrapHorizontal) {
-                            x = Math.max(pixel.x, 0);
-                        }
-                        if (!this.viewer.wrapVertical) {
-                            y = Math.max(pixel.y, 0);
-                        }
-                    }
-
-                    return new OpenSeadragon.Point(x + this.xOffset, y + this.yOffset);
-                }
-                if (this.location === OpenSeadragon.ScalebarLocation.TOP_RIGHT) {
-                    var barWidth = this.divElt.offsetWidth;
-                    var container = this.viewer.container;
-                    var x = container.offsetWidth - barWidth;
-                    var y = 0;
-                    if (this.stayInsideImage) {
-                        var pixel = this.viewer.viewport.pixelFromPoint(
-                                new OpenSeadragon.Point(1, 0), true);
-                        if (!this.viewer.wrapHorizontal) {
-                            x = Math.min(x, pixel.x - barWidth);
-                        }
-                        if (!this.viewer.wrapVertical) {
-                            y = Math.max(y + 20, pixel.y);
-                        }
-                    }
-
-                    return new OpenSeadragon.Point(x - this.xOffset, y + this.yOffset);
-                }
-                if (this.location === OpenSeadragon.ScalebarLocation.BOTTOM_RIGHT) {
-                    var barWidth = this.divElt.offsetWidth;
-                    var barHeight = this.divElt.offsetHeight;
-                    var container = this.viewer.container;
-                    var x = container.offsetWidth - barWidth;
-                    var y = container.offsetHeight - barHeight;
-                    if (this.stayInsideImage) {
-                        var pixel = this.viewer.viewport.pixelFromPoint(
-                                new OpenSeadragon.Point(1, 1 / this.viewer.source.aspectRatio),
-                                true);
-                        if (!this.viewer.wrapHorizontal) {
-                            x = Math.min(x, pixel.x - barWidth);
-                        }
-                        if (!this.viewer.wrapVertical) {
-                            y = Math.min(y, pixel.y - barHeight);
-                        }
-                    }
-
-                    return new OpenSeadragon.Point(x - this.xOffset, y - this.yOffset);
-                }
-                if (this.location === OpenSeadragon.ScalebarLocation.BOTTOM_LEFT) {
-                    var barHeight = this.divElt.offsetHeight;
-                    var container = this.viewer.container;
-                    var x = 0;
-                    var y = container.offsetHeight - barHeight;
-                    if (this.stayInsideImage) {
-                        var pixel = this.viewer.viewport.pixelFromPoint(
-                                new OpenSeadragon.Point(0, 1 / this.viewer.source.aspectRatio),
-                                true);
-                        if (!this.viewer.wrapHorizontal) {
-                            x = Math.max(x, pixel.x);
-                        }
-                        if (!this.viewer.wrapVertical) {
-                            y = Math.min(y, pixel.y - barHeight);
-                        }
-                    }
-
-                    return new OpenSeadragon.Point(x + this.xOffset, y - this.yOffset);
-                }
-            }).bind(me.viewer.scalebarInstance);
 
             // add screenshot
             me.viewer.screenshot({
