@@ -52,6 +52,7 @@ var Microdraw = (function () {
         counter: 1,
         tap: false,
         currentColorRegion: null,
+        tools : {},
 
         /*
             Region handling functions
@@ -1494,7 +1495,7 @@ var Microdraw = (function () {
             var search = location.search.substring(1);
             var result = search?
                         JSON.parse('{"' + search.replace(/[&]/g, '","').replace(/[=]/g, '":"') + '"}',
-                        function(key, value) { return key === ""?value:decodeURIComponent(value); }) :
+                        function(key, value) { return key === "" ? value : decodeURIComponent(value); }) :
                         {};
             if( me.debug ) {
                 console.log("url parametres:", result);
@@ -1751,33 +1752,138 @@ var Microdraw = (function () {
             event.preventDefault(); // prevent the default action (scroll / move caret)
         },
 
+
+        /**
+         * @function loadSourceJson
+         * @desc Load source json (from server)
+         * @returns {promise} returns a promise, resolving as a microdraw compatible object
+         */
+        loadSourceJson : function loadSourceJson(){
+            if( me.debug ) console.log('> loadSourceJson')
+            return new Promise((resolve,reject)=>{
+                const directFetch = new Promise((rs,rj)=>{
+
+                    // decide between json (local) and jsonp (cross-origin)
+                    var ext = me.params.source.split(".");
+                    ext = ext[ext.length - 1];
+                    if( ext === "jsonp" ) {
+                        if( me.debug ) {
+                            console.log("Reading cross-origin jsonp file");
+                        }
+                        $.ajax({
+                            type: 'GET',
+                            url: me.params.source + "?callback=?",
+                            jsonpCallback: 'f',
+                            dataType: 'jsonp',
+                            contentType: "application/json",
+                            success: function(obj) {
+                                rs(obj)
+                            },
+                            error: function(err) {
+                                rj(err);
+                            }
+                        });
+                    } else
+                    if( ext === "json" ) {
+                        if( me.debug ) {
+                            console.log("Reading local json file");
+                        }
+                        $.ajax({
+                            type: 'GET',
+                            url: me.params.source,
+                            dataType: "json",
+                            contentType: "application/json",
+                            success: function(obj) {
+                                rs(obj);
+                            },
+                            error: function(err) {
+                                rj(err);
+                            }
+                        });
+                    } else {
+                        fetch(me.params.source)
+                            .then((data) => data.json())
+                            .then((json) => {
+                                rs(json);
+                            })
+                            .catch((e) => rj(e));
+                    }
+                })
+                directFetch
+                    .then(json=>resolve(json))
+                    .catch(err=>{
+                        console.warn('> loadSourceJson : direct fetching of source failed ... ', err, 'attempting to fetch via microdraw server');
+
+                        fetch('/getJson?source='+me.params.source)
+                            .then((data) => data.json())
+                            .then((json) => {
+                                console.log('> loadSourceJson : getjson success', json);
+                                resolve(json);
+                            })
+                            .catch((err) => {
+                                console.error('> loadSourceJson : fetch json via microdraw failed.',err)
+                                reject(err)
+                            });
+                    })
+            })
+        },
+
         /**
          * @function loadConfiguration
          * @desc Load general microdraw configuration
-         * @returns {void}
+         * @returns {Promise<void[]>} returns a promise that resolves when the configuration is loaded
          */
         loadConfiguration: function loadConfiguration() {
-            return fetch("js/configuration.json").then((r) => r.json())
-                .then(function(data) {
-                    me.config = data;
-                    
-                    data.presets.default.forEach(function(item){
+            return Promise.all([
 
-                        /* attachDom */
-                        $('#toolsContainer').append(
-                            `<img class="button" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
-                        )
+                /* always load the default tools */
+                Promise.all([
+                    me.loadScript('/js/tools/home.js'),
+                    me.loadScript('/js/tools/navigate.js'),
+                    me.loadScript('/js/tools/zoomIn.js'),
+                    me.loadScript('/js/tools/zoomOut.js'),
+                    me.loadScript('/js/tools/previous.js'),
+                    me.loadScript('/js/tools/next.js'),
+                    me.loadScript('/js/tools/closeMenu.js'),
 
-                        /* load script + extend me.tools */
-                        me.loadScript(item.scriptPath)
-                            .then(function(){
-                                item.exportedVar.forEach(function(variable){
-                                    /* TODO use ES 6 for proper module import. eval should be avoided when possible */
-                                    eval(`$.extend(me.tools,${variable})`)
-                                })
+                ]).then(function () {
+                    $.extend(me.tools, ToolHome);
+                    $.extend(me.tools, ToolNavigate);
+                    $.extend(me.tools, ToolZoomIn);
+                    $.extend(me.tools, ToolZoomOut);
+                    $.extend(me.tools, ToolPrevious);
+                    $.extend(me.tools, ToolNext);
+                    $.extend(me.tools, ToolCloseMenu);
+
+                }),
+
+                /* load configuration file, then load the tools accordingly */
+                fetch("js/configuration.json").then((r) => r.json())
+                    .then((data) => {
+                        me.config = data;
+                        
+                        return Promise.all( [
+                            /* tools loaded dynamically, based on user configuration, server configuration etc. */
+                            data.presets.default.map((item)=>{
+
+                                /* attachDom */
+                                $('#toolsContainer').append(
+                                    `<img class="button" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
+                                )
+
+                                /* load script + extend me.tools */
+                                return me.loadScript(item.scriptPath)
+                                    .then(()=>{
+                                        /* there maybe multiple exported variables */
+                                        item.exportedVar.forEach((variable)=>{
+                                            /* TODO use ES 6 for proper module import. eval should be avoided when possible */
+                                            eval(`$.extend(me.tools,${variable})`)
+                                        })
+                                    })
                             })
+                        ])
                     })
-                });
+            ])
         },
 
         /**
@@ -1785,7 +1891,7 @@ var Microdraw = (function () {
          * @desc Loads script from path if test is not fulfilled
          * @param {string} path Path to script, either a local path or a url
          * @param {function} testScriptPresent Function to test if the script is already present. If undefined, the script will be loaded.
-         * @returns {object} A promise fulfilled when the script is loaded
+         * @returns {promise} A promise fulfilled when the script is loaded
          */
         loadScript: function loadScript(path, testScriptPresent) {
             return new Promise(function (resolve, reject) {
@@ -1813,172 +1919,85 @@ var Microdraw = (function () {
          */
         initMicrodraw: function initMicrodraw() {
 
-            /* define the tools object first */
-            me.tools = {};
-            return new Promise(function(resolve, reject) {
-                if( me.debug ) {
-                    console.log("> initMicrodraw promise");
-                }
+            if( me.debug ) {
+                console.log("> initMicrodraw promise");
+            }
 
-                // Subscribe to login changes
-                //MyLoginWidget.subscribe(loginChanged);
+            // Subscribe to login changes
+            //MyLoginWidget.subscribe(loginChanged);
 
-                // extend Microdraw with tools
-                // load scripts dynamically since import is not currently supported by browsers
-                Promise.all([
-                    me.loadScript('/js/tools/home.js'),
-                    me.loadScript('/js/tools/navigate.js'),
-                    me.loadScript('/js/tools/zoomIn.js'),
-                    me.loadScript('/js/tools/zoomOut.js'),
-                    me.loadScript('/js/tools/previous.js'),
-                    me.loadScript('/js/tools/next.js'),
-                    me.loadScript('/js/tools/closeMenu.js'),
+            // extend Microdraw with tools
+            // load scripts dynamically since import is not currently supported by browsers
+            
 
-                ]).then(function () {
-                    $.extend(me.tools, ToolHome);
-                    $.extend(me.tools, ToolNavigate);
-                    $.extend(me.tools, ToolZoomIn);
-                    $.extend(me.tools, ToolZoomOut);
-                    $.extend(me.tools, ToolPrevious);
-                    $.extend(me.tools, ToolNext);
-                    $.extend(me.tools, ToolCloseMenu);
+            // Enable click on toolbar buttons
+            $("img.button").click(me.toolSelection);
 
+            // set annotation loading flag to false
+            me.annotationLoadingFlag = false;
+
+            // Initialize the control key handler and set shortcuts
+            me.initShortCutHandler();
+            me.shortCutHandler({pc:'^ z', mac:'cmd z'}, me.cmdUndo);
+            me.shortCutHandler({pc:'^ y', mac:'cmd y'}, me.cmdRedo);
+            if( me.config.drawingEnabled ) {
+                me.shortCutHandler({pc:'^ x', mac:'cmd x'}, function () {
+                    console.log("cut!");
                 });
+                me.shortCutHandler({pc:'^ v', mac:'cmd v'}, me.cmdPaste);
+                me.shortCutHandler({pc:'^ a', mac:'cmd a'}, function () {
+                    console.log("select all!");
+                });
+                me.shortCutHandler({pc:'^ c', mac:'cmd c'}, me.cmdCopy);
+                me.shortCutHandler({pc:'#46', mac:'#8'}, me.cmdDeleteSelected); // delete key
+            }
+            me.shortCutHandler({pc:'#37', mac:'#37'}, me.loadPreviousImage); // left-arrow key
+            me.shortCutHandler({pc:'#39', mac:'#39'}, me.loadNextImage); // right-arrow key
 
-                // Enable click on toolbar buttons
-                $("img.button").click(me.toolSelection);
+            // Configure currently selected tool
+            me.selectedTool = "navigate";
+            me.selectTool();
 
-                // set annotation loading flag to false
-                me.annotationLoadingFlag = false;
+            // Change current section by typing in the section number and pessing the enter key
+            $("#sectionName").keyup(me.sectionNameOnEnter);
 
-                // Initialize the control key handler and set shortcuts
-                me.initShortCutHandler();
-                me.shortCutHandler({pc:'^ z', mac:'cmd z'}, me.cmdUndo);
-                me.shortCutHandler({pc:'^ y', mac:'cmd y'}, me.cmdRedo);
-                if( me.config.drawingEnabled ) {
-                    me.shortCutHandler({pc:'^ x', mac:'cmd x'}, function () {
-                        console.log("cut!");
-                    });
-                    me.shortCutHandler({pc:'^ v', mac:'cmd v'}, me.cmdPaste);
-                    me.shortCutHandler({pc:'^ a', mac:'cmd a'}, function () {
-                        console.log("select all!");
-                    });
-                    me.shortCutHandler({pc:'^ c', mac:'cmd c'}, me.cmdCopy);
-                    me.shortCutHandler({pc:'#46', mac:'#8'}, me.cmdDeleteSelected); // delete key
-                }
-                me.shortCutHandler({pc:'#37', mac:'#37'}, me.loadPreviousImage); // left-arrow key
-                me.shortCutHandler({pc:'#39', mac:'#39'}, me.loadNextImage); // right-arrow key
-
-                // Configure currently selected tool
-                me.selectedTool = "navigate";
-                me.selectTool();
-
-                // attempt to fetch json file directly from browser first
-                (new Promise((resolveDirectFetch, rejectDirectFetch) => {
-                    // decide between json (local) and jsonp (cross-origin)
-                    
-                    var ext = me.params.source.split(".");
-                    ext = ext[ext.length - 1];
-                    if( ext === "jsonp" ) {
-                        if( me.debug ) {
-                            console.log("Reading cross-origin jsonp file");
-                        }
-                        $.ajax({
-                            type: 'GET',
-                            url: me.params.source + "?callback=?",
-                            jsonpCallback: 'f',
-                            dataType: 'jsonp',
-                            contentType: "application/json",
-                            success: function(obj) {
-                                me.initMicrodraw2(obj);
-                                resolveDirectFetch();
-                            },
-                            error: function(err) {
-                                rejectDirectFetch(err);
-                            }
-                        });
-                    } else
-                    if( ext === "json" ) {
-                        if( me.debug ) {
-                            console.log("Reading local json file");
-                        }
-                        $.ajax({
-                            type: 'GET',
-                            url: me.params.source,
-                            dataType: "json",
-                            contentType: "application/json",
-                            success: function(obj) {
-                                me.initMicrodraw2(obj);
-                                resolveDirectFetch();
-                            },
-                            error: function(err) {
-                                rejectDirectFetch(err);
-                            }
-                        });
-                    } else {
-                        fetch(me.params.source)
-                            .then((data) => data.json())
-                            .then((json) => {
-                                me.initMicrodraw2(json);
-                                resolveDirectFetch();
-                            })
-                            .catch((e) => rejectDirectFetch(e));
+            // Show and hide menu
+            if( me.config.hideToolbar ) {
+                var mousePosition;
+                var animating = false;
+                $(document).mousemove(function (e) {
+                    if( animating ) {
+                        return;
                     }
-                }))
-                    .then(() => resolve())
-                    .catch((e) => {
-                        console.log('direct fetching of source failed ... ', e, 'attempting to fetch via microdraw server');
-                        //fetch json via microdraw server
-                        fetch('/getJson?source='+me.params.source)
-                        .then((data) => data.json())
-                        .then((json) => {
-                            console.log('getjson success', json);
-                            me.initMicrodraw2(json);
-                        })
-                        .catch((err) => console.log(err));
-                    });
+                    mousePosition = e.clientX;
 
-                // Change current section by typing in the section number and pessing the enter key
-                $("#sectionName").keyup(me.sectionNameOnEnter);
-
-                // Show and hide menu
-                if( me.config.hideToolbar ) {
-                    var mousePosition;
-                    var animating = false;
-                    $(document).mousemove(function (e) {
-                        if( animating ) {
-                            return;
-                        }
-                        mousePosition = e.clientX;
-
-                        if( mousePosition <= 100 ) {
-                            //SLIDE IN MENU
-                            animating = true;
-                            $('#menuBar').animate({
-                                left: 0,
-                                opacity: 1
-                            }, 200, function () {
-                                animating = false;
-                            });
-                        } else if( mousePosition > 200 ) {
-                            animating = true;
-                            $('#menuBar').animate({
-                                left: -100,
-                                opacity: 0
-                            }, 500, function () {
-                                animating = false;
-                            });
-                        }
-                    });
-                }
-
-                $(window).resize(function() {
-                    // $("#regionList").height($(window).height() - $("#regionList").offset().top);
-                    me.resizeAnnotationOverlay();
+                    if( mousePosition <= 100 ) {
+                        //SLIDE IN MENU
+                        animating = true;
+                        $('#menuBar').animate({
+                            left: 0,
+                            opacity: 1
+                        }, 200, function () {
+                            animating = false;
+                        });
+                    } else if( mousePosition > 200 ) {
+                        animating = true;
+                        $('#menuBar').animate({
+                            left: -100,
+                            opacity: 0
+                        }, 500, function () {
+                            animating = false;
+                        });
+                    }
                 });
+            }
 
-                me.appendRegionTagsFromOntology(Ontology);
+            $(window).resize(function() {
+                // $("#regionList").height($(window).height() - $("#regionList").offset().top);
+                me.resizeAnnotationOverlay();
             });
+
+            me.appendRegionTagsFromOntology(Ontology);
         },
 
         /**
@@ -2124,21 +2143,23 @@ var Microdraw = (function () {
 
         init: function init() {
             me.loadConfiguration()
-            .then(function () {
-                if( me.config.useDatabase ) {
-                    Promise.all([]) // [microdrawDBIP(), MyLoginWidget.init()]
-                    .then(function () {
+                .then(function () {
+                    if( me.config.useDatabase ) {
+                        Promise.all([]) // [microdrawDBIP(), MyLoginWidget.init()]
+                            .then(function () {
+                                me.params = me.deparam();
+                                me.section = me.currentImage;
+                                me.source = me.params.source;
+                                // updateUser();
+                            })
+                            .then(me.initMicrodraw);
+                    } else {
                         me.params = me.deparam();
-                        me.section = me.currentImage;
-                        me.source = me.params.source;
-                        // updateUser();
-                    })
-                    .then(me.initMicrodraw);
-                } else {
-                    me.params = me.deparam();
-                    me.initMicrodraw();
-                }
-            });
+                        me.initMicrodraw();
+                    }
+                })
+                .then(()=>me.loadSourceJson())
+                .then(json=>me.initMicrodraw2(json))
         }
     };
 
