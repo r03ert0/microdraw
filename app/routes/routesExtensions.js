@@ -1,16 +1,28 @@
+const url = require('url')
+const fetch = require('node-fetch')
+
+// TODO use request instead of node-fetch, then remove node-fetch from the dependency
 
 module.exports = (app) =>{
     app.get('/getTile',function (req,res){
+        const { source } = req.query
+
+        if( !source )
+            return res.status(404).send('source must be defined')
+
         fetch(req.query.source)
             .then(img=>img.body.pipe(res))
             .catch(e=>{
                 console.log('getTile api broken',e);
-                res.status(500)
+                res.status(500).send(e)
             });
     })
 
     app.get('/getJson',function (req,res) {
         const { source } = req.query;
+
+        if( !source )
+            return res.status(404).send('source must be defined')
 
         const thisHostname = req.protocol + '://' + req.get('host')
         console.log('this host name',thisHostname)
@@ -32,12 +44,15 @@ module.exports = (app) =>{
         }))
             .then(data=>data.json())
             .then(json=>{
-                json.tileSources = json.tileSources.map(tileSource=>(new RegExp('^http')).test(tileSource) ? tileSource : tileSource[0] == '/' ? thisHostname + '/getTile?source=' + sourceHostname + tileSource : thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource );
+                json.tileSources = json.tileSources.map(tileSource=>
+                    typeof tileSource !== 'string' ?
+                        tileSource :
+                        (new RegExp('^http')).test(tileSource) ? tileSource : tileSource[0] == '/' ? thisHostname + '/getTile?source=' + sourceHostname + tileSource : thisHostname + '/getTile?source=' + sourceHostname +  '/'+ tileSource );
                 res.status(200).send(JSON.stringify(json));
             })  
             .catch(e=>{
-                console.log('error'+e)
-                res.status(404);
+                console.log('Error at /getJson',e)
+                res.status(404).send(e);
             })
     })
 }
