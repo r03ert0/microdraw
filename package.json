@@ -31,9 +31,11 @@
   "main": "app.js",
   "devDependencies": {
     "chai": "^4.1.2",
-    "mocha": "^5.2.0",
     "eslint": "^4.19.1",
-    "puppeteer": "latest"
+    "mocha": "^5.2.0",
+    "nock": "^9.4.1",
+    "puppeteer": "latest",
+    "request": "^2.87.0"
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",
   "license": "ISC",
