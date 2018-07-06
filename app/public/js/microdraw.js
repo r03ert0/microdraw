@@ -1862,7 +1862,7 @@ var Microdraw = (function () {
                     .then((data) => {
                         me.config = data;
                         
-                        return Promise.all( [
+                        return Promise.all( 
                             /* tools loaded dynamically, based on user configuration, server configuration etc. */
                             data.presets.default.map((item)=>{
 
@@ -1881,7 +1881,7 @@ var Microdraw = (function () {
                                         })
                                     })
                             })
-                        ])
+                        )
                     })
             ])
         },
