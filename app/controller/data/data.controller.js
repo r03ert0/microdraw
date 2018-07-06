@@ -15,7 +15,8 @@ function data(req, res) {
         title: 'MicroDraw::Data',
         loginMethods : req.appConfig.loginMethods || [],
         params: JSON.stringify(req.query),
-        login: login
+        login: login,
+        user : req.user
     });
 }
 
