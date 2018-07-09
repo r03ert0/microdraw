@@ -14,16 +14,18 @@ module.exports = (app)=>{
         username 
       })
         .then(user=>{
-          done(null, user ? 
-            user.password === md5(password) ?
-              user :
-              false :
-            false)
+
+          /* never use md5 to store passwords*/
+          // done(null, user ? 
+          //   user.password === md5(password) ?
+          //     user :
+          //     false :
+          //   false)
 
           /* bcrypt -> more secure */
-          // bcrypt.compare(password,user.passhash)
-          //   .then(res=>done(null,res ? user : false))
-          //   .catch(e=>done(e))
+          bcrypt.compare(password,user.passhash)
+            .then(res=>done(null,res ? user : false))
+            .catch(e=>done(e))
         })
         .catch(e=>{
           console.log(JSON.stringify(e))
@@ -43,22 +45,28 @@ module.exports = (app)=>{
     })
 
   app.post('/localSignup', (req,res)=>{
-    console.log(req.body)
-    res.status(404)
 
     /* bcrypt more secrure */
-    // bcrypt.hash(req.body.password,saltRounds,(err,hash)=>{
-    //   if(err) res.status(500).send(err)
-    //   else {
+    bcrypt.hash(req.body.password,saltRounds,(err,hash)=>{
+      if(err) res.status(500).send(err)
+      else {
 
-    //     /* save req.body.username & hash */
-    //     app.db.addUser({
-    //       strategy : 'local',
-    //       username : req.body.username,
-    //       passhash : hash
-    //     })
-    //     res.status(200)
-    //   }
-    // })
+        /* save req.body.username & hash */
+        app.db.addUser({
+          strategy : 'local',
+          username : req.body.username,
+          passhash : hash
+        })
+        res.status(200)
+      }
+    })
   })
+
+
+  const loginMethods = app.get('loginMethods') ? app.get('loginMethods') : []
+  app.set('loginMethods', 
+    loginMethods.concat({
+      url : '/html/localsignin.html',
+      text : 'Log in locally'
+    }))
 }
