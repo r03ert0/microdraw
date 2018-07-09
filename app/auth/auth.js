@@ -1,6 +1,6 @@
 const session = require('express-session')
 const passport = require('passport')
-const SESSION_SECRETE = process.env.SESSION_SECRETE || 'a mi no me gusta la sémola'
+const SESSION_SECRET = process.env.SESSION_SECRET || 'a mi no me gusta la sémola'
 
 const github = require('./github')
 const local = require('./local')
@@ -18,7 +18,7 @@ const ensureAuthenticated = (req,res,next)=>{
 module.exports = (app)=>{
     console.log(`loading auth module`)
     app.use(session({
-        secret : SESSION_SECRETE,
+        secret : SESSION_SECRET,
         resave : false,
         saveUninitialized : false
     }))
@@ -50,16 +50,10 @@ module.exports = (app)=>{
     /* uncommend to include local signin strategy */
     /* or any other strategy you may like to include */
 
-    github(app)
-    // local(app)
+    app.set('loginMethods',[])
 
-    app.set('loginMethods',[{
-        url : '/auth/github',
-        text : 'Log in with GitHub'
-    // },{
-    //     url : '/html/localsignin.html',
-    //     text: 'Log in locally'
-    }])
+    github(app)
+    if(process.env.LOCALSIGNIN && process.env.LOCALSIGNIN === 'true') local(app)
 
     /* TODO simple a demo */
     app.get('/secure-route-example', ensureAuthenticated, function (req, res) { res.send("access granted"); });
@@ -72,6 +66,4 @@ module.exports = (app)=>{
             res.send({loggedIn: false});
         }
     })
-
-
 }

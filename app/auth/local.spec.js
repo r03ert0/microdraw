@@ -5,7 +5,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const session = require('express-session')
 const passport = require('passport')
-const SESSION_SECRETE = process.env.SESSION_SECRETE || 'a mi no me gusta la sémola'
+const SESSION_SECRET = process.env.SESSION_SECRET || 'a mi no me gusta la sémola'
 
 
 chai.use(chaiHttp)
@@ -33,7 +33,7 @@ describe('testing local.js',()=>{
   before(()=>{
 
     app.use(session({
-      secret : SESSION_SECRETE || 'temporary secret',
+      secret : SESSION_SECRET || 'temporary secret',
       resave : false,
       saveUninitialized : false
     }))
