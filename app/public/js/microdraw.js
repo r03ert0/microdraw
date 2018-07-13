@@ -2097,6 +2097,9 @@ var Microdraw = (function () {
                 yOffset:5
             });
 
+            /* fixes https://github.com/r03ert0/microdraw/issues/142  */
+            me.viewer.scalebarInstance.divElt.style.pointerEvents = `none`
+
             // add screenshot
             me.viewer.screenshot({
                 showOptions: true, // Default is false
