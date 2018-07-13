@@ -2094,8 +2094,12 @@ var Microdraw = (function () {
                 barThickness:4,
                 location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
                 xOffset:5,
-                yOffset:5
+                yOffset:5,
+                pointerEvents:'none'
             });
+
+            /* fixes https://github.com/r03ert0/microdraw/issues/142  */
+            me.viewer.scalebarInstance.divElt.style.pointerEvents = `none`
 
             // add screenshot
             me.viewer.screenshot({
