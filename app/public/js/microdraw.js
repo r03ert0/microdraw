@@ -2094,8 +2094,7 @@ var Microdraw = (function () {
                 barThickness:4,
                 location: OpenSeadragon.ScalebarLocation.TOP_RIGHT,
                 xOffset:5,
-                yOffset:5,
-                pointerEvents:'none'
+                yOffset:5
             });
 
             /* fixes https://github.com/r03ert0/microdraw/issues/142  */
