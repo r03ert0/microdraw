@@ -6,7 +6,7 @@ services:
         container_name: microdraw
         depends_on:
             - 'mongo'
-        build: .
+        build: ..
         image: microdraw
         ports:
             - '3000:3000'

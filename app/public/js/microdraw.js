@@ -1862,7 +1862,7 @@ var Microdraw = (function () {
                     .then((data) => {
                         me.config = data;
                         
-                        return Promise.all( [
+                        return Promise.all( 
                             /* tools loaded dynamically, based on user configuration, server configuration etc. */
                             data.presets.default.map((item)=>{
 
@@ -1881,7 +1881,7 @@ var Microdraw = (function () {
                                         })
                                     })
                             })
-                        ])
+                        )
                     })
             ])
         },
@@ -2096,6 +2096,9 @@ var Microdraw = (function () {
                 xOffset:5,
                 yOffset:5
             });
+
+            /* fixes https://github.com/r03ert0/microdraw/issues/142  */
+            me.viewer.scalebarInstance.divElt.style.pointerEvents = `none`
 
             // add screenshot
             me.viewer.screenshot({

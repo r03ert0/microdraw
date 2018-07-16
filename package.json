@@ -5,15 +5,18 @@
   "scripts": {
     "start": "node ./bin/www",
     "test": "node test.js",
+    "mocha": "node node_modules/mocha/bin/mocha ./test/mocha.index.js",
     "mocha-db": "MONGODB_TEST_DEFAULT=127.0.0.1:27017/microdraw_mocha_test node_modules/mocha/bin/mocha app/db/db.spec.js"
   },
   "dependencies": {
+    "bcrypt": "^2.0.1",
     "body-parser": "^1.18.2",
     "cookie-parser": "latest",
     "dateformat": "^3.0.2",
     "debug": "^3.1.0",
     "express": "latest",
     "express-session": "latest",
+    "md5": "^2.2.1",
     "mongodb": "^2.2.33",
     "monk": "^6.0.5",
     "morgan": "latest",
@@ -21,6 +24,8 @@
     "node-fetch": "^1.7.3",
     "passport": "^0.4.0",
     "passport-github": "latest",
+    "passport-local": "^1.0.0",
+    "request": "^2.83.0",
     "serve-favicon": "latest"
   },
   "main": "app.js",
@@ -28,6 +33,7 @@
     "chai": "^4.1.2",
     "eslint": "^4.19.1",
     "mocha": "^5.2.0",
+    "mock-fs": "^4.5.0",
     "nock": "^9.4.1",
     "puppeteer": "latest",
     "request": "^2.87.0"
