@@ -1612,7 +1612,7 @@ var Microdraw = (function () {
                 if( me.shortCuts[key] ) {
                     var shortcut = me.shortCuts[key];
                     shortcut();
-                    e.preventDefault();
+                    e.stopPropagation();
                 }
             });
         },
@@ -1749,7 +1749,7 @@ var Microdraw = (function () {
                     me.loadImage(me.imageOrder[index]);
                 }
             }
-            event.preventDefault(); // prevent the default action (scroll / move caret)
+            event.stopPropagation(); // prevent the default action (scroll / move caret)
         },
 
 
@@ -1959,7 +1959,7 @@ var Microdraw = (function () {
             me.selectTool();
 
             // Change current section by typing in the section number and pessing the enter key
-            $("#sectionName").keyup(me.sectionNameOnEnter);
+            $("#sectionName").keydown(me.sectionNameOnEnter);
 
             // Show and hide menu
             if( me.config.hideToolbar ) {
