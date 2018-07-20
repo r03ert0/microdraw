@@ -4,7 +4,7 @@
 var ToolDrawPolygon = {drawPolygon: (function() {
     
     /* can be changed/loaded via config  */
-    let drawingPolygonFlag = true
+    let drawingPolygonFlag = false
 
     /**
      * @function finishDrawingPolygon
@@ -21,7 +21,6 @@ var ToolDrawPolygon = {drawPolygon: (function() {
         }
         Microdraw.region.path.fullySelected = true;
         drawingPolygonFlag = false
-        Microdraw.commitMouseUndo();
     }
 
     var tool = {
@@ -35,6 +34,9 @@ var ToolDrawPolygon = {drawPolygon: (function() {
          mouseDown: function mouseDown(point) {
             // is already drawing a polygon or not?
             if( drawingPolygonFlag === false ) {
+
+                Microdraw.commitMouseUndo();    
+                
                 // deselect previously selected region
                 if( Microdraw.region ) { Microdraw.region.path.selected = false; }
 
