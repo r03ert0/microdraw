@@ -2,7 +2,30 @@
 /*global paper*/
 
 var ToolDrawPolygon = {drawPolygon: (function() {
+    
+    /* can be changed/loaded via config  */
+    let drawingPolygonFlag = true
+
+    /**
+     * @function finishDrawingPolygon
+     * @description cleanup finishing drawing polygon
+     */
+    const finishDrawingPolygon = function(closed){
+
+        // finished the drawing of the polygon
+        if( closed ) {
+            Microdraw.region.path.closed = true;
+            Microdraw.region.path.fillColor.alpha = Microdraw.config.defaultFillAlpha;
+        } else {
+            Microdraw.region.path.fillColor.alpha = 0;
+        }
+        Microdraw.region.path.fullySelected = true;
+        drawingPolygonFlag = false
+        Microdraw.commitMouseUndo();
+    }
+
     var tool = {
+
 
         /**
          * @function mouseDown
@@ -11,7 +34,7 @@ var ToolDrawPolygon = {drawPolygon: (function() {
          */
          mouseDown: function mouseDown(point) {
             // is already drawing a polygon or not?
-            if( Microdraw.drawingPolygonFlag == false ) {
+            if( drawingPolygonFlag === false ) {
                 // deselect previously selected region
                 if( Microdraw.region ) { Microdraw.region.path.selected = false; }
 
@@ -21,18 +44,18 @@ var ToolDrawPolygon = {drawPolygon: (function() {
                 Microdraw.region = Microdraw.newRegion({path:path});
                 Microdraw.region.path.fillColor.alpha = 0;
                 Microdraw.region.path.selected = true;
-                Microdraw.drawingPolygonFlag = true;
-                Microdraw.commitMouseUndo();
+
+                drawingPolygonFlag = true;
+
             } else {
                 var hitResult = paper.project.hitTest(point, {tolerance:Microdraw.tolerance, segments:true});
                 if( hitResult && hitResult.item === Microdraw.region.path && hitResult.segment.point === Microdraw.region.path.segments[0].point ) {
                     // clicked on first point of current path
                     // --> close path and remove drawing flag
-                    Microdraw.finishDrawingPolygon(true);
+                    finishDrawingPolygon(true);
                 } else {
                     // add point to region
                     Microdraw.region.path.add(point);
-                    Microdraw.commitMouseUndo();
                 }
             }
         },
@@ -76,6 +99,15 @@ var ToolDrawPolygon = {drawPolygon: (function() {
                 }
             }
             paper.view.draw();
+        },
+
+        /**
+         * @function onDeselect
+         * @returns {void}
+         * @description called when user clicks another tool
+         */
+        onDeselect : function onDeselect(){
+            finishDrawingPolygon(true)
         },
 
         /*

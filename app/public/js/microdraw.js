@@ -1066,26 +1066,6 @@ var Microdraw = (function () {
         },
 
         /**
-         * @function finishDrawingPolygon
-         * @desc Tool selection
-         * @param {number} closed Binary value indicating whether to close the region or not
-         * @returns {void}
-         */
-        finishDrawingPolygon: function finishDrawingPolygon(closed) {
-                // finished the drawing of the polygon
-                if( closed === true ) {
-                    me.region.path.closed = true;
-                    me.region.path.fillColor.alpha = me.config.defaultFillAlpha;
-                } else {
-                    me.region.path.fillColor.alpha = 0;
-                }
-                me.region.path.fullySelected = true;
-                //region.path.smooth();
-                me.drawingPolygonFlag = false;
-                me.commitMouseUndo();
-        },
-
-        /**
          * @function backToPreviousTool
          * @param {string} prevTool Name of the previously selected tool
          * @returns {void}
@@ -1178,11 +1158,8 @@ var Microdraw = (function () {
                 console.log("> toolSelection");
             }
 
-            //end drawing of polygons and make open form
-            if( me.drawingPolygonFlag === true ) {
-                me.finishDrawingPolygon(true);
-            }
-
+            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) me.tools[prevTool].onDeselect()
+            
             var prevTool = me.selectedTool;
             me.selectedTool = $(this).attr("id");
             me.selectTool();
