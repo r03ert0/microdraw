@@ -1,7 +1,5 @@
 const url = require('url')
-const fetch = require('node-fetch')
-
-// TODO use request instead of node-fetch, then remove node-fetch from the dependency
+const request = require('request')
 
 module.exports = (app) =>{
     app.get('/getTile',function (req,res){
@@ -25,7 +23,6 @@ module.exports = (app) =>{
             return res.status(404).send('source must be defined')
 
         const thisHostname = req.protocol + '://' + req.get('host')
-        console.log('this host name',thisHostname)
         const sourceHostname = 
             !source ? 
                 null : 
@@ -35,6 +32,13 @@ module.exports = (app) =>{
         const sourcePath = url.parse(source).path ? url.parse(source).path : null;
         (new Promise((resolve,reject)=>{
             if( sourceHostname && sourcePath ){
+                request(sourceHostname + sourcePath, (err,res,body)=>{
+                    if(err) reject(err)
+                    if(res.statusCode >= 400)
+                        reject(body)
+                    else
+                        resolve(body)
+                })
                 fetch(sourceHostname + sourcePath)
                     .then(data=>resolve(data))
                     .catch(e=>reject(e));
@@ -44,6 +48,7 @@ module.exports = (app) =>{
         }))
             .then(data=>data.json())
             .then(json=>{
+                
                 json.tileSources = json.tileSources.map(tileSource=>
                     typeof tileSource !== 'string' ?
                         tileSource :

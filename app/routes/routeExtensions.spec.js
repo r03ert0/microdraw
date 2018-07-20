@@ -48,6 +48,7 @@ nockProxy.get('/').reply(200)
 nockProxy.get('/1.json').reply(200,mockReplyJson1)
 nockProxy.get('/2.json').reply(200,mockReplyJson2)
 nockProxy.get('/3.json').reply(200,mockReplyJson3)
+nockProxy.get('/nonexistent.json',reply(400,mockReplyJson1))
 
 nockProxy.get('/test.jpg').reply(200,imageData)
 
@@ -99,6 +100,14 @@ describe('Test /getJson api end point',()=>{
     })
 
     describe('endpoint /getJson fetches existing endpoint correctly',()=>{
+
+        it('error status code forwards the result onwards',(done)=>{
+            request(`http://localhost:10002/getJson?source=${nockMockUrl}/nonexistent.json`,(err,res,body)=>{
+                expect(err).to.be.equal(null)
+                expect(res.statusCode).to.be.equal(404)
+                done()
+            })
+        })
 
         it('illformed json returns 404',(done)=>{
             request(`http://localhost:10002/getJson?source=${nockMockUrl}/1.json`,(err,res,body)=>{
