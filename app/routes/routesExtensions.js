@@ -39,16 +39,12 @@ module.exports = (app) =>{
                     else
                         resolve(body)
                 })
-                fetch(sourceHostname + sourcePath)
-                    .then(data=>resolve(data))
-                    .catch(e=>reject(e));
             }else{
                 reject('sourceurl not defined');
             }
         }))
-            .then(data=>data.json())
-            .then(json=>{
-                
+            .then(body=>{
+                const json = JSON.parse(body)
                 json.tileSources = json.tileSources.map(tileSource=>
                     typeof tileSource !== 'string' ?
                         tileSource :
