@@ -700,6 +700,19 @@ var Microdraw = (function () {
             }
         },
 
+
+        /**
+         * @function scrollHandler
+         * @param {object} event Scroll event
+         * @returns {void}
+         */
+        scrollHandler: function scrollHandler(ev){
+            if( me.debug ) { console.log("> scrollHandler") }
+
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].scrollHandler ) me.tools[me.selectedTool].scrollHandler(ev);
+            paper.view.draw()
+        },
+
         /**
          * @function mouseDown
          * @param {number} x X-coordinate for mouse down
@@ -2122,7 +2135,8 @@ var Microdraw = (function () {
                 {tracker: 'viewer', handler: 'clickHandler', hookHandler: me.clickHandler},
                 {tracker: 'viewer', handler: 'pressHandler', hookHandler: me.pressHandler},
                 {tracker: 'viewer', handler: 'dragHandler', hookHandler: me.dragHandler},
-                {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler}
+                {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler},
+                {tracker: 'viewer', handler: 'scrollHandler', hookHandler: me.scrollHandler}
             ]});
 
             if( me.debug ) {
