@@ -39,8 +39,6 @@ var ToolDrawPolygon = {drawPolygon: (function() {
                 drawingPolygonFlag = currentFlag
             })(drawingPolygonFlag)
 
-            Microdraw.commitMouseUndo();  
-
             if( drawingPolygonFlag === false ) {
                 
                 // deselect previously selected region
@@ -66,6 +64,8 @@ var ToolDrawPolygon = {drawPolygon: (function() {
                     Microdraw.region.path.add(point);
                 }
             }
+
+            Microdraw.commitMouseUndo();  
         },
 
         /**
@@ -107,15 +107,6 @@ var ToolDrawPolygon = {drawPolygon: (function() {
                 }
             }
             paper.view.draw();
-        },
-
-        /**
-         * @function onDeselect
-         * @returns {void}
-         * @description called when user clicks another tool
-         */
-        onDeselect : function onDeselect(){
-            finishDrawingPolygon(true)
         },
 
         /*
