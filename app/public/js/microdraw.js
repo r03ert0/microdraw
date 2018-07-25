@@ -1161,10 +1161,11 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> toolSelection");
             }
-
-            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) me.tools[prevTool].onDeselect()
             
             var prevTool = me.selectedTool;
+            
+            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) me.tools[prevTool].onDeselect()
+            
             me.selectedTool = $(this).attr("id");
             me.selectTool();
 
