@@ -1060,6 +1060,10 @@ var Microdraw = (function () {
                 }
             }
 
+            if(undo.callback && typeof undo.callback === 'function'){
+                undo.callback()
+            }
+
             /**
              * @todo This line produces an error when the undo object is undefined. However, the code seems to work fine without this line. Check what the line was supposed to do
              */
@@ -1076,26 +1080,6 @@ var Microdraw = (function () {
                 me.saveUndo(me.mouseUndo);
                 me.mouseUndo = null;
             }
-        },
-
-        /**
-         * @function finishDrawingPolygon
-         * @desc Tool selection
-         * @param {number} closed Binary value indicating whether to close the region or not
-         * @returns {void}
-         */
-        finishDrawingPolygon: function finishDrawingPolygon(closed) {
-                // finished the drawing of the polygon
-                if( closed === true ) {
-                    me.region.path.closed = true;
-                    me.region.path.fillColor.alpha = me.config.defaultFillAlpha;
-                } else {
-                    me.region.path.fillColor.alpha = 0;
-                }
-                me.region.path.fullySelected = true;
-                //region.path.smooth();
-                me.drawingPolygonFlag = false;
-                me.commitMouseUndo();
         },
 
         /**
@@ -1190,13 +1174,11 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> toolSelection");
             }
-
-            //end drawing of polygons and make open form
-            if( me.drawingPolygonFlag === true ) {
-                me.finishDrawingPolygon(true);
-            }
-
+            
             var prevTool = me.selectedTool;
+            
+            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) me.tools[prevTool].onDeselect()
+            
             me.selectedTool = $(this).attr("id");
             me.selectTool();
 
