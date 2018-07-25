@@ -1047,6 +1047,10 @@ var Microdraw = (function () {
                 }
             }
 
+            if(undo.callback && typeof undo.callback === 'function'){
+                undo.callback()
+            }
+
             /**
              * @todo This line produces an error when the undo object is undefined. However, the code seems to work fine without this line. Check what the line was supposed to do
              */
