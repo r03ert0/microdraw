@@ -1,9 +1,17 @@
 const session = require('express-session')
 const passport = require('passport')
+const MongoStore = require('connect-mongo')(session)
 const SESSION_SECRET = process.env.SESSION_SECRET || 'a mi no me gusta la sémola'
 
 const github = require('./github')
 const local = require('./local')
+
+const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw'
+
+const _URL = (MONGODB.slice(0,10) === 'mongodb://'
+        ? ''
+        : 'mongodb://') + 
+        MONGODB
 
 /* middle to ensure authenticated */
 const ensureAuthenticated = (req,res,next)=>{
@@ -20,7 +28,10 @@ module.exports = (app)=>{
     app.use(session({
         secret : SESSION_SECRET,
         resave : false,
-        saveUninitialized : false
+        saveUninitialized : false,
+        store: new MongoStore({
+            url : _URL
+        })
     }))
     app.use(passport.initialize())
     app.use(passport.session())
