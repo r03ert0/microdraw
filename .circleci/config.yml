@@ -14,7 +14,7 @@ jobs:
           name: Run server in background
           command: 'npm start'
           environment :
-            MONGODB : mongo:27017/circleci_test
+            MONGODB : 127.0.0.1:27017/circleci_test
           background: true
       - run: sleep 5
       - run:
