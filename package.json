@@ -11,10 +11,11 @@
   "dependencies": {
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.2",
+    "connect-mongo": "^2.0.1",
     "cookie-parser": "latest",
     "dateformat": "^3.0.2",
     "debug": "^3.1.0",
-    "express": "latest",
+    "express": "^4.16.3",
     "express-session": "latest",
     "md5": "^2.2.1",
     "mongodb": "^2.2.33",
