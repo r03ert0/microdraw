@@ -32,9 +32,9 @@ module.exports = (app) =>{
         const sourcePath = url.parse(source).path ? url.parse(source).path : null;
         (new Promise((resolve,reject)=>{
             if( sourceHostname && sourcePath ){
-                request(sourceHostname + sourcePath, (err,res,body)=>{
+                request(sourceHostname + sourcePath, (err, resp, body) => {
                     if(err) reject(err)
-                    if(res.statusCode >= 400)
+                    if(resp.statusCode >= 400)
                         reject(body)
                     else
                         resolve(body)
