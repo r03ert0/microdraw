@@ -57,10 +57,9 @@ You may also want to set the session secret by setting the environment variable:
 _n.b. it is highly advised to not use local strategies to manage users unless absolutely necessary._
 
 ### Annotations management
-Microdraw uses [mongodb](https://docs.mongodb.com/) to manage the annotations by default. You may choose to use a different solution, by replacing `./app/db/db.js` with your own backend. 
+Microdraw uses [mongodb](https://docs.mongodb.com/) to manage the annotations by default. You may choose to use a different solution, by replacing `./app/db/db.js` and replace with your own backend. 
 
-You can define your mongodb endpoing with the environmental variables:
-- `MONGODB=127.0.0.1/microdraw` (default: `127.0.0.1:27017/microdraw`)
+You can set a custom endpoint for mongodb by setting the environment variable : `MONGODB=url-to-mongo:27017/db_name`
 
 ### Set up your own local data folder
 * cd to /public directory, put yourDataFolder here which must contain
