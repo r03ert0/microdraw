@@ -20,3 +20,4 @@ vervet.zip
 test/*.png
 .DS_Store
 .vscode
+access.log
