@@ -29,8 +29,9 @@ module.exports = (app)=>{
         secret : SESSION_SECRET,
         resave : false,
         saveUninitialized : false,
-        store: new MongoStore({
-            url : _URL
+        store:  new MongoStore({
+            url : _URL,
+            fallbackMemory : true
         })
     }))
     app.use(passport.initialize())
