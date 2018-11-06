@@ -1,7 +1,8 @@
 const assert = require('assert')
 const expect = require('chai').expect
 
-const db = require('./db')
+const db = require('./db')()
+const garbageDb = require('./db')('GARBAGE_MONGO:27017/GARBAGE_MONGO')
 
 describe('Mocha Started',()=>{
     it('Mocha works properly',()=>{
@@ -95,16 +96,22 @@ describe('testing db.js',()=>{
         db.db.get('annotations').drop()
     })
 
-    // after(()=>{
-    //     db.db.get('users').drop()
-    //     db.db.get('annotations').drop()
-    // })
+    after(()=>{
+        db.db.get('users').drop()
+        db.db.get('annotations').drop()
+        db.db.close()
+    })
+
+    it('health check should reflect db health', () => {
+        expect(db.checkHealth()).to.be.equal(true)
+        expect(garbageDb.checkHealth()).to.be.equal(false)
+    })
 
     it('querying the empty mongodb should not yield any results',(done)=>{
         db.queryUser({
             username : dummyUser.username
         }).then(user=>{
-            done('should habe been empty, but not really empty')
+            done('should have been empty, but not really empty')
         }).catch(e=>{
             expect(e.message).to.equal('error find one user')
             done()

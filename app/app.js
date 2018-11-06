@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* setup DB */
-const db = require('./db/db')
+const db = require('./db/db')()
 app.db = db
 
 /* setup authentication */
