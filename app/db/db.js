@@ -1,10 +1,21 @@
 const monk = require('monk')
 const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw'
 
-module.exports = (function(){
+module.exports = function(overwriteMongoPath){
     console.log(`connecting to mongodb at: ${MONGODB}`)
-    const db = monk(MONGODB)
-    console.log('connection successful')
+    
+    const db = monk(overwriteMongoPath || MONGODB)
+    let connected = false
+
+    db.then(() => {
+        connected = true
+        console.log('connected successfully')
+    }).catch((e) => {
+        // retry (?)
+        connected = false
+        console.log('connection error', e)
+    })
+
     /* add user */
     const addUser = (user)=>new Promise((resolve,reject)=>{
         db.get('users').insert(user)
@@ -100,6 +111,11 @@ module.exports = (function(){
         })
     })
 
+    /**
+     * @returns {boolean} checks mongodb connection
+     */
+    const checkHealth = () => connected
+
     return {
         addUser,
         queryUser,
@@ -108,7 +124,8 @@ module.exports = (function(){
         updateAnnotation,
         updateUser,
         upsertUser,
-        db 
+        db,
+        checkHealth
     }
     /* should discourage the use of db.db ... this renders it db specific ... */
-})()
+}
