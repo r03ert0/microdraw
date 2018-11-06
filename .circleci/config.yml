@@ -2,7 +2,7 @@ version : 2
 jobs:
   build:
     docker:
-      - image: circleci/node:6.14-stretch-browsers
+      - image: circleci/node:6-browsers
       - image: circleci/mongo:3.4
     steps:
       - checkout
