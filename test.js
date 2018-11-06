@@ -114,6 +114,7 @@ puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandb
 
         // CLOSE
         .then(() => browser.close())
-        .then(function() { console.log('browser closed'); });
+        .then(function() { console.log('browser closed'); })
+        .catch(e => console.log('puppeteer error', e));
     });
 });
