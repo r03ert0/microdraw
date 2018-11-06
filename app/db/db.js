@@ -12,6 +12,7 @@ module.exports = function(overwriteMongoPath){
         console.log('connected successfully')
     }).catch((e) => {
         // retry (?)
+        connected = false
         console.log('connection error', e)
     })
 
