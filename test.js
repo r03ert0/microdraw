@@ -12,7 +12,7 @@ function delay(timeout) {
 }
 
 
-puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+puppeteer.launch({headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
     .then(function(browser) {
 
         console.log('puppeteer launched');
