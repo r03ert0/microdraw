@@ -8,12 +8,7 @@ module.exports = (app) =>{
         if( !source )
             return res.status(404).send('source must be defined')
 
-        fetch(req.query.source)
-            .then(img=>img.body.pipe(res))
-            .catch(e=>{
-                console.log('getTile api broken',e);
-                res.status(500).send(e)
-            });
+        request(req.query.source, {}).pipe(res)
     })
 
     app.get('/getJson',function (req,res) {
