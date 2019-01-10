@@ -39,6 +39,6 @@
     "request": "^2.87.0"
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "description": ""
 }

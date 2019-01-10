@@ -76,7 +76,7 @@
 
     <div id="colorSelector">
         stroke color
-        <select id="selectStrokeColor" onChange="onSelectStrokeColor();">
+        <select id="selectStrokeColor" onChange="Microdraw.onSelectStrokeColor();">
             <option value="0">black</option>
             <option value="1">white</option>
             <option value="2">red</option>
@@ -87,17 +87,17 @@
         <br>
         <br>
         stroke width
-        <input type="button" id="strokeWidthDec" value="-" onClick="onStrokeWidthDec();"><input type="button" id="strokeWidthInc" value="+" onClick="onStrokeWidthInc();">
+        <input type="button" id="strokeWidthDec" value="-" onClick="Microdraw.onStrokeWidthDec();"><input type="button" id="strokeWidthInc" value="+" onClick="Microdraw.onStrokeWidthInc();">
         <br>
         <br>
         fill color
-        <input type="color" id="fillColorPicker" value="#ff0000" onChange="onFillColorPicker(this.value);" >
+        <input type="color" id="fillColorPicker" value="#ff0000" onChange="Microdraw.onFillColorPicker(this.value);" >
         <br>
         <br>
-        &alpha;<input type="range" min="0" max="100" id="alphaSlider" onInput="onAlphaSlider(this.value);" ><input id="alphaFill" onInput="onAlphaInput(this.value);" >
+        &alpha;<input type="range" min="0" max="100" id="alphaSlider" onInput="Microdraw.onAlphaSlider(this.value);" ><input id="alphaFill" onInput="Microdraw.onAlphaInput(this.value);" >
         <br>
         <br>
-        <input type="button" id="okStrokeColor" value="ok" onClick="setRegionColor();">
+        <input type="button" id="okStrokeColor" value="ok" onClick="Microdraw.setRegionColor();">
     </div>
 
     <!-- Region Picker -->

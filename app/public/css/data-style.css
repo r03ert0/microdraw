@@ -71,3 +71,14 @@ html,body {
 {
     /* pointer-events:  */
 }
+
+#colorSelector,
+#colorSelector *
+{
+    color: black;
+}
+
+#regionPicker
+{
+    z-index: 2;
+}
