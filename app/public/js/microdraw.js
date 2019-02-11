@@ -333,6 +333,14 @@ var Microdraw = (function () {
                 $('#fillColorPicker').val( hexColor );
 
                 if( $('#colorSelector').css('display') === 'none' ) {
+                    /**
+                     * on show, populate alpha
+                     */
+                    const reg = me.currentColorRegion
+                    const alpha = reg.path.fillColor.alpha
+                    $('#alphaSlider').val(alpha * 100)
+                    $('#alphaFill').val(alpha * 100)
+
                     $('#colorSelector').css('display', 'block');
                 } else {
                     $('#colorSelector').css('display', 'none');
@@ -1840,6 +1848,7 @@ var Microdraw = (function () {
                     me.loadScript('/js/tools/previous.js'),
                     me.loadScript('/js/tools/next.js'),
                     me.loadScript('/js/tools/closeMenu.js'),
+                    me.loadScript('/js/tools/openMenu.js'),
 
                 ]).then(function () {
                     $.extend(me.tools, ToolHome);
@@ -1849,6 +1858,7 @@ var Microdraw = (function () {
                     $.extend(me.tools, ToolPrevious);
                     $.extend(me.tools, ToolNext);
                     $.extend(me.tools, ToolCloseMenu);
+                    $.extend(me.tools, ToolOpenMenu);
 
                 }),
 
