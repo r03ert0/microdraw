@@ -1,7 +1,7 @@
 /*global Microdraw*/
 /*global paper*/
 
-var ToolCloseMenu = { closeMenu : (function(){
+var ToolOpenMenu = { openMenu : (function(){
     var tool = {
 
         /**
