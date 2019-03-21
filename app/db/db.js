@@ -48,7 +48,7 @@ module.exports = function(overwriteMongoPath){
             .catch(e=>{
                 e.message === 'error find one user' ?
                     addUser(user)
-                        .then(user)
+                        .then(resolve)
                         .catch(e=>reject(e)) :
                 reject(e)
             })
