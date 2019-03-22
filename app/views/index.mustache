@@ -98,6 +98,9 @@
 -->
 
 <script>
+var vid = document.getElementById("neurons");
+vid.playbackRate = 0.5;
+
 $(".download>a").each(function(){
     $(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));
 })
