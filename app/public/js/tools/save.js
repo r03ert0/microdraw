@@ -45,9 +45,7 @@ var ToolSave = { save : (function(){
 
                 return;
             }
-            debugger
             value.Hash = h;
-            debugger
             savedSections += sl.toString() + " ";
 
             // post data to database
