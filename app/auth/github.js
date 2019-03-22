@@ -16,7 +16,8 @@ module.exports = (app)=>{
             passport.authenticate('github', {failureRedirect: '/'}),
             function (req, res) {
                 // successfully loged in. Check if user is new
-                app.db.upsert({
+                app.db.upsertUser({
+                    username: req.user.username,
                     name :req.user.displayName,
                     nickname : req.user.username,
                     url: req.user._json.blog,
@@ -29,7 +30,8 @@ module.exports = (app)=>{
                         delete req.session.returnTo;
                     })
                     .catch(e=>{
-                        res.status(500).send(e)
+                        console.log('db upsert user error', e)
+                        res.status(500).send(JSON.stringify(e))
                     })
         });
 

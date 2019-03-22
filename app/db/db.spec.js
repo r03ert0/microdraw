@@ -21,6 +21,15 @@ describe('testing db.js',()=>{
         age : 55
     }
 
+    const dummyGithubUser1 = {
+        username: 'github1 username',
+        name: 'github1 name',
+        nickename: 'github1 nickname',
+        url: 'github1 url',
+        brainboxURL: 'github1 brainbox URL',
+        joined: 'github1 joined'
+    }
+
     const dummyAnnotation = {
         fileID : 'dummy fileID 1',
         user : 'tommy jones',
@@ -155,12 +164,80 @@ describe('testing db.js',()=>{
         })
     })
 
+    describe('testing adding and querying github users', () => {
+        it('should add user fine', (done) => {
+            db.addUser(dummyGithubUser1)
+                .then(user => {
+                    expect(user).to.deep.equal(dummyGithubUser1)
+                    done()
+                })
+                .catch(done)
+        })
+
+        it('querying the inserted user should work as intended', (done) => {
+            db.queryUser({
+                username: dummyGithubUser1.username
+            })
+                .then(user => {
+                    expect(user).to.deep.equal(dummyGithubUser1)
+                    done()
+                })
+                .catch(done)
+        })
+
+        it('update user should work', (done) => {
+
+            const dghu1c = {
+                ...dummyGithubUser1,
+                joined: 'joined2'
+            }
+            db.updateUser(dghu1c)
+                .then(user => {
+                    expect(user).to.deep.equal(dghu1c)
+                    done()
+                })
+                .catch(done)
+        })
+
+        it('upsert user should work', (done) => {
+
+            const dghu1c = {
+                ...dummyGithubUser1,
+                joined: 'joined3'
+            }
+
+            const githubUser2 = {
+                ...dummyGithubUser1,
+                username: 'github1 username alt'
+            }
+            Promise.all([
+                db.upsertUser(dghu1c),
+                db.updateUser(githubUser2)
+            ])
+                .then(users => {
+                    expect(users).to.deep.equal([
+                        dghu1c,
+                        githubUser2
+                    ])
+                    done()
+                })
+                .catch(done)
+        })
+
+        // it('upserting should work', (done) => {
+        //     const dghu1c = {
+        //         ...dummyGithubUser1,
+        //         joined: 'joined2'
+        //     }
+        // })
+    })
+
     describe('testing adding, and querying annotations',()=>{
 
         it('should add annotations fine',(done)=>{
             db.updateAnnotation(dummyAnnotation)
                 .then(()=>done())
-                .catch(e=>done(e))
+                .catch(done)
         })
 
         it('should query the added annotation fine',(done)=>{
@@ -175,14 +252,14 @@ describe('testing db.js',()=>{
                     })
                     done()
                 })
-                .catch(e=>done(e))
+                .catch(done)
 
         })
 
         it('should add another annotations fine',(done)=>{
             db.updateAnnotation(dummyAnnotation2)
                 .then(()=>done())
-                .catch(e=>done(e))
+                .catch(done)
         })
 
         it('should query the added annotation fine',(done)=>{
@@ -197,7 +274,7 @@ describe('testing db.js',()=>{
                     })
                     done()
                 })
-                .catch(e=>done(e))
+                .catch(done)
 
         })
 
@@ -206,7 +283,7 @@ describe('testing db.js',()=>{
         it('should update fine',(done)=>{
             db.updateAnnotation(dummyAnnotation_updated)
                 .then(()=>done())
-                .catch(e=>done(e))
+                .catch(done)
         })
 
         it('should fetch the updated annotation',(done)=>{
@@ -222,7 +299,7 @@ describe('testing db.js',()=>{
                     })
                     done()
                 })
-                .catch(e=>done(e))
+                .catch(done)
         })
         
         it('should fetch an empty array when no results could be found',(done)=>{
@@ -231,7 +308,7 @@ describe('testing db.js',()=>{
             }).then(annotations=>{
                 expect(annotations).to.be.deep.equal([])
                 done()
-            }).catch(e=>done(e))
+            }).catch(done)
         })
         
     })
