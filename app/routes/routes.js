@@ -58,9 +58,9 @@ module.exports = (app)=>{
         app.db.updateAnnotation({
             fileID : req.body.fileID,
             user : req.user ? req.user.username : 'anonymouse',
-            annotationHash : req.body.annotationHash,
+            Hash : req.body.Hash,
             annotation :req.body.annotation})
-              .then(()=>res.status(200))
+              .then(()=>res.status(200).send())
               .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
       }else{
           res.status(500).send({err:'actions other than save are no longer supported.'})

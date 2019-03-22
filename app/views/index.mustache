@@ -13,6 +13,10 @@
     <!-- Content  -->
     <div class="slide" style="background:#222">
     <!-- Slide: Landing -->
+        <img id="neuronsImg" src="img/neurons.png" width="100%" />
+        <video id="neurons" width="100%" autoplay loop>
+            <source src="img/neurons.mp4" type="video/mp4">
+        </video>
         <div class="content">
             <img id="logo" src="img/microdraw-logo-white.svg"/>
             <h2 style='margin-top:0'>Collaborative atlas creation</h2>
@@ -29,8 +33,7 @@
                     <option value='' disabled selected hidden>&#9662; A list of datasets to try</option>
                     <option value="http://microdraw.pasteur.fr/bigbrain/bigbrain.json">BigBrain human brain section (Many thanks to Claude Lepage, Katrin Amunts, Alan Evans)</option>
                     <option value="http://microdraw.pasteur.fr/vervet/vervet.json">Vervet monkey brain section scanned using Polarized Light Imaging (Many thanks to Katrin Amuts, Markus Axer, Roger Woods, Karl Zilles)</option>
-                    <option value="http://microdraw.pasteur.fr/ferret/sub1.20.json">A section from a 32 days old ferret from project FIIND</option>
-                    <option value="http://umr3571.cnrs.fr/data/macaque/macaque.jsonp">Allen Institute macaque sections</option>
+                    <option value="http://microdraw.pasteur.fr/ferret1/ferret.json">A section from a 32 days old ferret from project FIIND</option>
                 </select>
                 <div id="go" class="pushButton" style="display:inline-block;width:32px;line-height:30px" onclick="goToURL()">Go</div>
             </div>
@@ -95,6 +98,9 @@
 -->
 
 <script>
+var vid = document.getElementById("neurons");
+vid.playbackRate = 0.5;
+
 $(".download>a").each(function(){
     $(this).attr('href',$(this).attr('href').replace("%%localhost%%",localhost));
 })

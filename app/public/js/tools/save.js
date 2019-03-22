@@ -40,7 +40,7 @@ var ToolSave = { save : (function(){
             if( Microdraw.debug > 1 ) { console.log("hash:", h, "original hash:", section.Hash); }
             // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
             if( typeof section.Hash === "undefined" || h === section.Hash ) {
-                if( Microdraw.debug > 1 ) { console.log("No change, no save"); }
+                if( Microdraw.debug > 1 ) { console.log(`sl ${sl}`, "No change, no save"); }
                 value.Hash = h;
 
                 return;
@@ -56,8 +56,8 @@ var ToolSave = { save : (function(){
                         type:"POST",
                         data: {
                             action: "save",
-                            fileID: Microdraw.fileID,
-                            annotationHash: h2,
+                            fileID: `${Microdraw.source}&slice=${sl}`,
+                            Hash: h2,
                             annotation: JSON.stringify(value)
                         },
                         success: function(result) {
@@ -125,7 +125,7 @@ Microdraw.microdrawDBLoad = function(){
 
         $.getJSON(dbroot,{
             action : "load_last",
-            fileID : Microdraw.fileID
+            fileID : `${Microdraw.source}&slice=${Microdraw.currentImage}`
         })
             .success(function (data){
                 var i, json, reg;

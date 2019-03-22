@@ -4,7 +4,7 @@
     "regionOntology":true,
     "drawingEnabled":true,
     "removeTools":[],
-    "multiImageSave":false,
+    "multiImageSave":true,
     "presets":{
         "default":[
             {

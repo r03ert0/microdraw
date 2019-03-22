@@ -16,14 +16,25 @@ module.exports = function(overwriteMongoPath){
         console.log('connection error', e)
     })
 
+    /**
+     * @returns {boolean} checks mongodb connection
+     */
+    const checkHealth = () => connected
+
     /* add user */
     const addUser = (user)=>new Promise((resolve,reject)=>{
+        if (!checkHealth()) {
+            return reject('db connection not healthy')
+        }
         db.get('users').insert(user)
             .then(()=>resolve(user))
             .catch(e=>reject(e))
     })
 
     const updateUser = (user)=>new Promise((resolve,reject)=>{
+        if (!checkHealth()) {
+            return reject('db connection not healthy')
+        }
         db.get('user').update({
             username : user.username
         },{
@@ -34,12 +45,18 @@ module.exports = function(overwriteMongoPath){
 
     /* find user */
     const queryUser = (searchQuery)=>new Promise((resolve,reject)=>{
+        if (!checkHealth()) {
+            return reject('db connection not healthy')
+        }
         db.get('users').findOne(searchQuery)
             .then((user)=>user ? resolve(user) : reject({message:'error find one user',result:user}))
             .catch(e=>reject(e))
     })
 
     const upsertUser = (user)=> new Promise((resolve,reject)=>{
+        if (!checkHealth()) {
+            return reject('db connection not healthy')
+        }
         queryUser({
             username : user.username
         })
@@ -56,6 +73,9 @@ module.exports = function(overwriteMongoPath){
     })
 
     const queryAllUsers = (pagination)=>new Promise((resolve,reject)=>{
+        if (!checkHealth()) {
+            return reject('db connection not healthy')
+        }
         db.get('users').find(pagination)
             .then((users)=>users ? resolve(users) : reject({message : 'error find all users',result:users}))
             .catch(e=>reject(e))
@@ -67,6 +87,9 @@ module.exports = function(overwriteMongoPath){
      * @returns {Promise} to resolve as an array of annotations
      */
     const findAnnotations = (searchQuery)=>new Promise((resolve,reject)=>{
+        if (!checkHealth()) {
+            return reject('db connection not healthy')
+        }
         db.get('annotations').find(
             Object.assign({},searchQuery,{
                 backup : { $exists : false }
@@ -81,11 +104,14 @@ module.exports = function(overwriteMongoPath){
 
     /**
      * 
-     * @param {Object} saveQuery having fields : fileID : string, user : string, annotationHash : string, annotation : JSON.stringify(Object { Regions : string[] }), hash : string
+     * @param {Object} saveQuery having fields : fileID : string, user : string, Hash : string, annotation : JSON.stringify(Object { Regions : string[] }), hash : string
      * @returns {Promise} to resolve when saving is complete
      */
     const updateAnnotation = (saveQuery)=> new Promise((resolve,reject)=>{
-        const { fileID , user, annotationHash, annotation } = saveQuery
+        if (!checkHealth()) {
+            return reject('db connection not healthy')
+        }
+        const { fileID , user, Hash, annotation } = saveQuery
         db.get('annotations').update(
             Object.assign(
                 {},
@@ -98,7 +124,7 @@ module.exports = function(overwriteMongoPath){
             const arrayTobeSaved = allAnnotation.Regions.map(region=>({
                 fileID, 
                 user,
-                annotationHash ,
+                Hash ,
                 annotation : region
             }))
             db.get('annotations').insert(arrayTobeSaved)
@@ -106,11 +132,6 @@ module.exports = function(overwriteMongoPath){
                 .catch(e=>reject(e))
         })
     })
-
-    /**
-     * @returns {boolean} checks mongodb connection
-     */
-    const checkHealth = () => connected
 
     return {
         addUser,

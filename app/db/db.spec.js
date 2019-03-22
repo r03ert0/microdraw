@@ -38,19 +38,19 @@ describe('testing db.js',()=>{
             annotationkey2 : 'dummy annotation 1 annotation value 2',
             Regions : ['dummy annotation 1 region1','dummy annotation 1 region2']
         }),
-        annotationHash : 'abc123'
+        Hash : 'abc123'
     }
 
     const expectedSavedDummy = [{
         fileID : 'dummy fileID 1',
         user : 'tommy jones',
         annotation : 'dummy annotation 1 region2',
-        annotationHash : 'abc123'
+        Hash : 'abc123'
     },{
         fileID : 'dummy fileID 1',
         user : 'tommy jones',
         annotation : 'dummy annotation 1 region1',
-        annotationHash : 'abc123'
+        Hash : 'abc123'
     }]
 
     const dummyAnnotation_updated = {
@@ -61,19 +61,19 @@ describe('testing db.js',()=>{
             annotationkey2 : 'dummy annotation 1 annotation value 2 updated',
             Regions : ['dummy annotation 1 updated region1','dummy annotation 1 updated region2']
         }),
-        annotationHash : 'abc123 updated'
+        Hash : 'abc123 updated'
     }
 
     const expectedSavedDummyUpdated = [{
         fileID : 'dummy fileID 1',
         user : 'tommy jones',
         annotation : 'dummy annotation 1 updated region2',
-        annotationHash : 'abc123 updated'
+        Hash : 'abc123 updated'
     },{
         fileID : 'dummy fileID 1',
         user : 'tommy jones',
         annotation : 'dummy annotation 1 updated region1',
-        annotationHash : 'abc123 updated'
+        Hash : 'abc123 updated'
     }]
 
 
@@ -85,19 +85,19 @@ describe('testing db.js',()=>{
             annotationkey2 : 'dummy annotation 2 annotation value 2',
             Regions : ['dummy annotation 2 region1','dummy annotation 2 region2']
         }),
-        annotationHash : '123abc'
+        Hash : '123abc'
     }
 
     const expectedSavedDummy2 = [{
         fileID : 'dummy fileID 2',
         user : 'anonymouse',
         annotation : 'dummy annotation 2 region1',
-        annotationHash : '123abc'
+        Hash : '123abc'
     },{
         fileID : 'dummy fileID 2',
         user : 'anonymouse',
         annotation : 'dummy annotation 2 region2',
-        annotationHash : '123abc'
+        Hash : '123abc'
     }]
 
     before(()=>{
@@ -114,6 +114,35 @@ describe('testing db.js',()=>{
     it('health check should reflect db health', () => {
         expect(db.checkHealth()).to.be.equal(true)
         expect(garbageDb.checkHealth()).to.be.equal(false)
+    })
+
+
+    describe('db operation with bad db health should result in error', () => {
+
+        const getTestGarbageDb = ({ prop, arg }) => (done) => (garbageDb[prop](arg)
+            .then(() => done('should not succeed'))
+            .catch(e => done()), null)
+        /**
+         * somewhat necessary to return NOT a promise. or else mocha will complain
+         */
+
+
+        /**
+         * user management
+         */
+        it('addUser throws', getTestGarbageDb({prop: 'addUser', arg: dummyUser}))
+        it('queryUser throws', getTestGarbageDb({prop: 'queryUser', arg: dummyUser}))
+        it('queryAllUsers throws', getTestGarbageDb({prop: 'queryAllUsers', arg: dummyUser}))
+        it('updateUser throws', getTestGarbageDb({prop: 'updateUser', arg: dummyUser}))
+        it('upsertUser throws', getTestGarbageDb({prop: 'upsertUser', arg: dummyUser}))
+
+        /**
+         * annotaiton managedment
+         */
+
+        it('findAnnotations throws', getTestGarbageDb({prop: 'findAnnotations', arg: dummyAnnotation}))
+        it('updateAnnotation throws', getTestGarbageDb({prop: 'updateAnnotation', arg: dummyAnnotation}))
+        
     })
 
     it('querying the empty mongodb should not yield any results',(done)=>{
@@ -247,8 +276,8 @@ describe('testing db.js',()=>{
             })
                 .then(annotations=>{
                     annotations.forEach(anno=>{
-                        const { user, fileID, annotationHash, annotation } = anno
-                        expect(expectedSavedDummy).to.deep.include.members([{ user, fileID, annotationHash, annotation }])
+                        const { user, fileID, Hash, annotation } = anno
+                        expect(expectedSavedDummy).to.deep.include.members([{ user, fileID, Hash, annotation }])
                     })
                     done()
                 })
@@ -269,8 +298,8 @@ describe('testing db.js',()=>{
             })
                 .then(annotations=>{
                     annotations.forEach(anno=>{
-                        const { user, fileID, annotationHash, annotation } = anno
-                        expect(expectedSavedDummy2).to.deep.include.members([{ user, fileID, annotationHash, annotation }])
+                        const { user, fileID, Hash, annotation } = anno
+                        expect(expectedSavedDummy2).to.deep.include.members([{ user, fileID, Hash, annotation }])
                     })
                     done()
                 })
@@ -294,8 +323,8 @@ describe('testing db.js',()=>{
             })
                 .then(annotations=>{
                     annotations.forEach(anno=>{
-                        const { user, fileID, annotationHash, annotation } = anno
-                        expect(expectedSavedDummyUpdated).to.deep.include.members([{ user, fileID, annotationHash, annotation }])
+                        const { user, fileID, Hash, annotation } = anno
+                        expect(expectedSavedDummyUpdated).to.deep.include.members([{ user, fileID, Hash, annotation }])
                     })
                     done()
                 })
