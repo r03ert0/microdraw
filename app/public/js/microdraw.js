@@ -1389,6 +1389,7 @@ var Microdraw = (function () {
 
             // change current section index (for loading and saving)
             me.section = me.currentImage;
+            me.fileID = `${me.source}`
 
             // hide previous section
             if( me.prevImage && paper.projects[me.ImageInfo[me.prevImage].projectID] ) {
