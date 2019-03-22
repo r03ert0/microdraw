@@ -59,7 +59,7 @@ module.exports = (app)=>{
 
     /* Strategies */
 
-    /* uncommend to include local signin strategy */
+    /* uncomment to include local signin strategy */
     /* or any other strategy you may like to include */
 
     app.set('loginMethods',[])
@@ -67,7 +67,7 @@ module.exports = (app)=>{
     github(app)
     if(process.env.LOCALSIGNIN && process.env.LOCALSIGNIN === 'true') local(app)
 
-    /* TODO simple a demo */
+    /* TODO simple demo */
     app.get('/secure-route-example', ensureAuthenticated, function (req, res) { res.send("access granted"); });
 
     /* TODO use reflection */
