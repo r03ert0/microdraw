@@ -6,7 +6,7 @@
 Please run either `npm test` or `npm run mocha-db`
 
 - [ ] All tests ran successfully. <!-- Please replace by `[X]` if tests successful-->
-- [ ] `test_screenshots` generates the same test pictures in `test/reference` as there were and does not show any errors
+- [ ] `test_screenshots` generates the same test pictures in `test` as there were in `test/reference` and does not show any errors
 
 <!-- Either: -->
 - [ ] I implemented tests for the new changes OR
