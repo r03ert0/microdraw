@@ -25,15 +25,11 @@ module.exports = function(overwriteMongoPath){
 
     const updateUser = (user)=>new Promise((resolve,reject)=>{
         db.get('user').update({
-            name : user.nickname
+            username : user.username
         },{
-            $set : {
-                name : user.displayName,
-                url : user._json.blog,
-                avatarURL : user._json.avatar_url
-            }
-        }).then(()=>resolve())
-            .catch(e=>reject(e))
+            $set : user
+        }).then(()=>resolve(user))
+            .catch(reject)
     })
 
     /* find user */
@@ -45,14 +41,14 @@ module.exports = function(overwriteMongoPath){
 
     const upsertUser = (user)=> new Promise((resolve,reject)=>{
         queryUser({
-            nickname : user.username
+            username : user.username
         })
             .then(()=>updateUser(user))
-            .then(()=>resolve())
+            .then(resolve)
             .catch(e=>{
                 e.message === 'error find one user' ?
                     addUser(user)
-                        .then(()=>resolve())
+                        .then(resolve)
                         .catch(e=>reject(e)) :
                 reject(e)
             })
