@@ -116,6 +116,35 @@ describe('testing db.js',()=>{
         expect(garbageDb.checkHealth()).to.be.equal(false)
     })
 
+
+    describe('db operation with bad db health should result in error', () => {
+
+        const getTestGarbageDb = ({ prop, arg }) => (done) => (garbageDb[prop](arg)
+            .then(() => done('should not succeed'))
+            .catch(e => done()), null)
+        /**
+         * somewhat necessary to return NOT a promise. or else mocha will complain
+         */
+
+
+        /**
+         * user management
+         */
+        it('addUser throws', getTestGarbageDb({prop: 'addUser', arg: dummyUser}))
+        it('queryUser throws', getTestGarbageDb({prop: 'queryUser', arg: dummyUser}))
+        it('queryAllUsers throws', getTestGarbageDb({prop: 'queryAllUsers', arg: dummyUser}))
+        it('updateUser throws', getTestGarbageDb({prop: 'updateUser', arg: dummyUser}))
+        it('upsertUser throws', getTestGarbageDb({prop: 'upsertUser', arg: dummyUser}))
+
+        /**
+         * annotaiton managedment
+         */
+
+        it('findAnnotations throws', getTestGarbageDb({prop: 'findAnnotations', arg: dummyAnnotation}))
+        it('updateAnnotation throws', getTestGarbageDb({prop: 'updateAnnotation', arg: dummyAnnotation}))
+        
+    })
+
     it('querying the empty mongodb should not yield any results',(done)=>{
         db.queryUser({
             username : dummyUser.username
