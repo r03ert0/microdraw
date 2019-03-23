@@ -37,7 +37,7 @@ puppeteer.launch({headless: false, args: ['--no-sandbox', '--disable-setuid-sand
 
             // OPEN DATA
             .then(() => console.log('go to cat'))
-            .then(() => page.goto('http://localhost:3000/data?source=/test_data/cat.json'))
+            .then(() => page.goto('http://localhost:3000/data?source=/test_data/cat.json&slice=0'))
             .then(() => delay(2000))
             .then(() => page.screenshot({path:'test/02.cat.png'}))
 
