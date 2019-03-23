@@ -230,10 +230,10 @@ var Microdraw = (function () {
             });
 
             // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit
-            
+
             /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector  needs to be #\\31 0 or tag will return null*/
             var tag = document.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
-            
+
             tag.classList.remove("deselected");
             tag.classList.add("selected");
 
@@ -318,7 +318,7 @@ var Microdraw = (function () {
                 if( me.debug ) { console.log("> changing annotation style"); }
 
                 me.currentColorRegion = reg;
-                var {alpha} = reg.path.fillColor.alpha;
+                let {alpha} = reg.path.fillColor.alpha;
                 $('#alphaSlider').val(alpha*100);
                 $('#alphaFill').val(parseInt(alpha*100, 10));
 
@@ -333,13 +333,12 @@ var Microdraw = (function () {
                 $('#fillColorPicker').val( hexColor );
 
                 if( $('#colorSelector').css('display') === 'none' ) {
-                    /**
-                     * on show, populate alpha
-                     */
-                    const reg = me.currentColorRegion
-                    const alpha = reg.path.fillColor.alpha
-                    $('#alphaSlider').val(alpha * 100)
-                    $('#alphaFill').val(alpha * 100)
+
+                    /** @todo On show, populate alpha */
+                    reg = me.currentColorRegion;
+                    alpha = reg.path.fillColor.alpha;
+                    $('#alphaSlider').val(alpha * 100);
+                    $('#alphaFill').val(alpha * 100);
 
                     $('#colorSelector').css('display', 'block');
                 } else {
@@ -711,14 +710,17 @@ var Microdraw = (function () {
 
         /**
          * @function scrollHandler
-         * @param {object} event Scroll event
+         * @param {object} ev Scroll event
          * @returns {void}
          */
-        scrollHandler: function scrollHandler(ev){
+        scrollHandler: function scrollHandler(ev) {
             if( me.debug ) { console.log("> scrollHandler") }
 
-            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].scrollHandler ) me.tools[me.selectedTool].scrollHandler(ev);
-            paper.view.draw()
+            if( me.tools[me.selectedTool]
+                && me.tools[me.selectedTool].scrollHandler ) {
+                me.tools[me.selectedTool].scrollHandler(ev);
+            }
+            paper.view.draw();
         },
 
         /**
@@ -737,7 +739,10 @@ var Microdraw = (function () {
 
             me.handle = null;
 
-            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDown ) me.tools[me.selectedTool].mouseDown(point);
+            if( me.tools[me.selectedTool]
+                && me.tools[me.selectedTool].mouseDown ) {
+                me.tools[me.selectedTool].mouseDown(point);
+            }
             paper.view.draw();
         },
 
@@ -1068,8 +1073,8 @@ var Microdraw = (function () {
                 }
             }
 
-            if(undo.callback && typeof undo.callback === 'function'){
-                undo.callback()
+            if(undo.callback && typeof undo.callback === 'function') {
+                undo.callback();
             }
 
             /**
@@ -1182,15 +1187,19 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> toolSelection");
             }
-            
+
             var prevTool = me.selectedTool;
-            
-            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) me.tools[prevTool].onDeselect()
-            
+
+            if( me.tools[prevTool] && me.tools[prevTool].onDeselect ) {
+                me.tools[prevTool].onDeselect();
+            }
+
             me.selectedTool = $(this).attr("id");
             me.selectTool();
 
-            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].click ) me.tools[me.selectedTool].click()
+            if( me.tools[me.selectedTool] && me.tools[me.selectedTool].click ) {
+                me.tools[me.selectedTool].click();
+            }
         },
 
         /**
@@ -1413,12 +1422,12 @@ var Microdraw = (function () {
                 // load regions from database
                 if( me.config.useDatabase ) {
                     me.microdrawDBLoad()
-                        .then(function(data){
-                            for( i = 0; i < data.length; i += 1 ) {
-                                reg = {};
+                        .then(function(data) {
+                            for( let i = 0; i < data.length; i += 1 ) {
+                                const reg = {};
                                 reg.name = data[i].annotation.name;
                                 //reg.page = data[i].annotation.page;
-                                json = data[i].annotation.path;
+                                const json = data[i].annotation.path;
                                 reg.path = new paper.Path();
 
                                 /** @todo Remove workaround once paperjs will be fixed */
@@ -1438,9 +1447,9 @@ var Microdraw = (function () {
 
                             if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
                         })
-                        .catch(function(error){
-                            console.error('< microdrawDBLoad resolve error',error)
-                        })
+                        .catch(function(error) {
+                            console.error('< microdrawDBLoad resolve error', error);
+                        });
                 }
 
                 if( me.debug ) { console.log('Set up new project, currentImage: ' + me.currentImage + ', ID: ' + me.ImageInfo[me.currentImage].projectID); }
@@ -1762,10 +1771,11 @@ var Microdraw = (function () {
          * @desc Load source json (from server)
          * @returns {promise} returns a promise, resolving as a microdraw compatible object
          */
-        loadSourceJson : function loadSourceJson(){
-            if( me.debug ) console.log('> loadSourceJson')
-            return new Promise((resolve,reject)=>{
-                const directFetch = new Promise((rs,rj)=>{
+        loadSourceJson : function loadSourceJson() {
+            if( me.debug ) { console.log('> loadSourceJson'); }
+
+            return new Promise((resolve, reject)=> {
+                const directFetch = new Promise((rs, rj)=> {
 
                     // decide between json (local) and jsonp (cross-origin)
                     var ext = me.params.source.split(".");
@@ -1781,7 +1791,7 @@ var Microdraw = (function () {
                             dataType: 'jsonp',
                             contentType: "application/json",
                             success: function(obj) {
-                                rs(obj)
+                                rs(obj);
                             },
                             error: function(err) {
                                 rj(err);
@@ -1814,8 +1824,8 @@ var Microdraw = (function () {
                     }
                 })
                 directFetch
-                    .then(json=>resolve(json))
-                    .catch(err=>{
+                    .then( (json) => resolve(json))
+                    .catch( (err) => {
                         console.warn('> loadSourceJson : direct fetching of source failed ... ', err, 'attempting to fetch via microdraw server');
 
                         fetch('/getJson?source='+me.params.source)
@@ -1824,12 +1834,12 @@ var Microdraw = (function () {
                                 console.log('> loadSourceJson : getjson success', json);
                                 resolve(json);
                             })
-                            .catch((err) => {
-                                console.error('> loadSourceJson : fetch json via microdraw failed.',err)
-                                reject(err)
+                            .catch( (err2) => {
+                                console.error('> loadSourceJson : fetch json via microdraw failed.', err2);
+                                reject(err2);
                             });
-                    })
-            })
+                    });
+            });
         },
 
         /**
@@ -1840,7 +1850,7 @@ var Microdraw = (function () {
         loadConfiguration: function loadConfiguration() {
             return Promise.all([
 
-                /* always load the default tools */
+                // 1st promise in array: always load the default tools
                 Promise.all([
                     me.loadScript('/js/tools/home.js'),
                     me.loadScript('/js/tools/navigate.js'),
@@ -1863,33 +1873,35 @@ var Microdraw = (function () {
 
                 }),
 
-                /* load configuration file, then load the tools accordingly */
-                fetch("js/configuration.json").then((r) => r.json())
+                // 2nd promise in array: load configuration file, then load the tools accordingly
+                fetch("js/configuration.json")
+                    .then((r) => r.json())
                     .then((data) => {
                         me.config = data;
-                        
-                        return Promise.all( 
-                            /* tools loaded dynamically, based on user configuration, server configuration etc. */
-                            data.presets.default.map((item)=>{
+
+                        return Promise.all(
+                            // tools loaded dynamically, based on user configuration, server configuration etc.
+                            data.presets.default.map( (item) => {
 
                                 /* attachDom */
                                 $('#toolsContainer').append(
                                     `<img class="button" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
-                                )
+                                );
 
                                 /* load script + extend me.tools */
                                 return me.loadScript(item.scriptPath)
-                                    .then(()=>{
-                                        /* there maybe multiple exported variables */
-                                        item.exportedVar.forEach((variable)=>{
-                                            /* TODO use ES 6 for proper module import. eval should be avoided when possible */
-                                            eval(`$.extend(me.tools,${variable})`)
-                                        })
-                                    })
+                                    .then( () => {
+                                        // there maybe multiple exported variables
+                                        item.exportedVar.forEach( (variable) => {
+
+                                            /** @todo use ES 6 for proper module import. eval should be avoided when possible */
+                                            eval(`$.extend(me.tools,${variable})`);
+                                        });
+                                    });
                             })
-                        )
+                        );
                     })
-            ])
+            ]);
         },
 
         /**
@@ -1934,7 +1946,7 @@ var Microdraw = (function () {
 
             // extend Microdraw with tools
             // load scripts dynamically since import is not currently supported by browsers
-            
+
 
             // Enable click on toolbar buttons
             $("img.button").click(me.toolSelection);
@@ -2104,7 +2116,7 @@ var Microdraw = (function () {
             });
 
             /* fixes https://github.com/r03ert0/microdraw/issues/142  */
-            me.viewer.scalebarInstance.divElt.style.pointerEvents = `none`
+            me.viewer.scalebarInstance.divElt.style.pointerEvents = `none`;
 
             // add screenshot
             me.viewer.screenshot({
@@ -2168,8 +2180,8 @@ var Microdraw = (function () {
                         me.initMicrodraw();
                     }
                 })
-                .then(()=>me.loadSourceJson())
-                .then(json=>me.initMicrodraw2(json))
+                .then( () => me.loadSourceJson())
+                .then( (json) => me.initMicrodraw2(json));
         }
     };
 
