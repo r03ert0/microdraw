@@ -56,7 +56,7 @@ var ToolDraw = { draw: (function () {
             if( Microdraw.newRegionFlag === true ) {
                 Microdraw.region.path.closed = true;
                 Microdraw.region.path.fullySelected = true;
-                Microdraw.newRegionFlag = false
+                Microdraw.newRegionFlag = false;
 
                 // to delete all unnecessary segments while preserving the form of the
                 // region to make it modifiable; & adding handles to the segments
@@ -67,6 +67,7 @@ var ToolDraw = { draw: (function () {
                 if (Microdraw.debug) {
                     origSegments = Microdraw.region.path.segments.length;
                 }
+
                 // pixels per dot (dot is a device-independent psuedo-pixel with a
                 // resolution of roughly 72 dpi)
                 var ppd = paper.view.pixelRatio;

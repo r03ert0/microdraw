@@ -19,8 +19,8 @@ var ToolDrawLine = {
                 Microdraw.region = Microdraw.newRegion({ path: path });
                 Microdraw.region.path.fillColor.alpha = 0;
                 Microdraw.newRegionFlag = true;
+
                 Microdraw.commitMouseUndo();
-                return;
             },
 
             /**
@@ -40,13 +40,17 @@ var ToolDrawLine = {
             mouseUp: function mouseUp() {
 
                 // this handler may get called for multiple times in one drawing session
-                if (!Microdraw.region) return;
+                if (!Microdraw.region) {
+                    return;
+                }
 
+                // do not keep paths with too little segments
                 if ((Microdraw.region.path.segments || []).length < Microdraw.tolerance) {
                     Microdraw.removeRegion(Microdraw.region);
                     paper.view.draw();
-                return;
+                    return;
                 }
+
                 if (Microdraw.newRegionFlag === true) {
                     Microdraw.region.path.closed = false;
                     Microdraw.region.path.fullySelected = false;
