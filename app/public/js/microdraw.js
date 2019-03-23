@@ -1824,7 +1824,9 @@ var Microdraw = (function () {
                     }
                 })
                 directFetch
-                    .then( (json) => resolve(json))
+                    .then( function (json) {
+                            resolve(json);
+                    })
                     .catch( (err) => {
                         console.warn('> loadSourceJson : direct fetching of source failed ... ', err, 'attempting to fetch via microdraw server');
 
@@ -2073,8 +2075,14 @@ var Microdraw = (function () {
             }
 
             // init slider that can be used to change between slides
-            me.initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length / 2));
-            me.currentImage = me.imageOrder[Math.floor(obj.tileSources.length / 2)];
+            if(typeof me.params.slice === 'undefined') {
+                me.initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length / 2));
+                me.currentImage = me.imageOrder[Math.floor(obj.tileSources.length / 2)];
+            } else {
+                me.initSlider(0, obj.tileSources.length, 1, me.params.slice);
+                me.currentImage = me.imageOrder[[parseInt(me.params.slice, 10)]];
+                console.log(me.currentImage);
+            }
 
             me.params.tileSources = obj.tileSources;
             if (typeof obj.fileID !== 'undefined') {
