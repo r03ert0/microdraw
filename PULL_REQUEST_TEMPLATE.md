@@ -3,9 +3,9 @@
 <!-- Please find a short title for your pull request and describe your changes on the following line: -->
 
 <!-- Please run our tests -->
-Please run either `npm test` or `npm run mocha-db`
+- [ ] Run `npm test` successfully. 
+- [ ] Run `npm run mocha-db`successfully.
 
-- [ ] All tests ran successfully. <!-- Please replace by `[X]` if tests successful-->
 - [ ] `test_screenshots` generates the same test pictures in `test` as there were in `test/reference` and does not show any errors
 
 <!-- Either: -->
