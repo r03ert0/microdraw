@@ -137,7 +137,7 @@ describe('testing db.js',()=>{
         it('upsertUser throws', getTestGarbageDb({prop: 'upsertUser', arg: dummyUser}))
 
         /**
-         * annotaiton managedment
+         * annotation managedment
          */
 
         it('findAnnotations throws', getTestGarbageDb({prop: 'findAnnotations', arg: dummyAnnotation}))

@@ -45,10 +45,13 @@ describe('testing local.js',()=>{
     app.listen(port,()=>console.log('app listening at port 3002'))
   })
 
-  it(`app listening at port ${port} correctly`,()=>{
+  it(`app listening at port ${port} correctly`,(done)=>{
     chai.request(url)
       .get('/')
-      .end((err,res)=>res.should.have.status(200))
+      .end((err,res)=>{
+        res.should.have.status(200)
+        done()
+      })
   })
 
   it('inserts local user signup correctly',()=>{

@@ -48,12 +48,12 @@ nockProxy.get('/').reply(200)
 nockProxy.get('/1.json').reply(200,mockReplyJson1)
 nockProxy.get('/2.json').reply(200,mockReplyJson2)
 nockProxy.get('/3.json').reply(200,mockReplyJson3)
-nockProxy.get('/nonexistent.json',reply(400,mockReplyJson1))
+nockProxy.get('/nonexistent.json').reply(400,mockReplyJson1)
 
 nockProxy.get('/test.jpg').reply(200,imageData)
 
 describe('Mocha started',()=>{
-    it('Mocha works properly',()=>{
+    it('now testing routeExtensions.spec',()=>{
         assert.equal(1,1)
     })
 })

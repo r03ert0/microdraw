@@ -56,7 +56,8 @@ var ToolSave = { save : (function(){
                         type:"POST",
                         data: {
                             action: "save",
-                            fileID: `${Microdraw.source}&slice=${sl}`,
+                            source: Microdraw.source,
+                            slice: sl,
                             Hash: h2,
                             annotation: JSON.stringify(value)
                         },
@@ -125,7 +126,8 @@ Microdraw.microdrawDBLoad = function(){
 
         $.getJSON(dbroot,{
             action : "load_last",
-            fileID : `${Microdraw.source}&slice=${Microdraw.currentImage}`
+            source : Microdraw.source,
+            slice: Microdraw.currentImage
         })
             .success(function (data){
                 var i, json, reg;
