@@ -4,7 +4,7 @@
 
 <!-- Please run our tests -->
 - [ ] Run `npm test` successfully. 
-- [ ] Run `npm run mocha-db`successfully.
+- [ ] Run `npm run mocha`successfully.
 
 - [ ] `test_screenshots` generates the same test pictures in `test` as there were in `test/reference` and does not show any errors
 
