@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./bin/www",
     "test": "node test.js",
-    "mocha": "node node_modules/mocha/bin/mocha ./test/mocha.index.js",
+    "mocha": "node node_modules/mocha/bin/mocha",
     "mocha-db": "MONGODB_TEST_DEFAULT=127.0.0.1:27017/microdraw_mocha_test node_modules/mocha/bin/mocha app/db/db.spec.js"
   },
   "dependencies": {
@@ -29,12 +29,14 @@
   "main": "app.js",
   "devDependencies": {
     "chai": "^4.2.0",
+    "chai-http": "^4.2.1",
     "eslint": "^5.15.3",
     "mocha": "^6.0.2",
     "mock-fs": "^4.5.0",
     "nock": "^10.0.6",
     "puppeteer": "latest",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "sinon": "^7.3.1"
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",
   "license": "GPL-3.0",
