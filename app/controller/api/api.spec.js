@@ -95,11 +95,12 @@ describe('testing api', () => {
             .end((err, res) => {
                 expect(res).to.have.status(200)
                 
-                const { action, source, slice, ...rest } = sendItem
+                const { action, source, slice, Hash, annotation } = sendItem
                 assert(updateAnnotation.calledWith({
                     fileID: '/path/to/json.json&slice=24',
                     user: 'anonymouse',
-                    ...rest
+                    Hash,
+                    annotation
                 }))
 
                 done()
