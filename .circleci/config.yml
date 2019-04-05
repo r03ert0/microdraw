@@ -2,7 +2,7 @@ version : 2
 jobs:
   build:
     docker:
-      - image: circleci/node:6-browsers
+      - image: circleci/node:8-browsers
       - image: circleci/mongo:3.4
     steps:
       - checkout
@@ -20,3 +20,8 @@ jobs:
       - run:
           name: Test server
           command: 'npm test'
+      - run:
+          name: Unit tests with Mocha
+          command: 'npm run mocha'
+          environment :
+            MONGODB : 127.0.0.1:27017/circleci_test

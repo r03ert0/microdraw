@@ -48,12 +48,16 @@ nockProxy.get('/').reply(200)
 nockProxy.get('/1.json').reply(200,mockReplyJson1)
 nockProxy.get('/2.json').reply(200,mockReplyJson2)
 nockProxy.get('/3.json').reply(200,mockReplyJson3)
-nockProxy.get('/nonexistent.json',reply(400,mockReplyJson1))
+nockProxy.get('/nonexistent.json').reply(400,mockReplyJson1)
+nockProxy.get('/error.json').replyWithError({
+    message: 'error message',
+    code: 'error_code'
+})
 
 nockProxy.get('/test.jpg').reply(200,imageData)
 
 describe('Mocha started',()=>{
-    it('Mocha works properly',()=>{
+    it('now testing routeExtensions.spec',()=>{
         assert.equal(1,1)
     })
 })
@@ -74,7 +78,7 @@ describe('Test /getJson api end point',()=>{
 
     before(()=>{
 
-        app.get('/',(_req,res)=>res.status(200).send('ok'))
+        app.get('/',(_req,res) => res.status(200).send('ok'))
         _server = app.listen(10002,()=>console.log('mocha test listening on port 10002'))
     })
 
@@ -111,6 +115,14 @@ describe('Test /getJson api end point',()=>{
 
         it('illformed json returns 404',(done)=>{
             request(`http://localhost:10002/getJson?source=${nockMockUrl}/1.json`,(err,res,body)=>{
+                expect(err).to.be.equal(null)
+                expect(res.statusCode).to.be.equal(404)
+                done()
+            })
+        })
+
+        it('sometimes foreign server returns error (resp arg is undefined)', (done) => {
+            request(`http://localhost:10002/getJson?source=${nockMockUrl}/error.json`, (err, res, body) => {
                 expect(err).to.be.equal(null)
                 expect(res.statusCode).to.be.equal(404)
                 done()

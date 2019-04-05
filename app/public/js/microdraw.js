@@ -1023,6 +1023,9 @@ var Microdraw = (function () {
             // update image slider
             me.updateSliderValue(index);
 
+            //update url
+            me.updateURL(index);
+
             me.loadImage(me.imageOrder[index]);
         },
 
@@ -1339,6 +1342,9 @@ var Microdraw = (function () {
             // update image slider
             me.updateSliderValue(nextIndex);
 
+            // update URL
+            me.updateURL(nextIndex);
+
             me.loadImage(me.imageOrder[nextIndex]);
         },
 
@@ -1353,6 +1359,9 @@ var Microdraw = (function () {
 
             // update image slider
             me.updateSliderValue(previousIndex);
+
+            // update URL
+            me.updateURL(previousIndex);
 
             me.loadImage(me.imageOrder[previousIndex]);
         },
@@ -1697,6 +1706,8 @@ var Microdraw = (function () {
             }
             var imageNumber = me.imageOrder[newImageNumber];
             me.loadImage(imageNumber);
+
+            me.updateURL(imageNumber);
         },
 
         /**
@@ -1760,11 +1771,52 @@ var Microdraw = (function () {
                 if( index > -1 ) { // if section number exists
                     me.updateSliderValue(index);
                     me.loadImage(me.imageOrder[index]);
+                    me.updateURL(index);
                 }
             }
             event.stopPropagation(); // prevent the default action (scroll / move caret)
         },
 
+        /**
+         * @function updateURL
+         * @desc Used to update the URL with the slice value if the section was changed by another control
+         * @param {number} newIndex section number to which the URL will be set
+         * @returns {void}
+         */
+        updateURL : function updateURL(newIndex) {
+            if( me.debug ) {
+                console.log('> updateURL');
+            }
+            const oldURL = window.location.href;
+            const URLparts = oldURL.split('=');
+            const oldSliceNumber = URLparts[2];
+            URLparts[2] = newIndex;
+
+            const newURL = URLparts[0] + '=' + URLparts[1] + '=' + URLparts[2];
+            const stateObj = {
+                oldURL: newURL
+            };
+            history.pushState(stateObj, "", newURL);
+        },
+
+        /**
+         * @function addSliceToURL
+         * @desc Used to update the URL with the slice value if none is given by user
+         * @param {number} newIndex section number to which the URL will be set
+         * @returns {void}
+         */
+        addSliceToURL : function addSliceToURL(newIndex) {
+            if( me.debug ) {
+                console.log('> addSliceToURL');
+            }
+            const oldURL = window.location.href;
+
+            const newURL = oldURL + '&slice=' + newIndex;
+            const stateObj = {
+                oldURL: newURL
+            };
+            history.pushState(stateObj, "", newURL);
+        },
 
         /**
          * @function loadSourceJson
@@ -1824,7 +1876,9 @@ var Microdraw = (function () {
                     }
                 })
                 directFetch
-                    .then( (json) => resolve(json))
+                    .then( function (json) {
+                            resolve(json);
+                    })
                     .catch( (err) => {
                         console.warn('> loadSourceJson : direct fetching of source failed ... ', err, 'attempting to fetch via microdraw server');
 
@@ -2073,8 +2127,14 @@ var Microdraw = (function () {
             }
 
             // init slider that can be used to change between slides
-            me.initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length / 2));
-            me.currentImage = me.imageOrder[Math.floor(obj.tileSources.length / 2)];
+            if(typeof me.params.slice === 'undefined') {
+                me.initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length / 2));
+                me.currentImage = me.imageOrder[Math.floor(obj.tileSources.length / 2)];
+                me.addSliceToURL(me.currentImage);
+            } else {
+                me.initSlider(0, obj.tileSources.length, 1, me.params.slice);
+                me.currentImage = me.imageOrder[[parseInt(me.params.slice, 10)]];
+            }
 
             me.params.tileSources = obj.tileSources;
             if (typeof obj.fileID !== 'undefined') {
