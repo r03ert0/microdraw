@@ -9,8 +9,10 @@ var ToolDrawPolygon = {drawPolygon: (function() {
     /**
      * @function finishDrawingPolygon
      * @description cleanup finishing drawing polygon
+     * @param {bool} closed True if the polygon has to be closed
+     * @returns {void}
      */
-    const finishDrawingPolygon = function(closed) {
+    function finishDrawingPolygon(closed) {
 
         // finished the drawing of the polygon
         if( closed ) {
@@ -20,7 +22,7 @@ var ToolDrawPolygon = {drawPolygon: (function() {
             Microdraw.region.path.fillColor.alpha = 0;
         }
         Microdraw.region.path.fullySelected = true;
-        drawingPolygonFlag = false
+        drawingPolygonFlag = false;
     }
 
     var tool = {
