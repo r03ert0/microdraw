@@ -28,11 +28,13 @@ module.exports = (app) =>{
         (new Promise((resolve,reject)=>{
             if( sourceHostname && sourcePath ){
                 request(sourceHostname + sourcePath, (err, resp, body) => {
-                    if(err) reject(err)
-                    if(resp.statusCode >= 400)
-                        reject(body)
+                    if(err) return reject(err)
+                    if (/error/.test(sourcePath))
+                        console.log({body, resp, err})
+                    if(resp && resp.statusCode >= 400)
+                        return reject(body)
                     else
-                        resolve(body)
+                        return resolve(body)
                 })
             }else{
                 reject('sourceurl not defined');
