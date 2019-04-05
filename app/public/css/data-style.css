@@ -1,0 +1,84 @@
+html,body {
+    margin:0px;
+    background-color: #333;
+}
+* {
+    font-family: sans-serif;
+    font-size:1rem;
+}
+#header {
+    height:48px;
+}
+#header img.button {
+    width:0.9rem;
+    height:0.9rem;
+    margin:8px 15px;
+    vertical-align:middle;
+    cursor:pointer;
+}
+#header img.button:hover {
+    opacity:0.5;
+}
+#header a {
+    color:white;
+}
+#header .linkNoULine {
+    text-decoration: none;
+    font-weight: lighter;
+}
+#menu {
+    float:right;
+    margin-right: 10px;
+    display: inline-block;
+    font: 16px/24px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
+}
+#MyLogin {
+     display:inline-block;
+     margin-left:15px;
+}
+#microdrawView {
+    position:relative;
+    width:calc( 100% - 20px );
+    height:calc( 100% - 48px - 20px);
+    margin-left:10px;
+    margin-bottom: 20px;
+    background-color:  #fff;
+}
+
+/* container styles */
+#openseadragon1
+{
+    width : 100%;
+    height: 100%;
+    position: absolute;
+    top:0;
+    left:0;
+    z-index:1;
+}
+
+#paperjs-container
+{
+    width:100%;
+    height:100%;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:2;
+    pointer-events: none;
+}
+
+#paperjs-container canvas
+{
+    /* pointer-events:  */
+}
+
+#colorSelector,
+#colorSelector *
+{
+    color: black;
+}
+
+#regionPicker
+{
+    z-index: 2;
+}

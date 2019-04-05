@@ -1,0 +1,27 @@
+version : 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:8-browsers
+      - image: circleci/mongo:3.4
+    steps:
+      - checkout
+      - run: npm install
+      - run:
+          name: Run server in background
+          command: 'npm start'
+          environment :
+            MONGODB : 127.0.0.1:27017/circleci_test
+          background: true
+      - run: sleep 5
+      - run:
+          name: Query host
+          command: 'node host.js'
+      - run:
+          name: Test server
+          command: 'npm test'
+      - run:
+          name: Unit tests with Mocha
+          command: 'npm run mocha'
+          environment :
+            MONGODB : 127.0.0.1:27017/circleci_test
