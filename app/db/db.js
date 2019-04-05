@@ -53,6 +53,7 @@ module.exports = function(overwriteMongoPath){
             .catch(e=>reject(e))
     })
 
+    /* upsert user */
     const upsertUser = (user)=> new Promise((resolve,reject)=>{
         if (!checkHealth()) {
             return reject('db connection not healthy')
@@ -72,6 +73,7 @@ module.exports = function(overwriteMongoPath){
             
     })
 
+    /* query all users */
     const queryAllUsers = (pagination)=>new Promise((resolve,reject)=>{
         if (!checkHealth()) {
             return reject('db connection not healthy')
@@ -81,12 +83,27 @@ module.exports = function(overwriteMongoPath){
             .catch(e=>reject(e))
     })
 
+    /* add token */
+    const addToken = (token) => new Promise((resolve,reject) => {
+        db.get('log').insert(token)
+        .then(() => resolve(token))
+        .catch((e) => reject(e));
+    });
+
+    /* find token */
+    const findToken = (token) => new Promise((resolve,reject) => {
+        db.get('log').findOne({token})
+        .then((token) => resolve(token))
+        .catch((e) => reject(e));
+    });
+
     /**
      * 
      * @param {Object} searchQuery having fields: fileID : string, user:string
      * @returns {Promise} to resolve as an array of annotations
      */
     const findAnnotations = (searchQuery)=>new Promise((resolve,reject)=>{
+        console.log("search query", searchQuery);
         if (!checkHealth()) {
             return reject('db connection not healthy')
         }
@@ -95,11 +112,14 @@ module.exports = function(overwriteMongoPath){
                 backup : { $exists : false }
             })
         )
-            .then((annotations)=>
-                annotations ? 
-                    resolve(annotations) :
-                    resolve([]))
-            .catch(e=>reject(e))
+            .then((annotations) => {
+                if(annotations) {
+                    resolve(annotations);
+                } else {
+                    resolve([]);
+                }
+            })
+            .catch((e) => reject(e))
     })
 
     /**
@@ -141,6 +161,8 @@ module.exports = function(overwriteMongoPath){
         updateAnnotation,
         updateUser,
         upsertUser,
+        addToken,
+        findToken,
         db,
         checkHealth
     }
