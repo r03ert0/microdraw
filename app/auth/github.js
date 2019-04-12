@@ -6,7 +6,6 @@ const path = require('path')
 module.exports = (app)=>{
     try{
         const githubKeys = fs.readFileSync( path.join(__dirname,'github-keys.json'), 'utf-8' )
-
         const githubKeysJson = JSON.parse(githubKeys)
         passport.use(new GithubStrategy( githubKeysJson ,
             (accessToken, refreshToken, profile, done) => done(null, profile)))

@@ -15,7 +15,7 @@ const _URL = (MONGODB.slice(0,10) === 'mongodb://'
 
 /* middle to ensure authenticated */
 const ensureAuthenticated = (req,res,next)=>{
-    if(req.isAuthenticated()){
+    if(req.user){
         return next()
     }
 
@@ -72,7 +72,7 @@ module.exports = (app)=>{
 
     /* TODO use reflection */
     app.get('/loggedIn', (req, res) => {
-        if (req.isAuthenticated()) {
+        if (req.user) {
             res.send({loggedIn: true, username: req.user.username});
         } else {
             res.send({loggedIn: false});
