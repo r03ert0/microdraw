@@ -6,13 +6,7 @@ router.get('', function (req, res) {
 
     console.warn("call to GET api");
 
-    let user = 'anonymous';
-    if (req.user) {
-        user = req.user.username;
-    } else
-    if (req.isTokenAuthenticated) {
-        user = req.tokenUsername;
-    }
+    const user = (req.user && req.user.username) || 'anonymous';
 
     console.warn(req.query);
     const { source, slice } = req.query;
@@ -32,13 +26,7 @@ router.post('', function (req, res) {
     if(req.body.action === 'save') {
         const { source, slice, Hash, annotation } = req.body;
 
-        let user = 'anonymous';
-        if (req.user) {
-            user = req.user.username;
-        } else
-        if (req.isTokenAuthenticated) {
-            user = req.tokenUsername;
-        }
+        const user = (req.user && req.user.username) || 'anonymous';
 
         req.app.db.updateAnnotation({
             fileID : `${source}&slice=${slice}`,
