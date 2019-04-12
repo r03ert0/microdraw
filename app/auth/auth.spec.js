@@ -1,5 +1,6 @@
 const mock = require('mock-fs')
 const fs = require('fs')
+const path = require('path')
 
 const assert = require('assert')
 const chai = require('chai')
@@ -16,12 +17,19 @@ describe('Mocha Started',()=>{
 const test_txt = 'test_javalin'
 const github_keys = {"clientID": "testclientID","clientSecret": "testclientsecret","callbackURL": "testcallbackurl"}
 
+const getMockfsConfig = (filename, content) => {
+    const obj = {}
+    obj[path.join(__dirname, filename)] = content
+    return obj
+}
+
 describe('mock-fs works properly',()=>{
     before(()=>{
-        mock({
-            'test.txt' : test_txt,
-            'github-keys.json' : JSON.stringify(github_keys)
-        })
+        const config = {
+            ...getMockfsConfig('test.txt', test_txt),
+            ...getMockfsConfig('github-keys.json', JSON.stringify(github_keys))
+        }
+        mock(config)
     })
 
     after(()=>{
@@ -29,7 +37,7 @@ describe('mock-fs works properly',()=>{
     })
 
     it('fetches mocked test.txt properly',(done)=>{
-        fs.readFile('test.txt','utf-8',(err,data)=>{
+        fs.readFile(path.join(__dirname, 'test.txt'),'utf-8',(err,data)=>{
             expect(err).to.be.equals(null)
             expect(data).to.be.equals(test_txt)
             done()
@@ -38,7 +46,7 @@ describe('mock-fs works properly',()=>{
     })
 
     it('should throw err when fetching non existent file',(done)=>{
-        fs.readFile('not_exist_txt','utf-8',(err,data)=>{
+        fs.readFile(path.join(__dirname, 'not_exist_txt'),'utf-8',(err,data)=>{
             expect(err).to.be.not.equal(null)
             expect(err.code).to.be.equal('ENOENT')
             done()
@@ -46,7 +54,7 @@ describe('mock-fs works properly',()=>{
     })
 
     it('mock-fs fetches github-keys.json',(done)=>{
-        fs.readFile('github-keys.json','utf-8',(err,data)=>{
+        fs.readFile(path.join(__dirname, 'github-keys.json'),'utf-8',(err,data)=>{
             expect(err).to.be.equal(null)
             expect(data).to.be.equal(JSON.stringify(github_keys))
             done()
@@ -61,14 +69,8 @@ const containLocalLoginMethod = (loginMethods) => loginMethods.findIndex(loginMe
 const auth = require('./auth')
 
 describe('auth api works properly',()=>{
-    before(()=>{
-        mock({
-            
-        })
 
-    })
-
-    after(()=>{
+    after(() => {
         mock.restore()
     })
 
@@ -81,19 +83,15 @@ describe('auth api works properly',()=>{
         })
 
         it('with mal-formed github-key.json, app.loginMethods will not be populated with github methods',()=>{
-            mock({
-                'github-keys.json' : test_txt
-            })
+            mock(getMockfsConfig('github-keys.json', test_txt))
             const app = express()
             auth(app)
             const loginMethods = app.get('loginMethods')
             expect( containGithubLoginMethod(loginMethods) ).to.be.equal(false)
         })
 
-        it('with github-keys.json, app.loginMethods will be populated with github methods',()=>{
-            mock({
-                'github-keys.json' : JSON.stringify(github_keys)
-            })
+        it('with valid github-keys.json, app.loginMethods will be populated with github methods',()=>{
+            mock(getMockfsConfig('github-keys.json', JSON.stringify(github_keys)))
             const app = express()
             auth(app)
             const loginMethods = app.get('loginMethods')

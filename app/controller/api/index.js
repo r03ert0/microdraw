@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 // API routes
-router.get('', tokenAuthentication, function (req, res) {
+router.get('', function (req, res) {
 
     console.warn("call to GET api");
 
     let user = 'anonymous';
-    if (req.isAuthenticated()) {
+    if (req.user) {
         user = req.user.username;
     } else
     if (req.isTokenAuthenticated) {
@@ -33,7 +33,7 @@ router.post('', function (req, res) {
         const { source, slice, Hash, annotation } = req.body;
 
         let user = 'anonymous';
-        if (req.isAuthenticated()) {
+        if (req.user) {
             user = req.user.username;
         } else
         if (req.isTokenAuthenticated) {
