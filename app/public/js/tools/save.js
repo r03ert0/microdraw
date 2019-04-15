@@ -1,10 +1,9 @@
 /*global Microdraw*/
-/*global paper*/
 /*global $*/
 
-var dbroot = '/api'
+var dbroot = '/api';
 
-var ToolSave = { save : (function(){
+var ToolSave = { save : (function() {
 
     /**
      * @function microdrawDBSave
@@ -93,7 +92,7 @@ var ToolSave = { save : (function(){
             $("#saveDialog")
             .fadeOut(500);
         }, 2000);
-    }
+    };
 
     var tool = {
 
@@ -107,8 +106,8 @@ var ToolSave = { save : (function(){
             microdrawDBSave();
             Microdraw.backToPreviousTool(prevTool);
         }
-    }
-    
+    };
+
     return tool;
 }())}
 
@@ -118,19 +117,18 @@ var ToolSave = { save : (function(){
  * @returns {Promise} A promise to return an array of paths of the current section.
 
  */
-Microdraw.microdrawDBLoad = function(){
-    return new Promise(function(resolve,reject){
-        if( Microdraw.debug ){
+Microdraw.microdrawDBLoad = function() {
+    return new Promise(function(resolve,reject) {
+        if( Microdraw.debug ) {
             console.log("> save.js microdrawDBLoad promise")
         }
 
-        $.getJSON(dbroot,{
+        $.getJSON(dbroot, {
             action : "load_last",
             source : Microdraw.source,
             slice: Microdraw.currentImage
         })
-            .success(function (data){
-                var i, json, reg;
+            .success(function (data) {
                 Microdraw.annotationLoadingFlag = false;
 
                 // Because of asynchrony, the section that just loaded may not be the one that the user
@@ -139,23 +137,21 @@ Microdraw.microdrawDBLoad = function(){
                 if( Microdraw.section !== Microdraw.currentImage ) {
                     console.log("> save.js microdrawDBLoad: Loaded section does not correspond with the current section.")
                     Microdraw.microdrawDBLoad()
-                        .then(function(data){
+                        .then(function(data) {
                             resolve(data)
                         })
-                        .catch(function(error){
+                        .catch(function(error) {
                             reject(error)
                         })
 
-                }else{
-                    if( $.isEmptyObject(data) ) {
-                        Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
-                        if( Microdraw.debug ){
-                            console.log("< save.js microdrawDBLoad: returned data is an empty object")
-                        }
-                        resolve([]);
-                    }else{
-                        resolve(data)
+                } else if( $.isEmptyObject(data) ) {
+                    Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
+                    if( Microdraw.debug ) {
+                        console.log("< save.js microdrawDBLoad: returned data is an empty object");
                     }
+                    resolve([]);
+                } else {
+                    resolve(data);
                 }
             })
             .error(function(jqXHR, textStatus, err) {
@@ -163,6 +159,5 @@ Microdraw.microdrawDBLoad = function(){
                 Microdraw.annotationLoadingFlag = false;
                 reject(err);
             });
-            
-    })
-}
+    });
+};
