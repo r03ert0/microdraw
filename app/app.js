@@ -28,7 +28,7 @@ app.db = db
 require('./auth/auth')(app)
 
 /* setup token authentication */
-require('./auth/token')(app);
+require('./auth/token'); //(app);
 
 /* setup GUI routes */
 require('./routes/routes')(app)

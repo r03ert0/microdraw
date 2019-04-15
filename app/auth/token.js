@@ -1,9 +1,11 @@
 const TOKEN_DURATION = process.env.TOKEN_DURATION || 24 * (1000 * 3600);
 
 // eslint-disable-next-line func-style
+// eslint-disable-next-line max-statements
 const token = function token(req, res) {
-    const {db} = req.app
-    const {user} = req
+    const {db} = req.app;
+    const {user} = req;
+
     /**
      * TODO
      * use next({ status: 500 })
@@ -15,7 +17,6 @@ const token = function token(req, res) {
     if (!user) {
         return res.status(401).send('not logged in');
     }
-
 
     const a = Math.random()
                 .toString(36)
@@ -36,8 +37,8 @@ const token = function token(req, res) {
 
     // store it in the database for the user
     db.addToken(obj)
-        .then(token => res.json(token))
-        .catch(e => res.status(500).send(JSON.stringify(e)));
+        .then((theToken) => res.json(theToken))
+        .catch((e) => res.status(500).send(JSON.stringify(e)));
 
     /*
         // schedule its removal or log them forever?
@@ -50,8 +51,8 @@ const token = function token(req, res) {
 
 exports.authTokenMiddleware = function (req, res, next) {
     console.log('>> Check token');
-    const token = req.params.token || req.query.token;
-    if (!token) {
+    const theToken = req.params.token || req.query.token;
+    if (!theToken) {
         console.log('>> No token');
         next();
 
@@ -63,7 +64,7 @@ exports.authTokenMiddleware = function (req, res, next) {
         return next();
     }
 
-    db && db.findToken(token)
+    db && db.findToken(theToken)
     .then( (obj) => {
         if (obj) {
             // Check token expiry date
@@ -89,4 +90,4 @@ exports.authTokenMiddleware = function (req, res, next) {
     });
 };
 
-exports.getTokenEndPoint = token
+exports.getTokenEndPoint = token;
