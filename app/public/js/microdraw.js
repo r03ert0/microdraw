@@ -202,7 +202,7 @@ var Microdraw = (function () {
         /**
          * @function selectRegion
          * @desc Make the region selected
-         * @param {object} reg The region to select.
+         * @param {object} reg The region to select, or null to deselect allr egions
          * @returns {void}
          */
         selectRegion: function selectRegion(reg) {
@@ -231,11 +231,13 @@ var Microdraw = (function () {
 
             // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit
 
-            /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector  needs to be #\\31 0 or tag will return null*/
-            var tag = document.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
+            if (reg) {
+                /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector  needs to be #\\31 0 or tag will return null*/
+                var tag = document.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
 
-            tag.classList.remove("deselected");
-            tag.classList.add("selected");
+                tag.classList.remove("deselected");
+                tag.classList.add("selected");
+            }
 
             if(me.debug) { console.log("< selectRegion"); }
         },
