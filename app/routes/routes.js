@@ -1,6 +1,7 @@
 
 const mustacheExpress = require('mustache-express');
 const path = require('path')
+const {authTokenMiddleware, getTokenEndPoint} = require('../auth/token')
 
 module.exports = (app)=>{
     console.log(`configuring routes`)
@@ -38,7 +39,9 @@ module.exports = (app)=>{
 
     app.use('/user', require('../controller/user/'));
 
-    app.use('/api', require('../controller/api/'));
+    app.get('/token', getTokenEndPoint)
+
+    app.use('/api', authTokenMiddleware, require('../controller/api/'));
 
     /* patches for bypassing CORS header restrictions */
     require('./routesExtensions')(app);
