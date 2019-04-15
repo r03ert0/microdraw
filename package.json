@@ -6,7 +6,8 @@
     "start": "node ./bin/www",
     "test": "node test.js",
     "mocha": "node node_modules/mocha/bin/mocha",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/save.spec"
   },
   "dependencies": {
     "bcrypt": "^3.0.5",
