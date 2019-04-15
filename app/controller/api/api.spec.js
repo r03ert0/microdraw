@@ -74,7 +74,7 @@ describe('testing api', () => {
                 expect(res).to.have.status(200)
                 assert(findAnnotations.calledWith({
                     fileID: '/path/to/json.json&slice=42',
-                    user: 'anonymouse'
+                    user: 'anonymous'
                 }))
                 done()
             })
@@ -98,7 +98,7 @@ describe('testing api', () => {
                 const { action, source, slice, ...rest } = sendItem
                 assert(updateAnnotation.calledWith({
                     fileID: '/path/to/json.json&slice=24',
-                    user: 'anonymouse',
+                    user: 'anonymous',
                     ...rest
                 }))
 

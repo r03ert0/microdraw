@@ -1,44 +1,57 @@
+const TOKEN_DURATION = process.env.TOKEN_DURATION || 24 * (1000 * 3600);
+
 // eslint-disable-next-line func-style
 const token = function token(req, res) {
-    if (req.isAuthenticated()) {
-        const a = Math.random()
-                    .toString(36)
-                    .slice(2);
-        const b = Math.random()
-                    .toString(36)
-                    .slice(2);
-        const now = new Date();
-
-        // generate a random token
-        const obj = {
-            token: a + b,
-            // expiration date: now plus tokenDuration milliseconds
-            expiryDate: new Date(now.getTime() + req.tokenDuration),
-            // record the username
-            username: req.user.username
-        };
-
-        // store it in the database for the user
-        req.db.addToken(obj);
-
-        /*
-            // schedule its removal or log them forever?
-            setTimer(function () {
-                //req.db.get("log").remove(obj);
-                req.db.removeToken(obj);
-            }, req.tokenDuration);
-        */
-
-        res.json(obj);
-    } else {
-        res.redirect('/');
+    const {db} = req.app
+    const {user} = req
+    /**
+     * TODO
+     * use next({ status: 500 })
+     * etc to beautify error responses
+     */
+    if (!db) {
+        return res.status(500).send('database notfound');
     }
+    if (!user) {
+        return res.status(401).send('not logged in');
+    }
+
+
+    const a = Math.random()
+                .toString(36)
+                .slice(2);
+    const b = Math.random()
+                .toString(36)
+                .slice(2);
+    const now = new Date();
+
+    // generate a random token
+    const obj = {
+        token: a + b,
+        // expiration date: now plus tokenDuration milliseconds
+        expiryDate: new Date(now.getTime() + TOKEN_DURATION),
+        // record the username
+        username: user.username
+    };
+
+    // store it in the database for the user
+    db.addToken(obj)
+        .then(token => res.json(token))
+        .catch(e => res.status(500).send(JSON.stringify(e)));
+
+    /*
+        // schedule its removal or log them forever?
+        setTimer(function () {
+            //req.db.get("log").remove(obj);
+            req.db.removeToken(obj);
+        }, req.tokenDuration);
+    */
 };
 
 module.exports = (app) => {
     console.log(`loading token module`);
 
-    global.tokenAuthentication = function (req, res, next) {
+    app.use(function (req, res, next) {
         console.log('>> Check token');
         const token = req.params.token || req.query.token;
         if (!token) {
@@ -47,7 +60,13 @@ module.exports = (app) => {
     
             return;
         }
-        req.db.findToken(token)
+        const {db} = req.app;
+
+        if (!db) {
+            return next();
+        }
+
+        db && db.findToken(token)
         .then( (obj) => {
             if (obj) {
                 // Check token expiry date
@@ -56,6 +75,9 @@ module.exports = (app) => {
                     console.log('>> Authenticated by token');
                     req.isTokenAuthenticated = true;
                     req.tokenUsername = obj.username;
+                    req.user = {
+                        username: obj.username
+                    }
                 } else {
                     console.log('>> Token expired');
                     req.isTokenAuthenticated = false;
@@ -68,13 +90,7 @@ module.exports = (app) => {
             console.log('ERROR:', err);
             next();
         });
-    };
-
-    app.use((req, res, next) => {
-        req.db = app.db;
-        req.tokenDuration = 24 * (1000 * 3600); // token duration: 24h in milliseconds
-        next();
     });
 
     app.get('/token', token);
-};
+}

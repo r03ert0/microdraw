@@ -104,6 +104,7 @@ var ToolSave = { save : (function(){
          * @returns {void}
          */
         click : function click(prevTool) {
+            Microdraw.selectRegion( null )
             microdrawDBSave();
             Microdraw.backToPreviousTool(prevTool);
         }
