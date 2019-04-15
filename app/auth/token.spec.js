@@ -4,7 +4,7 @@ const request = require('request')
 const chai = require('chai')
 const sinon = require('sinon')
 const expect = chai.expect
-const should = chai.should()
+const { authTokenMiddleware, getTokenEndPoint } = require('./token')
 
 describe('mocha works', () => {
     it('mocha works property', () => {
@@ -47,7 +47,8 @@ const user = {
 describe('if db is not define, reponses are as expected', () => {
     before(() => {
         const app = express()
-        require('./token')(app)
+        app.use(authTokenMiddleware)
+        app.get('/token', getTokenEndPoint)
         _server = app.listen(port, () => console.log(`application listening on port ${port}`))
     })
     after(() => {
@@ -92,7 +93,8 @@ describe('get token when not logged in works as intended', () => {
         app.db = {
             addToken: addTokenFake
         }
-        require('./token')(app)
+        app.use(authTokenMiddleware)
+        app.get('/token', getTokenEndPoint)
         app.get('/spy', spy)
         app.get('/dummy', (req, res) => {
             const { isTokenAuthenticated, tokenUsername } = req
@@ -172,7 +174,8 @@ describe('get toekn when logged in works as intended', () => {
             }
             next()
         })
-        require('./token')(app)
+        app.use(authTokenMiddleware)
+        app.get('/token', getTokenEndPoint)
         app.get('/spy', spy)
         app.get('/dummy', (req, res) => {
             const { isTokenAuthenticated, tokenUsername } = req
