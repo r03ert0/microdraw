@@ -48,49 +48,45 @@ const token = function token(req, res) {
     */
 };
 
-module.exports = (app) => {
-    console.log(`loading token module`);
+exports.authTokenMiddleware = function (req, res, next) {
+    console.log('>> Check token');
+    const token = req.params.token || req.query.token;
+    if (!token) {
+        console.log('>> No token');
+        next();
 
-    app.use(function (req, res, next) {
-        console.log('>> Check token');
-        const token = req.params.token || req.query.token;
-        if (!token) {
-            console.log('>> No token');
-            next();
-    
-            return;
-        }
-        const {db} = req.app;
+        return;
+    }
+    const {db} = req.app;
 
-        if (!db) {
-            return next();
-        }
+    if (!db) {
+        return next();
+    }
 
-        db && db.findToken(token)
-        .then( (obj) => {
-            if (obj) {
-                // Check token expiry date
-                const now = new Date();
-                if (now.getTime() - obj.expiryDate.getTime() < 0) {
-                    console.log('>> Authenticated by token');
-                    req.isTokenAuthenticated = true;
-                    req.tokenUsername = obj.username;
-                    req.user = {
-                        username: obj.username
-                    }
-                } else {
-                    console.log('>> Token expired');
-                    req.isTokenAuthenticated = false;
-                    req.tokenUsername = obj.username;
+    db && db.findToken(token)
+    .then( (obj) => {
+        if (obj) {
+            // Check token expiry date
+            const now = new Date();
+            if (now.getTime() - obj.expiryDate.getTime() < 0) {
+                console.log('>> Authenticated by token');
+                req.isTokenAuthenticated = true;
+                req.tokenUsername = obj.username;
+                req.user = {
+                    username: obj.username
                 }
+            } else {
+                console.log('>> Token expired');
+                req.isTokenAuthenticated = false;
+                req.tokenUsername = obj.username;
             }
-            next();
-        })
-        .catch( (err) => {
-            console.log('ERROR:', err);
-            next();
-        });
+        }
+        next();
+    })
+    .catch( (err) => {
+        console.log('ERROR:', err);
+        next();
     });
+};
 
-    app.get('/token', token);
-}
+exports.getTokenEndPoint = token
