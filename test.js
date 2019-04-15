@@ -11,7 +11,6 @@ function delay(timeout) {
     });
 }
 
-
 puppeteer.launch({headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
     .then(function(browser) {
 

@@ -42,7 +42,7 @@ describe('testing local.js',()=>{
 
     require('./local')(app)
     app.get('/',(req,res)=>res.status(200))
-    app.listen(port,()=>console.log('app listening at port 3002'))
+    app.listen(port,()=>console.log(`app listening at port ${port}`))
   })
 
   it(`app listening at port ${port} correctly`,(done)=>{

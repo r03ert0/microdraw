@@ -20,7 +20,7 @@ const validator = function (req, res, next) {
 };
 
 const user = function (req, res) {
-    const login = (req.isAuthenticated()) ?
+    const login = (req.user) ?
                 ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
                 ('<a href=\'/auth/github\'>Log in with GitHub</a>');
     const requestedUser = req.params.userName;
