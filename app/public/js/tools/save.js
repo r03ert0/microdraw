@@ -5,6 +5,20 @@ var dbroot = '/api';
 
 var ToolSave = { save : (function() {
 
+    const configureValuesToSave = function (sl) {
+        var section = Microdraw.ImageInfo[sl];
+        var value = {};
+        value.Regions = [];
+        for( i = 0; i < section.Regions.length; i += 1 ) {
+            var el = {};
+            el.path = JSON.parse(section.Regions[i].path.exportJSON());
+            el.name = section.Regions[i].name;
+            value.Regions.push(el);
+        }
+
+        return value;
+    }
+
     /**
      * @function microdrawDBSave
      * @desc Save SVG overlay to microdrawDB
@@ -19,28 +33,21 @@ var ToolSave = { save : (function() {
         var promiseArray = [];
         var savedSections = "Saving sections: ";
 
-        Object.keys(Microdraw.ImageInfo).forEach(function(sl) {
+        Object.keys(Microdraw.ImageInfo).forEach(function (sl) {
             if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
                 return;
             }
             // configure value to be saved
-            var section = Microdraw.ImageInfo[sl];
-            var value = {};
-            value.Regions = [];
-            for( i = 0; i < section.Regions.length; i += 1 ) {
-                var el = {};
-                el.path = JSON.parse(section.Regions[i].path.exportJSON());
-                el.name = section.Regions[i].name;
-                value.Regions.push(el);
-            }
+            const value = configureValuesToSave(sl);
 
             // check if the section annotations have changed since loaded by computing a hash
-            var h = Microdraw.hash(JSON.stringify(value.Regions)).toString(16);
+            const h = Microdraw.hash(JSON.stringify(value.Regions)).toString(16);
+            var section = Microdraw.ImageInfo[sl];
             if( Microdraw.debug > 1 ) { console.log("hash:", h, "original hash:", section.Hash); }
-            // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
+            // if the section hash is undefined, this section has not yet been loaded. Do not save anything for this section
             if( typeof section.Hash === "undefined" || h === section.Hash ) {
                 if( Microdraw.debug > 1 ) { console.log(`sl ${sl}`, "No change, no save"); }
-                value.Hash = h;
+                // value.Hash = h; /** @todo remove */
 
                 return;
             }

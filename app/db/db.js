@@ -1,114 +1,115 @@
-const monk = require('monk')
-const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw'
+const monk = require('monk');
+const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw';
 
-module.exports = function(overwriteMongoPath){
-    console.log(`connecting to mongodb at: ${MONGODB}`)
-    
-    const db = monk(overwriteMongoPath || MONGODB)
-    let connected = false
+// eslint-disable-next-line max-statements
+module.exports = function(overwriteMongoPath) {
+    console.log(`connecting to mongodb at: ${MONGODB}`);
+
+    const db = monk(overwriteMongoPath || MONGODB);
+    let connected = false;
 
     db.then(() => {
-        connected = true
-        console.log('connected successfully')
+        connected = true;
+        console.log('connected successfully');
     }).catch((e) => {
         // retry (?)
-        connected = false
-        console.log('connection error', e)
-    })
+        connected = false;
+        console.log('connection error', e);
+    });
 
     /**
      * @returns {boolean} checks mongodb connection
      */
-    const checkHealth = () => connected
+    const checkHealth = () => connected;
 
     /* add user */
-    const addUser = (user)=>new Promise((resolve,reject)=>{
+    const addUser = (user) => new Promise((resolve, reject) => {
         if (!checkHealth()) {
-            return reject('db connection not healthy')
+            return reject(new Error('db connection not healthy'));
         }
         db.get('users').insert(user)
-            .then(()=>resolve(user))
-            .catch(e=>reject(e))
-    })
+            .then(() => resolve(user))
+            .catch((e) => reject(e));
+    });
 
-    const updateUser = (user)=>new Promise((resolve,reject)=>{
+    const updateUser = (user) => new Promise((resolve, reject) => {
         if (!checkHealth()) {
-            return reject('db connection not healthy')
+            return reject(new Error('db connection not healthy'));
         }
         db.get('user').update({
             username : user.username
-        },{
+        }, {
             $set : user
-        }).then(()=>resolve(user))
-            .catch(reject)
-    })
+        })
+        .then(() => resolve(user))
+        .catch(reject);
+    });
 
     /* find user */
-    const queryUser = (searchQuery)=>new Promise((resolve,reject)=>{
+    const queryUser = (searchQuery) => new Promise((resolve, reject) => {
         if (!checkHealth()) {
-            return reject('db connection not healthy')
+            return reject(new Error('db connection not healthy'));
         }
         db.get('users').findOne(searchQuery)
-            .then((user)=>user ? resolve(user) : reject({message:'error find one user',result:user}))
-            .catch(e=>reject(e))
-    })
+            .then((user) => user ? resolve(user) : reject({message:'error find one user', result:user}))
+            .catch((e) => reject(e));
+    });
 
     /* upsert user */
-    const upsertUser = (user)=> new Promise((resolve,reject)=>{
+    const upsertUser = (user) => new Promise((resolve, reject) => {
         if (!checkHealth()) {
-            return reject('db connection not healthy')
+            return reject(new Error('db connection not healthy'));
         }
         queryUser({
             username : user.username
         })
-            .then(()=>updateUser(user))
+            .then(() => updateUser(user))
             .then(resolve)
-            .catch(e=>{
+            .catch((e) => {
                 e.message === 'error find one user' ?
                     addUser(user)
                         .then(resolve)
                         .catch(e=>reject(e)) :
-                reject(e)
-            })
-            
-    })
+                reject(e);
+            });
+    });
 
     /* query all users */
-    const queryAllUsers = (pagination)=>new Promise((resolve,reject)=>{
+    const queryAllUsers = (pagination) => new Promise((resolve, reject) => {
         if (!checkHealth()) {
-            return reject('db connection not healthy')
+            return reject(new Error('db connection not healthy'));
         }
         db.get('users').find(pagination)
-            .then((users)=>users ? resolve(users) : reject({message : 'error find all users',result:users}))
-            .catch(e=>reject(e))
-    })
+            .then((users) => users?resolve(users): reject({message: 'error find all users', result: users}))
+            .catch((e) => reject(e));
+    });
 
     /* add token */
-    const addToken = (token) => new Promise((resolve,reject) => {
+    const addToken = (token) => new Promise((resolve, reject) => {
         db.get('log').insert(token)
         .then(() => resolve(token))
         .catch((e) => reject(e));
     });
 
     /* find token */
-    const findToken = (token) => new Promise((resolve,reject) => {
+    const findToken = (token) => new Promise((resolve, reject) => {
         db.get('log').findOne({token})
-        .then((token) => resolve(token))
+        .then((theToken) => resolve(theToken))
         .catch((e) => reject(e));
     });
 
     /**
-     * 
+     * @function findAnnotations
      * @param {Object} searchQuery having fields: fileID : string, user:string
      * @returns {Promise} to resolve as an array of annotations
      */
-    const findAnnotations = (searchQuery)=>new Promise((resolve,reject)=>{
+    const findAnnotations = (searchQuery) => new Promise((resolve, reject) => {
         console.log("search query", searchQuery);
         if (!checkHealth()) {
-            return reject('db connection not healthy')
+            return reject(new Error('db connection not healthy'));
         }
         db.get('annotations').find(
-            Object.assign({},searchQuery,{
+            Object.assign({}, searchQuery, {
                 backup : { $exists : false }
             })
         )
@@ -119,39 +120,42 @@ module.exports = function(overwriteMongoPath){
                     resolve([]);
                 }
             })
-            .catch((e) => reject(e))
-    })
+            .catch((e) => reject(e));
+    });
 
     /**
-     * 
+     * @function updateAnnotation
+     * @description Update annotation object
      * @param {Object} saveQuery having fields : fileID : string, user : string, Hash : string, annotation : JSON.stringify(Object { Regions : string[] }), hash : string
      * @returns {Promise} to resolve when saving is complete
      */
-    const updateAnnotation = (saveQuery)=> new Promise((resolve,reject)=>{
+    const updateAnnotation = (saveQuery) => new Promise((resolve, reject) => {
         if (!checkHealth()) {
-            return reject('db connection not healthy')
+            return reject(new Error('db connection not healthy'));
         }
-        const { fileID , user, Hash, annotation } = saveQuery
+        const { fileID, user, Hash, annotation } = saveQuery;
         db.get('annotations').update(
             Object.assign(
                 {},
-                { fileID , user },
-                { backup : { $exists : false } }),
-            { $set : { backup : true } },
-            { multi : true }
-        ).then(()=>{
-            const allAnnotation = JSON.parse(annotation)
-            const arrayTobeSaved = allAnnotation.Regions.map(region=>({
-                fileID, 
+                { fileID, user },
+                { backup: { $exists: false } }
+            ),
+            { $set: { backup: true } },
+            { multi: true }
+        )
+        .then(() => {
+            const allAnnotation = JSON.parse(annotation);
+            const arrayTobeSaved = allAnnotation.Regions.map((region) => ({
+                fileID,
                 user,
-                Hash ,
-                annotation : region
-            }))
+                Hash,
+                annotation: region
+            }));
             db.get('annotations').insert(arrayTobeSaved)
-                .then(()=>resolve())
-                .catch(e=>reject(e))
-        })
-    })
+                .then(() => resolve())
+                .catch( (e) => reject(e));
+        });
+    });
 
     return {
         addUser,
@@ -165,6 +169,7 @@ module.exports = function(overwriteMongoPath){
         findToken,
         db,
         checkHealth
-    }
+    };
+
     /* should discourage the use of db.db ... this renders it db specific ... */
-}
+};
