@@ -61,6 +61,27 @@ Microdraw uses [mongodb](https://docs.mongodb.com/) to manage the annotations by
 
 You can set a custom endpoint for mongodb by setting the environment variable : `MONGODB=url-to-mongo:27017/db_name`
 
+#### Programmatic access of annotations
+In order to access the user specific annotation, logged in user can visit `token` endpoint on a logged in browser. This will generate a token, which, when appended as a query param with the key `token` can be used as proxy to user login.
+
+```
+# get annotations
+GET /api?source=/path/to/file&slice=12&token=FAKE_TOKEN
+```
+
+```
+# save annotation
+POST /api?source=/path/to/file&slice=12token=FAKE_TOKEN
+```
+
+```
+# save annotation via API
+POST /api?source=/path/to/file&slice=12token=FAKE_TOKEN @data=file.json
+```
+
+
+The token expires after 24 hours by default (can be changed by setting env `TOKEN_DURATION`)
+
 ### Set up your own local data folder
 * cd to /public directory, put yourDataFolder here which must contain
     * a folder with the folders with your data tiles in dzi format
