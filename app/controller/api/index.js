@@ -2,13 +2,15 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const multer = require('multer');
+
 const fs = require('fs');
 
 const TMP_DIR = process.env.TMP_DIR
-
-const uploadConfig = TMP_DIR
-    ? { dest: TMP_DIR }
-    : {}
+const storage = TMP_DIR
+    ? multer.diskStorage({
+        destination: TMP_DIR
+    })
+    : multer.memoryStorage()
 
 // API routes
 router.get('', function (req, res) {
@@ -85,7 +87,7 @@ const filterAuthorizedUserOnly = (req, res, next) => {
     }
 }
 
-router.post('/upload', filterAuthorizedUserOnly,  multer(uploadConfig).array('data'), function (req, res) {
+router.post('/upload', filterAuthorizedUserOnly,  multer({ storage }).array('data'), function (req, res) {
     console.warn("call to POST from API");
 
     saveFromAPI(req, res);

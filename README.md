@@ -79,8 +79,10 @@ POST /api?source=/path/to/file&slice=12token=FAKE_TOKEN
 POST /api?source=/path/to/file&slice=12token=FAKE_TOKEN @data=file.json
 ```
 
-
 The token expires after 24 hours by default (can be changed by setting env `TOKEN_DURATION`)
+
+#### Saving annotation via file upload
+Deploy environments may not allow for `fs` access. As a result, Microdraw uses [memory storage](https://github.com/expressjs/multer#memorystorage) by default. This can lead to OOM. If `TMP_DIR` env is set, Microdraw will use `TMP_DIR` to write uploaded file. 
 
 ### Set up your own local data folder
 * cd to /public directory, put yourDataFolder here which must contain
