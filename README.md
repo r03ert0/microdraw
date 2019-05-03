@@ -66,20 +66,24 @@ In order to access the user specific annotation, logged in user can visit `token
 
 ```
 # get annotations
-GET /api?source=/path/to/file&slice=12&token=FAKE_TOKEN
+curl -XGET /api?source=/path/to/file&slice=12&token=FAKE_TOKEN
 ```
 
 ```
 # save annotation
-POST /api?source=/path/to/file&slice=12token=FAKE_TOKEN
+curl -XPOST /api?source=/path/to/file&slice=12token=FAKE_TOKEN -H "Content-Type: application/json" -d"{\"hello\":\"world\"}"
 ```
 
 ```
 # save annotation via API
-POST /api?source=/path/to/file&slice=12token=FAKE_TOKEN @data=file.json
+# note that only the files in the `data` field is parsed and saved
+curl -XPOST /api?source=/path/to/file&slice=12token=FAKE_TOKEN -F "data=@/path/to/file.json"
 ```
 
 The token expires after 24 hours by default (can be changed by setting env `TOKEN_DURATION`)
+
+#### Example data.json file
+TODO
 
 #### Saving annotation via file upload
 Deploy environments may not allow for `fs` access. As a result, Microdraw uses [memory storage](https://github.com/expressjs/multer#memorystorage) by default. This can lead to OOM. If `TMP_DIR` env is set, Microdraw will use `TMP_DIR` to write uploaded file. 
