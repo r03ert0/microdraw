@@ -19,7 +19,7 @@ router.get('', function (req, res) {
         user : user
     })
         .then(annotations=>res.status(200).send(annotations))
-        .catch(e=>res.state(500).send({err:JSON.stringify(e)}))
+        .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
 });
 
 const saveFromGUI = function (req, res) {

@@ -1436,12 +1436,28 @@ var Microdraw = (function () {
                                 const reg = {};
                                 reg.name = data[i].annotation.name;
                                 const json = data[i].annotation.path;
-                                reg.path = new paper.Path();
+                                
+                                const type = json[0];
+                                if (type === 'Path') {
+                                    reg.path = new paper.Path();
 
-                                /** @todo Remove workaround once paperjs will be fixed */
-                                var {insert} = reg.path.insert;
-                                reg.path.importJSON(json);
-                                reg.path.insert = insert;
+                                    /** @todo Remove workaround once paperjs will be fixed */
+                                    var {insert} = reg.path.insert;
+                                    reg.path.importJSON(json);
+                                    reg.path.insert = insert;
+                                } else if (type === 'CompoundPath') {
+                                    reg.path = new paper.CompoundPath();
+                                    reg.path.importJSON(json);
+                                } else {
+                                    /**
+                                     * TODO catch future path types
+                                     */
+                                    reg.path = new paper.Path();
+                                    /** @todo Remove workaround once paperjs will be fixed */
+                                    var {insert} = reg.path.insert;
+                                    reg.path.importJSON(json);
+                                    reg.path.insert = insert;
+                                }
 
                                 me.newRegion({name:reg.name, path:reg.path});
                             }
