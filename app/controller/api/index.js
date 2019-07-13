@@ -5,7 +5,8 @@ const multer = require('multer');
 const fs = require('fs');
 
 // API routes
-router.get('', function (req, res) {
+
+router.get('/', function (req, res) {
 
     console.warn("call to GET api");
 
@@ -37,7 +38,7 @@ const saveFromGUI = function (req, res) {
         .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
 };
 
-const saveFromAPI = function (req, res) {
+const saveFromAPI = async function (req, res) {
     const user = req.user && req.user.username;
 
     if (typeof user === 'undefined') {
@@ -46,23 +47,32 @@ const saveFromAPI = function (req, res) {
         const { source, slice, Hash } = req.query;
         const fileID = `${source}&slice=${slice}`;
         const json = JSON.parse(fs.readFileSync(req.files[0].path).toString());
-        const annotations = {Regions: []};
-        for(let ann of json) {
-            annotations.Regions.push(ann.annotation);
-        }
+
+        const { action } = req.query
+        const annotations = action === 'append'
+            ? await req.app.db.findAnnotations({ fileID, user })
+            : { Regions: [] }
+
+        /**
+         * use object destruction to avoid mutation of annotations object
+         */
+        const { Regions, ...rest } = annotations
 
         req.app.db.updateAnnotation({
-            fileID : fileID,
+            fileID,
             user,
             Hash,
-            annotation: JSON.stringify(annotations)
+            annotation: JSON.stringify({
+                ...rest,
+                Regions: Regions.concat(json.map(v => v.annotation))
+            })
         })
             .then(() => res.status(200).send())
             .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
     }
 };
 
-router.post('', function (req, res) {
+router.post('/', function (req, res) {
     console.warn("call to POST from GUI");
 
     if(req.body.action === 'save') {
@@ -75,11 +85,20 @@ router.post('', function (req, res) {
 router.post('/upload', multer({dest: path.join(__dirname, 'tmp')}).array('data'), function (req, res) {
     console.warn("call to POST from API");
 
-    if(req.query.action === 'save') {
-        saveFromAPI(req, res);
-    } else {
-        res.status(500).send({err:'actions other than save are no longer supported.'});
+    const { action } = req.query
+    switch(action) {
+        case 'save': 
+        case 'append':
+            saveFromAPI(req, res)
+        break;
+        default:
+            return res.status(500).send({err: `actions other than save and append are no longer supported`})
     }
+    
 });
+
+router.use('', (req, res) => {
+    return res.redirect('/')
+})
 
 module.exports = router;
