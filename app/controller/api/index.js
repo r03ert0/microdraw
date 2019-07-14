@@ -13,7 +13,8 @@ const storage = TMP_DIR
     : multer.memoryStorage()
 
 // API routes
-router.get('', function (req, res) {
+
+router.get('/', function (req, res) {
 
     console.warn("call to GET api");
 
@@ -27,7 +28,7 @@ router.get('', function (req, res) {
         user : user
     })
         .then(annotations=>res.status(200).send(annotations))
-        .catch(e=>res.state(500).send({err:JSON.stringify(e)}))
+        .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
 });
 
 const saveFromGUI = function (req, res) {
@@ -45,30 +46,44 @@ const saveFromGUI = function (req, res) {
         .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
 };
 
-const saveFromAPI = function (req, res) {
+const saveFromAPI = async function (req, res) {
     const user = req.user && req.user.username;
 
-    const { source, slice, Hash } = req.query;
-    const fileID = `${source}&slice=${slice}`;
-    const rawString = TMP_DIR
-        ? fs.readFileSync(req.files[0].path).toString()
-        : req.files[0].buffer.toString()
-    const json = JSON.parse(rawString);
-    const annotations = {Regions: []};
-    for(let ann of json) {
-        annotations.Regions.push(ann.annotation);
-    }
+    if (typeof user === 'undefined') {
+        res.status(401).send({msg:'API upload requires a valid token authentication'});
+    } else {
+        const { source, slice, Hash } = req.query;
+        const fileID = `${source}&slice=${slice}`;
+        const rawString = TMP_DIR
+            ? fs.readFileSync(req.files[0].path).toString()
+            : req.files[0].buffer.toString()
+        const json = JSON.parse(rawString);
 
-    req.app.db.updateAnnotation({
-        fileID : fileID,
-        user,
-        annotation: JSON.stringify(annotations)
-    })
-        .then(() => res.status(200).send())
-        .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
+        const { action } = req.query
+        const annotations = action === 'append'
+            ? await req.app.db.findAnnotations({ fileID, user })
+            : { Regions: [] }
+
+        /**
+         * use object destruction to avoid mutation of annotations object
+         */
+        const { Regions, ...rest } = annotations
+
+        req.app.db.updateAnnotation({
+            fileID,
+            user,
+            Hash,
+            annotation: JSON.stringify({
+                ...rest,
+                Regions: Regions.concat(json.map(v => v.annotation))
+            })
+        })
+            .then(() => res.status(200).send())
+            .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
+    }
 };
 
-router.post('', function (req, res) {
+router.post('/', function (req, res) {
     console.warn("call to POST from GUI");
 
     if(req.body.action === 'save') {
@@ -87,10 +102,22 @@ const filterAuthorizedUserOnly = (req, res, next) => {
     }
 }
 
-router.post('/upload', filterAuthorizedUserOnly,  multer({ storage }).array('data'), function (req, res) {
+router.post('/upload', filterAuthorizedUserOnly, multer({dest: path.join(__dirname, 'tmp')}).array('data'), function (req, res) {
     console.warn("call to POST from API");
 
-    saveFromAPI(req, res);
+    const { action } = req.query
+    switch(action) {
+        case 'save': 
+        case 'append':
+            saveFromAPI(req, res)
+        break;
+        default:
+            return res.status(500).send({err: `actions other than save and append are no longer supported`})
+    }
 });
+
+router.use('', (req, res) => {
+    return res.redirect('/')
+})
 
 module.exports = router;

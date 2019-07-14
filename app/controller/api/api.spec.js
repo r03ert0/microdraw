@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const chaiHttp = require('chai-http')
 const expect = chai.expect
 const sinon = require('sinon')
+const fs = require('fs')
 
 const express = require('express')
 const app = express()
@@ -20,7 +21,24 @@ app.use((req, res, next) => {
 })
 
 app.use(bodyParser.urlencoded({ extended: false }))
+
+/**
+ * simulate authenication status
+ * testing authentication is not the aim of this test suite
+ * these tests only check if api works as intended
+ */
+let authenticated = false
+const USER = 'bobby'
+app.use((req, res, next) => {
+    if (authenticated) {
+        req.user = {
+            username: USER
+        }
+    }
+    next()
+})
 app.use(require('./index'))
+
 chai.use(chaiHttp)
 
 describe('Mocha works', () => {
@@ -49,14 +67,18 @@ describe('sinon works', () => {
     })
 })
 
-describe('api.js', () => {
-    let _server
-    const port = 10002
-    const url = `http://127.0.0.1:${port}`
-    const updateAnnotation = sinon.fake.resolves()
-    const findAnnotations = sinon.fake.resolves([{
-        hello:'world'
-    }])
+describe('controller/api/index.js', () => {
+    const annoationInDb = {
+        Regions: ['hello: world', 'foobar']
+    }
+    let _server,
+        port = 10002,
+        url = `http://127.0.0.1:${port}`,
+    
+        returnFoundAnnotation = true,
+        updateAnnotation = sinon.fake.resolves(), 
+        findAnnotations = sinon.fake.resolves(returnFoundAnnotation ? annoationInDb : {Regions: []})
+    
     before(() => {
         app.db = {
             updateAnnotation,
@@ -227,4 +249,136 @@ describe('api.js', () => {
                 })
         })
     })
+    /**
+     * TODO: merge with other #saveFromAPI when #192 is merged
+     * appended to the end for now to avoid merge conflicts
+     */
+    describe('#saveFromAPI?action=append', () => {
+    
+        let FILENAME1 = `FILENAME1.json`
+        let FILENAME2 = `FILENAME2.json`
+        const correctJson = [
+            {
+                "annotation": {
+                    "path": [
+                        "Path",
+                        {
+                            "applyMatrix": true,
+                            "segments": [
+                                [345, 157],
+                                [386, 159],
+                                [385, 199]
+                            ],
+                            "closed": true,
+                            "fillColor": [0.1, 0.7, 0.6, 0.5],
+                            "strokeColor": [0, 0, 0],
+                            "strokeScaling": false
+                        }
+                    ],
+                    "name": "Contour 1"
+                }
+            },
+            {
+                "annotation": {
+                    "path": [
+                        "Path",
+                        {
+                            "applyMatrix": true,
+                            "segments": [
+                                [475, 227],
+                                [502, 155],
+                                [544, 221]
+                            ],
+                            "closed": true,
+                            "fillColor": [0.0, 0.0, 0.6, 0.5],
+                            "strokeColor": [0, 0, 0],
+                            "strokeScaling": false
+                        }
+                    ],
+                    "name": "Contour 2"
+                }
+            }
+        ]
+    
+        const incorrectJSON = {
+            hello: "world"
+        }
+
+        const getQueryParam = ({ action = 'append' } = {}) => ({
+            source: '/path/to/json.json',
+            slice: 24,
+            Hash: 'hello world',
+            action
+        })
+
+        const makeChaiRequest = ({ action = 'append' } = {}) => chai.request(url)
+            .post('/upload')
+            .attach('data', fs.readFileSync(FILENAME1), FILENAME1)
+            .query(getQueryParam())
+    
+        let readFileStub
+        
+        beforeEach(() => {
+            authenticated = true
+            returnFoundAnnotation = true
+
+            readFileStub = sinon.stub(fs, 'readFileSync')
+            readFileStub.returns(Buffer.from(JSON.stringify(correctJson)))
+
+            authenticated = true
+        })
+    
+        afterEach(() => {
+            readFileStub.restore()
+        })
+
+        it('response is as expected', (done) => {
+            const action = 'append'
+            makeChaiRequest({ action })
+                .end((err, res) => {
+                    assert(!err)
+                    expect(res.status).equal(200)
+                    done()
+                })
+        })
+
+        it('db.findAnnotation called', (done) => {
+            const action = 'append'
+            makeChaiRequest({ action })
+                .end((err, res) => {
+                    assert(!err)
+                    assert(findAnnotations.called)
+
+                    const { source, slice, Hash, action } = getQueryParam()
+                    assert(findAnnotations.calledWith({
+                        fileID: `${source}&slice=${slice}`,
+                        user: USER
+                    }))
+                    done()
+                })
+        })
+
+        it('db.updateAnnotation called', (done) => {
+            const action = 'append'
+            makeChaiRequest({ action })
+                .end((err, res) => {
+                    assert(!err)
+                    assert(updateAnnotation.called)
+                    const { source, slice, Hash, action } = getQueryParam()
+                    const { Regions } = annoationInDb
+                    const annotation = {
+                        Regions: Regions.concat(correctJson.map(v => v.annotation))
+                    }
+
+                    assert(updateAnnotation.calledWith({
+                        fileID: `${source}&slice=${slice}`,
+                        user: USER,
+                        Hash,
+                        annotation: JSON.stringify(annotation)
+                    }))
+                    done()
+                })
+        })
+    })
 })
+
