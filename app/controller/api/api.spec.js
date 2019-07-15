@@ -150,111 +150,6 @@ describe('controller/api/index.js', () => {
 
     describe('saveFromAPI', () => {
 
-        const path = require('path')
-        const fs = require('fs')
-
-        const source = 'testSource'
-        const slice = '5'
-
-        const testJson = [
-            {
-                "annotation": {
-                    "path": [
-                        "Path",
-                        {
-                            "applyMatrix": true,
-                            "segments": [
-                                [345, 157],
-                                [386, 159],
-                                [385, 199]
-                            ],
-                            "closed": true,
-                            "fillColor": [0.1, 0.7, 0.6, 0.5],
-                            "strokeColor": [0, 0, 0],
-                            "strokeScaling": false
-                        }
-                    ],
-                    "name": "Contour 1"
-                }
-            },
-            {
-                "annotation": {
-                    "path": [
-                        "Path",
-                        {
-                            "applyMatrix": true,
-                            "segments": [
-                                [475, 227],
-                                [502, 155],
-                                [544, 221]
-                            ],
-                            "closed": true,
-                            "fillColor": [0.0, 0.0, 0.6, 0.5],
-                            "strokeColor": [0, 0, 0],
-                            "strokeScaling": false
-                        }
-                    ],
-                    "name": "Contour 2"
-                }
-            }
-        ]
-
-        const storedInDb = {
-            fileID: `testSource&slice=5`,
-            user: 'bobby',
-            annotation: "{\"Regions\":[{\"path\":[\"Path\",{\"applyMatrix\":true,\"segments\":[[345,157],[386,159],[385,199]],\"closed\":true,\"fillColor\":[0.1,0.7,0.6,0.5],\"strokeColor\":[0,0,0],\"strokeScaling\":false}],\"name\":\"Contour 1\"},{\"path\":[\"Path\",{\"applyMatrix\":true,\"segments\":[[475,227],[502,155],[544,221]],\"closed\":true,\"fillColor\":[0,0,0.6,0.5],\"strokeColor\":[0,0,0],\"strokeScaling\":false}],\"name\":\"Contour 2\"}]}"
-        }
-        before(() => {
-            const mock = require('mock-fs')
-
-            const { getMockfsConfig } = require('../../../test/mocha.test.util')
-            const config = getMockfsConfig(__dirname, 'data.json', JSON.stringify(testJson))
-            mock(config)
-            
-        })
-        
-        it('unauthorized post request should return 401', (done) => {
-            authorized = false
-            
-            const filePath = path.join(__dirname, 'data.json')
-            chai.request(url)
-                .post(`/upload?source=${source}&slice=${slice}`)
-                .attach('data', fs.readFileSync(filePath), 'data.json')
-                .end((err, res) => {
-                    expect(err).to.be.null
-                    expect(res).to.have.status(401)
-                    expect(updateAnnotation.called).to.be.false
-                    done()
-                })
-                
-        })
-
-        // it('malformed post requests should return 400', (done) => {
-        //     done()
-        // })
-
-        it('authorized post request should return 200', (done) => {
-            authorized = true
-
-            const filePath = path.join(__dirname, 'data.json')
-            const attachedFile = fs.readFileSync(filePath)
-            chai.request(url)
-                .post(`/upload?source=${source}&slice=${slice}`)
-                .attach('data', attachedFile, 'data.json')
-                .end((err, res) => {
-                    expect(err).to.be.null
-                    expect(res).to.have.status(200)
-                    assert(updateAnnotation.calledWith(storedInDb))
-                    done()
-                })
-        })
-    })
-    /**
-     * TODO: merge with other #saveFromAPI when #192 is merged
-     * appended to the end for now to avoid merge conflicts
-     */
-    describe('#saveFromAPI?action=append', () => {
-    
         let FILENAME1 = `FILENAME1.json`
         let FILENAME2 = `FILENAME2.json`
         const correctJson = [
@@ -314,70 +209,131 @@ describe('controller/api/index.js', () => {
         const makeChaiRequest = ({ action = 'append' } = {}) => chai.request(url)
             .post('/upload')
             .attach('data', fs.readFileSync(FILENAME1), FILENAME1)
-            .query(getQueryParam())
+            .query(getQueryParam({ action }))
     
         let readFileStub
         
-        beforeEach(() => {
-            authenticated = true
-            returnFoundAnnotation = true
 
-            readFileStub = sinon.stub(fs, 'readFileSync')
-            readFileStub.returns(Buffer.from(JSON.stringify(correctJson)))
+        describe('action=save', () => {
 
-            authenticated = true
-        })
+            beforeEach(() => {
+                authenticated = true
+                returnFoundAnnotation = true
     
-        afterEach(() => {
-            readFileStub.restore()
+                readFileStub = sinon.stub(fs, 'readFileSync')
+                readFileStub.returns(Buffer.from(JSON.stringify(correctJson)))
+    
+                authenticated = true
+            })
+        
+            afterEach(() => {
+                readFileStub.restore()
+            })
+
+            const action = 'save'
+            it('response is as expected', (done) => {
+                makeChaiRequest({ action })
+                    .end((err, res) => {
+                        assert(!err)
+                        expect(res.status).equal(200)
+                        done()
+                    })
+            })
+
+            it('db.findAnnotation NOT called', (done) => {
+                makeChaiRequest({ action })
+                    .end((err, res) => {
+                        assert(!err)
+                        assert(!findAnnotations.called)
+                        done()
+                    })
+            })
+    
+            it('db.updateAnnotation called', (done) => {
+                makeChaiRequest({ action })
+                    .end((err, res) => {
+                        assert(!err)
+                        assert(updateAnnotation.called)
+                        const { source, slice, Hash, action } = getQueryParam()
+                        const { Regions } = annoationInDb
+                        const annotation = {
+                            Regions: correctJson.map(v => v.annotation)
+                        }
+    
+                        assert(updateAnnotation.calledWith({
+                            fileID: `${source}&slice=${slice}`,
+                            user: USER,
+                            Hash,
+                            annotation: JSON.stringify(annotation)
+                        }))
+                        done()
+                    })
+            })
+    
         })
 
-        it('response is as expected', (done) => {
+        describe('action=append', () => {
+
+            beforeEach(() => {
+                authenticated = true
+                returnFoundAnnotation = true
+    
+                readFileStub = sinon.stub(fs, 'readFileSync')
+                readFileStub.returns(Buffer.from(JSON.stringify(correctJson)))
+    
+                authenticated = true
+            })
+        
+            afterEach(() => {
+                readFileStub.restore()
+            })
+
             const action = 'append'
-            makeChaiRequest({ action })
-                .end((err, res) => {
-                    assert(!err)
-                    expect(res.status).equal(200)
-                    done()
-                })
-        })
-
-        it('db.findAnnotation called', (done) => {
-            const action = 'append'
-            makeChaiRequest({ action })
-                .end((err, res) => {
-                    assert(!err)
-                    assert(findAnnotations.called)
-
-                    const { source, slice, Hash, action } = getQueryParam()
-                    assert(findAnnotations.calledWith({
-                        fileID: `${source}&slice=${slice}`,
-                        user: USER
-                    }))
-                    done()
-                })
-        })
-
-        it('db.updateAnnotation called', (done) => {
-            const action = 'append'
-            makeChaiRequest({ action })
-                .end((err, res) => {
-                    assert(!err)
-                    assert(updateAnnotation.called)
-                    const { source, slice, Hash, action } = getQueryParam()
-                    const { Regions } = annoationInDb
-                    const annotation = {
-                        Regions: Regions.concat(correctJson.map(v => v.annotation))
-                    }
-
-                    assert(updateAnnotation.calledWith({
-                        fileID: `${source}&slice=${slice}`,
-                        user: USER,
-                        Hash,
-                        annotation: JSON.stringify(annotation)
-                    }))
-                    done()
-                })
+            
+            it('response is as expected', (done) => {
+                makeChaiRequest({ action })
+                    .end((err, res) => {
+                        assert(!err)
+                        expect(res.status).equal(200)
+                        done()
+                    })
+            })
+    
+            it('db.findAnnotation called', (done) => {
+                makeChaiRequest({ action })
+                    .end((err, res) => {
+                        assert(!err)
+                        assert(findAnnotations.called)
+    
+                        const { source, slice, Hash, action } = getQueryParam()
+                        assert(findAnnotations.calledWith({
+                            fileID: `${source}&slice=${slice}`,
+                            user: USER
+                        }))
+                        done()
+                    })
+            })
+    
+            it('db.updateAnnotation called', (done) => {
+                makeChaiRequest({ action })
+                    .end((err, res) => {
+                        assert(!err)
+                        assert(updateAnnotation.called)
+                        const { source, slice, Hash, action } = getQueryParam()
+                        const { Regions } = annoationInDb
+                        const annotation = {
+                            Regions: Regions.concat(correctJson.map(v => v.annotation))
+                        }
+    
+                        assert(updateAnnotation.calledWith({
+                            fileID: `${source}&slice=${slice}`,
+                            user: USER,
+                            Hash,
+                            annotation: JSON.stringify(annotation)
+                        }))
+                        done()
+                    })
+            })
         })
     })
 })

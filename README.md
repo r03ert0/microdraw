@@ -77,8 +77,17 @@ curl -XPOST /api?source=/path/to/file&slice=12token=FAKE_TOKEN -H "Content-Type:
 ```
 # save annotation via API
 # note that only the files in the `data` field is parsed and saved
-curl -XPOST /api?source=/path/to/file&slice=12token=FAKE_TOKEN -F "data=@/path/to/file.json"
+curl -XPOST /api?action=save&source=/path/to/file&slice=12token=FAKE_TOKEN -F "data=@/path/to/file.json"
 ```
+
+```
+# append annotation via API
+# note that only the files in the data field is parsed and appended
+curl -XPOST /api?action=append&source=/path/to/file&slice=12token=FAKE_TOKEN -F "data=@/path/to/file.json"
+```
+
+> ### saving strategy
+> [multer](https://www.npmjs.com/package/multer) is used to handle uploaded file. An optional TMP_DIR environmental variable can be set for the uploaded json file to be saved to disk. If unset, multer is configured to use buffer storage.
 
 The token expires after 24 hours by default (can be changed by setting env `TOKEN_DURATION`)
 

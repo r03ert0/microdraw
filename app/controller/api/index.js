@@ -102,7 +102,7 @@ const filterAuthorizedUserOnly = (req, res, next) => {
     }
 }
 
-router.post('/upload', filterAuthorizedUserOnly, multer({dest: path.join(__dirname, 'tmp')}).array('data'), function (req, res) {
+router.post('/upload', filterAuthorizedUserOnly, multer({ storage }).array('data'), function (req, res) {
     console.warn("call to POST from API");
 
     const { action } = req.query
