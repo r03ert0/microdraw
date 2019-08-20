@@ -21,19 +21,38 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* setup DB */
-const db = require('./db/db')()
-app.db = db
+var checkAnyoneUser = function () {
+
+    /* check that the 'anyone' user exists. Insert it if it doesn't */
+    db.queryUser({username: 'anyone'})
+    .then((res) => {
+        console.log('"anyone" user correctly configured.', res);
+    })
+    .catch((e) => {
+        console.log('"anyone" user absent: adding one.', res);
+        const anyone = {
+            username: 'anyone',
+            nickname: 'anyone',
+            name: 'Any User',
+            joined: (new Date()).toJSON()
+        };
+        db.addUser(anyone);
+    });
+};
+
+const db = require('./db/db')(null, checkAnyoneUser);
+app.db = db;
 
 /* setup authentication */
-require('./auth/auth')(app)
+require('./auth/auth')(app);
 
 /* setup GUI routes */
-require('./routes/routes')(app)
+require('./routes/routes')(app);
 
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-    var err = new Error('Not Found');
+    var err = new Error('Not Found', req);
     err.status = 404;
     next(err);
 });
