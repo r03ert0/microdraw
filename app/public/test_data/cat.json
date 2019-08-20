@@ -1,7 +1,7 @@
 {
     "tileSources": [
-        "test_data/cat.dzi",
-        "test_data/doge.dzi"
+        "/test_data/cat.dzi",
+        "/test_data/doge.dzi"
     ],
     "pixelsPerMeter": 10000,
     "fileID": "cat"
