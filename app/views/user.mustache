@@ -2,13 +2,9 @@
 <html>
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"> 
-    <link rel="shortcut icon" type="image/x-icon" href="/favicon.png" />
-    <title>{{title}}</title>
+    {{> partials/header }}
     <link rel="stylesheet" type="text/css" href="/css/ui.css" />
     <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="/css/shared-style.css" />
     <link rel="stylesheet" type="text/css" href="/css/user-style.css" />
 </head>
 
@@ -20,6 +16,7 @@
     <div id="header">
         <!-- Top-right menu bar -->
         <div id="menu">
+            <img id="addProject" class="button" title="add project" src='/img/plus.svg'/>
             <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
             <a href="https://github.com/r03ert0/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
             <a href="https://github.com/r03ert0/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
@@ -36,18 +33,6 @@
                 <a href='/' style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100; text-decoration:none">{{nickname}}</a>
             </span>
         </div>
-
-
-        <!-- Small left-top logo -->
-<!--
-        <div style="display:inline-block;margin:10px">
-            <a href='/' style="text-decoration:none">
-                <img style='height:28px;vertical-align:middle' src='/img/microdraw-white.svg'/>
-            </a><span id="fontLogo"> 
-                <a href='/' style="font-family: Roboto, sans-serif; font-size: 28px; font-weight:100; text-decoration:none;vertical-align:middle">MicroDraw</a>
-            </span>
-        </div>
--->
     </div>
 
     <!-- Content (variable height) -->
@@ -151,66 +136,91 @@
     
 </div>
 
+<!--
 <script src="/lib/jquery-3.1.1.min.js"></script>
+-->
 <script>
-    var userInfo='{{{userInfo}}}';
-    var cursorFiles = 0;
-    var cursorAtlas = 0;
-    var cursorProjects = 0;
-    
-    userInfo=JSON.parse(userInfo);
-    userInfo.MRIFiles = [];
-    userInfo.atlasFiles = [];
-    userInfo.projects = [];
-    
-    // switch tabs
-    $("a.tab").click(function() {
-        $("a.tab").removeClass("selected");
-        $(this).addClass("selected");
-        $(".tabContent").hide();
-        selectTab($(this).attr('value'));
+var userInfo='{{{userInfo}}}';
+var cursorFiles = 0;
+var cursorAtlas = 0;
+var cursorProjects = 0;
+
+userInfo=JSON.parse(userInfo);
+userInfo.MRIFiles = [];
+userInfo.atlasFiles = [];
+userInfo.projects = [];
+
+// switch tabs
+for(let tab of document.querySelectorAll("a.tab")) {
+    tab.addEventListener('click', () => {
+        for(let tab2 of document.querySelectorAll("a.tab")) {
+            tab2.classList.remove('selected');
+        }
+        tab.classList.add("selected");
+        for(con of document.querySelectorAll(".tabContent")) {
+            con.setAttribute('display', 'none');
+        }
+        selectTab(tab.getAttribute('value'));
     });
-    selectTab('{{tab}}');
-    
-    queryFiles();
-    queryAtlas();
-    queryProjects();
-    
-    $("#addProject").click(function(){location="/project/new"});
-    $("#settings").click(function(){
-        var pathname=location.pathname;
-        if(pathname.slice(-1)=="/")
-            location=pathname+"settings";
-        else
-            location=pathname+"/settings";
-    });
+}
+selectTab('{{tab}}');
+
+queryFiles();
+// queryAtlas();
+// queryProjects();
+
+document.addEventListener('click', function(ev) {
+    if(!ev.target.matches('#addProject')) {
+        return;
+    }
+    ev.preventDefault();
+    location.href = "/project/new";
+});
+
+document.querySelector("#addProject").addEventListener('click', () => {location="/project/new"});
+document.querySelector("#settings").addEventListener('click', () => {
+    var pathname=location.pathname;
+    if(pathname.slice(-1)=="/")
+        location=pathname+"settings";
+    else
+        location=pathname+"/settings";
+});
     
 function selectTab(tab) {
-    $(".tab").removeClass("selected");
+    for(tab2 of document.querySelectorAll(".tab")) {
+        tab2.classList.remove("selected");
+    }
     switch(tab) {
         case "mri":
-            $(".tab:eq(0)").addClass("selected");
-            $("#MRIFiles").show();
+            document.querySelectorAll(".tab")[0].classList.add("selected");
+            document.querySelector("#MRIFiles").setAttribute('display','inline-block');
             break;
         case "atlas":
-            $(".tab:eq(1)").addClass("selected");
-            $("#atlasFiles").show();
+            document.querySelectorAll(".tab")[1].classList.add("selected");
+            document.querySelector("#atlasFiles").setAttribute('display','inline-block');
             break;
         case "projects":
-            $(".tab:eq(2)").addClass("selected");
-            $("#projects").show();
+            document.querySelectorAll(".tab")[2].classList.add("selected");
+            document.querySelector("#projects").setAttribute('display','inline-block');
             break;
     }
 }
 function queryFiles() {
-    $.getJSON("/user/json/{{nickname}}/files", {start:cursorFiles, length:100})
-    .then(function(res) {
-        if(res.success) {
-            appendFiles(res.list);
-            cursorFiles += 100;
-            queryFiles();
+    var xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            const res = JSON.parse(xhr.responseText);
+            if(res.success) {
+                appendFiles(res.list);
+                cursorFiles += 100;
+                queryFiles();
+            }
+        } else {
+            console.log('The request failed!');
         }
-    });
+    };
+    xhr.open('GET', `/user/json/{{nickname}}/files?start=${cursorFiles}&length=100`);
+    xhr.send();
 }
 function appendFiles(list) {
     userInfo.MRIFiles.push.apply(userInfo.MRIFiles, list);

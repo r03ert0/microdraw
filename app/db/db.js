@@ -2,20 +2,11 @@ const monk = require('monk');
 const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw';
 
 // eslint-disable-next-line max-statements
-module.exports = function(overwriteMongoPath) {
+module.exports = function(overwriteMongoPath, callback) {
     console.log(`connecting to mongodb at: ${MONGODB}`);
 
     const db = monk(overwriteMongoPath || MONGODB);
     let connected = false;
-
-    db.then(() => {
-        connected = true;
-        console.log('connected successfully');
-    }).catch((e) => {
-        // retry (?)
-        connected = false;
-        console.log('connection error', e);
-    });
 
     /**
      * @returns {boolean} checks mongodb connection
@@ -66,11 +57,13 @@ module.exports = function(overwriteMongoPath) {
             .then(() => updateUser(user))
             .then(resolve)
             .catch((e) => {
-                e.message === 'error find one user' ?
+                if(e.message === 'error find one user') {
                     addUser(user)
                         .then(resolve)
-                        .catch(e=>reject(e)) :
-                reject(e);
+                        .catch(e=>reject(e));
+                } else {
+                    reject(e);
+                }
             });
     });
 
@@ -80,7 +73,13 @@ module.exports = function(overwriteMongoPath) {
             return reject(new Error('db connection not healthy'));
         }
         db.get('users').find(pagination)
-            .then((users) => users?resolve(users): reject({message: 'error find all users', result: users}))
+            .then((users) => {
+                if(users) {
+                    resolve(users);
+                } else {
+                    reject({message: 'error find all users', result: users});
+                }
+            })
             .catch((e) => reject(e));
     });
 
@@ -157,14 +156,93 @@ module.exports = function(overwriteMongoPath) {
         });
     });
 
+    /* add project */
+    const addProject = (project) => new Promise((resolve, reject) => {
+        if (!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('projects').insert(project)
+            .then(() => resolve(project))
+            .catch((e) => reject(e));
+    });
+
+    const updateProject = (project) => new Promise((resolve, reject) => {
+        if (!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('project').update({
+            projectname : project.projectname
+        }, {
+            $set : project
+        })
+        .then(() => resolve(project))
+        .catch(reject);
+    });
+
+    /* find project */
+    const queryProject = (searchQuery) => new Promise((resolve, reject) => {
+        if (!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('projects').findOne(searchQuery)
+            .then((project) => project ? resolve(project) : resolve())
+            .catch((e) => reject(e));
+    });
+
+    /* upsert project */
+    const upsertProject = (project) => new Promise((resolve, reject) => {
+        if (!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        queryProject({
+            projectame : project.projectname
+        })
+            .then(() => updateProject(project))
+            .then(resolve)
+            .catch((e) => {
+                e.message === 'error find one project' ?
+                    addProject(project)
+                        .then(resolve)
+                        .catch(e=>reject(e)) :
+                reject(e);
+            });
+    });
+
+    /* query all projects */
+    const queryAllProjects = (pagination) => new Promise((resolve, reject) => {
+        if (!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('projects').find(pagination)
+            .then((projects) => projects?resolve(projects): reject({message: 'error find all projects', result: projects}))
+            .catch((e) => reject(e));
+    });
+
+    db.then(() => {
+        connected = true;
+        console.log('connected successfully');
+        if(typeof callback !== 'undefined') {
+            callback();
+        }
+    }).catch((e) => {
+        // retry (?)
+        connected = false;
+        console.log('connection error', e);
+    });
+
     return {
         addUser,
         queryUser,
+        updateUser,
+        upsertUser,
         queryAllUsers,
         findAnnotations,
         updateAnnotation,
-        updateUser,
-        upsertUser,
+        addProject,
+        queryProject,
+        updateProject,
+        upsertProject,
+        queryAllProjects,
         addToken,
         findToken,
         db,

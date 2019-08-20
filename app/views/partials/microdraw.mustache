@@ -1,0 +1,106 @@
+<div id="microdrawView">
+    <!-- Menu button -->
+    <div id="menuButton">
+        <img class="button1" id="openMenu" title="Menu" src="/img/openMenu.svg" />
+    </div>
+
+    <!-- Toolbar -->
+    <div id="menuBar" class="table">
+
+        <div style="height:2em" class="row">
+            <img class="button1" id="closeMenu" title="Close Menu" src="/img/closeMenu.svg" />
+        </div>
+
+        <div class="row">
+            <div id="myNavigator"></div>
+        </div>
+
+        <div class="row">
+            <div class="cell" style="text-align:center">
+                
+                <!-- Built in buttons always shown -->
+                <div class="buttonGroup">
+                    <img class="button1" id="navigate"       title="Navigator"              src="/img/navigate.svg" />
+                    <img class="button1" id="home"           title="Home"                   src="/img/home.svg" />
+                    <img class="button1" id="zoomIn"         title="Zoom in"                src="/img/zoomIn.svg" />
+                    <img class="button1" id="zoomOut"        title="Zoom out"               src="/img/zoomOut.svg" />
+                    <div class="section-nav">
+                        <img class="button1" id="previous"   title="Previous section"         src="/img/previous.svg" />
+                        <input id="sectionName" list="section-names" style="width:65px;color:black" />
+                        <img class="button1" id="next"       title="Next section"             src="/img/next.svg" />
+                    </div>
+                    <input type="range" id="slider" />
+                </div>
+
+                <!-- Imported buttons -->
+                <div class = "buttonGroup" id = "toolsContainer">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="cell">
+                <br />
+                Regions
+                <div id="regionList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="colorSelector">
+        stroke color
+        <select id="selectStrokeColor" onChange="Microdraw.onSelectStrokeColor();">
+            <option value="0">black</option>
+            <option value="1">white</option>
+            <option value="2">red</option>
+            <option value="3">green</option>
+            <option value="4">blue</option>
+            <option value="5">yellow</option>
+        </select>
+        <br>
+        <br>
+        stroke width
+        <input type="button" id="strokeWidthDec" value="-" onClick="Microdraw.onStrokeWidthDec();"><input type="button" id="strokeWidthInc" value="+" onClick="Microdraw.onStrokeWidthInc();">
+        <br>
+        <br>
+        fill color
+        <input type="color" id="fillColorPicker" value="#ff0000" onChange="Microdraw.onFillColorPicker(this.value);" >
+        <br>
+        <br>
+        &alpha;<input type="range" min="0" max="100" id="alphaSlider" onInput="Microdraw.onAlphaSlider(this.value);" ><input id="alphaFill" onInput="Microdraw.onAlphaInput(this.value);" >
+        <br>
+        <br>
+        <input type="button" id="okStrokeColor" value="ok" onClick="Microdraw.setRegionColor();">
+    </div>
+
+    <!-- Region Picker -->
+    <div id="regionPicker">
+    </div>
+
+    <!-- OpenSeadragon viewer -->
+    <div id="openseadragon1" style="width:100%">
+    </div>
+
+    <!-- paperjs container -->
+    <div id = "paperjs-container">
+    </div>
+
+    <!-- alert/info box after saving -->
+    <div id="saveDialog"></div>
+
+    <!-- naat logo -->
+    <a id="logo" href="http://neuroanatomy.github.io">
+        <img src="/img/naat.svg" style="width:2.5em" />
+    </a>
+</div>
+
+<!-- Load javascript -->
+<script src="/lib/paper-full-0.9.25.min.js"></script>
+<script src="/lib/openseadragon/openseadragon.js"></script>
+<script src="/lib/openseadragon-viewerinputhook.min.js"></script>
+<script src="/lib/OpenSeadragonScalebar/openseadragon-scalebar.js"></script>
+<script src="/lib/openseadragon-screenshot/openseadragonScreenshot.min.js"></script>
+<script src="/lib/FileSaver.js/FileSaver.min.js"></script>
+<script src="/lib/jquery-1.11.0.min.js"></script>
+<script src="/js/neurolex-ontology.js"></script>
+<script src="/js/microdraw.js"></script>

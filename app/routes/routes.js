@@ -1,10 +1,10 @@
 
 const mustacheExpress = require('mustache-express');
-const path = require('path')
-const {authTokenMiddleware, getTokenEndPoint} = require('../auth/token')
+const path = require('path');
+const {authTokenMiddleware, getTokenEndPoint} = require('../auth/token');
 
-module.exports = (app)=>{
-    console.log(`configuring routes`)
+module.exports = (app) => {
+    console.log(`configuring routes`);
 
     // view engine setup
     app.engine('mustache', mustacheExpress());
@@ -38,6 +38,8 @@ module.exports = (app)=>{
     } , require('../controller/data/'));
 
     app.use('/user', require('../controller/user/'));
+
+    app.use('/project', require('../controller/project/'));
 
     app.get('/token', getTokenEndPoint)
 

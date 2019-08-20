@@ -1212,8 +1212,8 @@ var Microdraw = (function () {
         selectTool: function selectTool() {
             if( me.debug ) { console.log("> selectTool"); }
 
-            $("img.button").removeClass("selected");
-            $("img.button#" + me.selectedTool).addClass("selected");
+            $("img.button1").removeClass("selected");
+            $("img.button1#" + me.selectedTool).addClass("selected");
             //$("svg").removeClass("selected");
             //$("svg#" + me.selectedTool).addClass("selected");
         },
@@ -1569,7 +1569,7 @@ var Microdraw = (function () {
                     console.log("> makeSVGInline promise");
                 }
 
-                $('img.button').each(() => {
+                $('img.button1').each(() => {
                     var $img = $(this);
                     var imgID = $img.attr('id');
                     var imgClass = $img.attr('class');
@@ -1927,7 +1927,7 @@ var Microdraw = (function () {
                 }),
 
                 // 2nd promise in array: load configuration file, then load the tools accordingly
-                fetch("js/configuration.json")
+                fetch("/js/configuration.json")
                     .then((r) => r.json())
                     .then((data) => {
                         me.config = data;
@@ -1938,7 +1938,7 @@ var Microdraw = (function () {
 
                                 /* attachDom */
                                 $('#toolsContainer').append(
-                                    `<img class="button" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
+                                    `<img class="button1" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
                                 );
 
                                 /* load script + extend me.tools */
@@ -2002,7 +2002,8 @@ var Microdraw = (function () {
 
 
             // Enable click on toolbar buttons
-            $("img.button").click(me.toolSelection);
+            // @todo the button1 class collides with that from MUI
+            $("img.button1").click(me.toolSelection);
 
             // set annotation loading flag to false
             me.annotationLoadingFlag = false;
@@ -2143,7 +2144,7 @@ var Microdraw = (function () {
             }
             me.viewer = new OpenSeadragon({
                 id: "openseadragon1",
-                prefixUrl: "lib/openseadragon/images/",
+                prefixUrl: "/lib/openseadragon/images/",
                 tileSources: [],
                 showReferenceStrip: false,
                 referenceStripSizeRatio: 0.2,
@@ -2154,7 +2155,8 @@ var Microdraw = (function () {
                 zoomOutButton:"zoomOut",
                 homeButton:"home",
                 maxZoomPixelRatio:10,
-                preserveViewport: true
+                preserveViewport: true,
+                defaultZoomLevel: 1
             });
 
             // open the currentImage
