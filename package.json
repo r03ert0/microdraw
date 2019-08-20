@@ -26,18 +26,18 @@
     "passport": "^0.4.0",
     "passport-github": "latest",
     "passport-local": "^1.0.0",
-    "serve-favicon": "latest"
+    "serve-favicon": "latest",
+    "request": "^2.88.0"
   },
   "main": "app.js",
   "devDependencies": {
     "chai": "^4.2.0",
     "chai-http": "^4.2.1",
     "eslint": "^5.16.0",
-    "mocha": "^6.0.2",
+    "mocha": "^6.1.4",
     "mock-fs": "^4.5.0",
     "nock": "^10.0.6",
     "puppeteer": "latest",
-    "request": "^2.88.0",
     "sinon": "^7.3.1"
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",

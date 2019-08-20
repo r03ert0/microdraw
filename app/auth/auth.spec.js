@@ -70,13 +70,14 @@ const auth = require('./auth')
 
 describe('auth api works properly',()=>{
 
-    after(() => {
+    afterEach(() => {
         mock.restore()
     })
 
     describe('github signin strategy works',()=>{
         it('without github-keys.json, app.loginMethods will not be populated with github methods',()=>{
             const app = express()
+            mock({})
             auth(app)
             const loginMethods = app.get('loginMethods')
             expect( containGithubLoginMethod(loginMethods) ).to.be.equal(false)
