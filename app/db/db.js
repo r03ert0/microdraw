@@ -220,10 +220,12 @@ module.exports = function(overwriteMongoPath, callback) {
 
     db.then(() => {
         connected = true;
-        console.log('connected successfully');
+
         if(typeof callback !== 'undefined') {
             callback();
         }
+
+        console.log('connected successfully');
     }).catch((e) => {
         // retry (?)
         connected = false;

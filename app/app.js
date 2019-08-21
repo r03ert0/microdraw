@@ -28,8 +28,8 @@ var checkAnyoneUser = function () {
     .then((res) => {
         console.log('"anyone" user correctly configured.', res);
     })
-    .catch((e) => {
-        console.log('"anyone" user absent: adding one.', res);
+    .catch((err) => {
+        console.log('"anyone" user absent: adding one.', err);
         const anyone = {
             username: 'anyone',
             nickname: 'anyone',
