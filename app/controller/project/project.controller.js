@@ -133,20 +133,35 @@ var settings = function(req, res) {
  * @returns {void}
  */
 const projectNew = function (req, res) {
+    console.log("New Project");
     const login = (req.user) ?
                 ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
                 ('<a href=\'/auth/github\'>Log in with GitHub</a>');
-
-    console.log("New Project");
+    var loggedUser = "anonymous";
+    if(req.isAuthenticated()) {
+        loggedUser = req.user.username;
+    } else
+    if(req.isTokenAuthenticated) {
+        loggedUser = req.tokenUsername;
+    }
 
     // Store return path in case of login
     req.session.returnTo = req.originalUrl;
 
-    const context = {
-        projectname: "Microdraw: New Project",
-        login
-    };
-    res.render('projectNew', context);
+    if(loggedUser === "anonymous" ) {
+        var context = {
+            title: "MicroDraw: New Project",
+            functionality: "create a new project",
+            login: login
+        };
+        res.render('askForLogin',context);
+    } else {
+        var context = {
+            title: "MicroDraw: New Project",
+            login: login
+        };
+        res.render('projectNew',context);
+    }
 };
 
 const apiProject = function (req, res) {
