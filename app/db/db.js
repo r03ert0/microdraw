@@ -218,6 +218,23 @@ module.exports = function(overwriteMongoPath, callback) {
             .catch((e) => reject(e));
     });
 
+    /* query user projects */
+    const queryUserProjects = (requestedUser) => new Promise((resolve, reject) => {
+        if (!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('projects').find({
+            $or: [
+                {owner: requestedUser},
+                {"collaborators.list": {$elemMatch:{userID: requestedUser}}}
+            ],
+            backup: {$exists: false}
+        })
+        // the results should be access filtered
+        .then((projects) => projects?resolve(projects): reject({message: 'error find all projects', result: projects}))
+        .catch((e) => reject(e));
+    });
+
     db.then(() => {
         connected = true;
 
@@ -245,6 +262,7 @@ module.exports = function(overwriteMongoPath, callback) {
         updateProject,
         upsertProject,
         queryAllProjects,
+        queryUserProjects,
         addToken,
         findToken,
         db,

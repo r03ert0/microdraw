@@ -102,7 +102,16 @@ const api_userFiles = function (req, res) {
     const length = parseInt(req.query.length);
 
     console.log('userName:', userName, 'start:', start, 'length:', length);
-    res.send({success:true, message:'WARNING: THIS FUNCTION IS NOT YET IMPLEMENTED', list:[]});
+    res.send({
+        success:true,
+        message:'WARNING: THIS FUNCTION IS NOT YET IMPLEMENTED',
+        list: [
+            {name: 'test1', dimensions: '3000x2000x200', included: 'yes'},
+            {name: 'test2', dimensions: '4000x3000x300', included: 'yes'},
+            {name: 'test3', dimensions: '5000x4000x400', included: 'yes'}
+        ]
+    });
+
     /*
     dataSlices.getUserFilesSlice(req, userName, start, length)
     .then(result => {
@@ -114,19 +123,29 @@ const api_userFiles = function (req, res) {
     });
     */
 };
+
 /**
  * @function api_userAtlas
  */
-/**
+
+ /**
  * @todo Check access rights for this route
  */
+
 const api_userAtlas = function (req, res) {
     const userName = req.params.userName;
     const start = parseInt(req.query.start);
     const length = parseInt(req.query.length);
 
     console.log('userName:', userName, 'start:', start, 'length:', length);
-    res.send({});
+    res.send({
+        successful: true,
+        message: "WARNING: THIS FUNCTIONALITY IS NOT YET IMPLEMENTED",
+        list: [
+            {parent: 'Test 1', name: 'test 1', project: 'testproject1', lastModified: (new Date()).toJSON()},
+            {parent: 'Test 2', name: 'test 2', project: 'testproject2', lastModified: (new Date()).toJSON()}
+        ]
+    });
 
     /*
     dataSlices.getUserAtlasSlice(req, userName, start, length)
@@ -153,19 +172,13 @@ const api_userProjects = function (req, res) {
     const start = parseInt(req.query.start);
     const length = parseInt(req.query.length);
 
-    console.log('userName:', userName, 'start:', start, 'length:', length);
-    res.send({});
-
-    /*
-    dataSlices.getUserProjectsSlice(req, userName, start, length)
-    .then(result => {
-        res.send(result);
-    })
-    .catch(err => {
-        console.log('ERROR:', err);
-        res.send({success: false, list: []});
+    req.appConfig.db.queryUserProjects(userName)
+    .then((result) => {
+        res.send({
+            successful: true,
+            list: result
+        });
     });
-    */
 };
 
 const userController = function () {

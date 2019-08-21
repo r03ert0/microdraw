@@ -11,21 +11,21 @@
 td {
     word-break: break-word;
 }
-#MRIFiles, #atlasFiles, #projects {
+#dataFiles, #atlasFiles, #projects {
     color:white;
     text-align:left;
     width:100%;
     border-collapse:collapse;
 }
-#MRIFiles td, #atlasFiles td, #projects td,
-#MRIFiles th, #atlasFiles th, #projects th {
+#dataFiles td, #atlasFiles td, #projects td,
+#dataFiles th, #atlasFiles th, #projects th {
     padding:0px 4px;
 }
-#MRIFiles, #atlasFiles, #projects,
-#MRIFiles th, #atlasFiles th, #projects th {
+#dataFiles, #atlasFiles, #projects,
+#dataFiles th, #atlasFiles th, #projects th {
     border-bottom:thin solid white;
 }
-#MRIFiles a, #atlasFiles a, #projects a {
+#dataFiles a, #atlasFiles a, #projects a {
     text-decoration:none;
 }
 
