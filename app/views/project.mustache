@@ -185,17 +185,24 @@ document.querySelector("#vecAnnotations").addEventListener('click', function (e)
     selectRow(e.target.closest('tr'));
 });
 
-var search = location.search.substring(1);
-var result = JSON.parse('{"' + search.replace(/[&]/g, '","').replace(/[=]/g, '":"') + '"}',
-            function(key, value) { return key === "" ? value : decodeURIComponent(value); });
 let fileIndex=0;
-for(let f=0;f<projectInfo.files.list.length;f++) {
-    if(projectInfo.files.list[f].source === result.source) {
-        fileIndex = f;
-        break;
+var search = location.search.substring(1);
+var result;
+if(search !== "") {
+    var result = JSON.parse('{"' + search.replace(/[&]/g, '","').replace(/[=]/g, '":"') + '"}',
+                function(key, value) { return key === "" ? value : decodeURIComponent(value); });
+    for(let f=0;f<projectInfo.files.list.length;f++) {
+        if(projectInfo.files.list[f].source === result.source) {
+            fileIndex = f;
+            break;
+        }
     }
 }
 selectRow(document.querySelectorAll("#projectFiles tbody tr")[fileIndex]);
+if(typeof result === 'undefined') {
+    location.search = `source=${projectInfo.files.list[0].source}`;
+}
+Microdraw.init();
 
 /*
 // Listen to changes that trigger a metadata save
