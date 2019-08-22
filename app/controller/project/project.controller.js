@@ -221,7 +221,7 @@ const postProject = function (req, res) {
     // const {username} = req.user;
     const projectInfo = JSON.parse(req.body.data);
 
-    req.appConfig.db.addProject(projectInfo);
+    req.appConfig.db.upsertProject(projectInfo);
 }
 
 const projectController = function () {
