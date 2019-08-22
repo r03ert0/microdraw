@@ -2265,8 +2265,6 @@ var Microdraw = (function () {
     return me;
 }());
 
-Microdraw.init();
-
 /*
     // Log microdraw
     //microdrawDBSave(JSON.stringify(myOrigin), "entered", null);
