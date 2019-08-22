@@ -366,7 +366,7 @@ document.querySelector("#DataFiles").addEventListener('click', function (e) {
 document.querySelector("#saveChanges").addEventListener('click', saveChanges);
 document.querySelector("#deleteProject").addEventListener('click', deleteProject);
 document.querySelector("#goToProject").addEventListener('click', function goToProject () {
-    location.href=`/project/${projectShortname}?source=${projectInfo.files.list[0].source}`
+    location.href=`/project/${projectShortname}`;
 });
 
 // select first access row
