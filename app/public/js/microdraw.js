@@ -2171,8 +2171,7 @@ var Microdraw = (function () {
                 zoomOutButton:"zoomOut",
                 homeButton:"home",
                 maxZoomPixelRatio:10,
-                preserveViewport: true,
-                defaultZoomLevel: 1
+                preserveViewport: true
             });
 
             // open the currentImage
@@ -2264,8 +2263,6 @@ var Microdraw = (function () {
 
     return me;
 }());
-
-Microdraw.init();
 
 /*
     // Log microdraw

@@ -42,8 +42,17 @@ module.exports = function(overwriteMongoPath, callback) {
             return reject(new Error('db connection not healthy'));
         }
         db.get('users').findOne(searchQuery)
-            .then((user) => user ? resolve(user) : reject({message:'error find one user', result:user}))
-            .catch((e) => reject(e));
+            .then((user) => {
+                if(user) {
+                    resolve(user);
+                } else {
+                    reject({
+                        message: 'error find one user',
+                        result: user
+                    });
+                }
+            })
+            .catch(reject);
     });
 
     /* upsert user */
@@ -60,7 +69,7 @@ module.exports = function(overwriteMongoPath, callback) {
                 if(e.message === 'error find one user') {
                     addUser(user)
                         .then(resolve)
-                        .catch(e=>reject(e));
+                        .catch(reject);
                 } else {
                     reject(e);
                 }
@@ -170,12 +179,12 @@ module.exports = function(overwriteMongoPath, callback) {
         if (!checkHealth()) {
             return reject(new Error('db connection not healthy'));
         }
-        db.get('project').update({
-            projectname : project.projectname
-        }, {
-            $set : project
-        })
-        .then(() => resolve(project))
+        console.log('updateProject:', project);
+        db.get('projects').update(
+            { shortname : project.shortname },
+            project
+        )
+        .then(() => resolve(project) )
         .catch(reject);
     });
 
@@ -185,8 +194,14 @@ module.exports = function(overwriteMongoPath, callback) {
             return reject(new Error('db connection not healthy'));
         }
         db.get('projects').findOne(searchQuery)
-            .then((project) => project ? resolve(project) : resolve())
-            .catch((e) => reject(e));
+            .then((project) => {
+                if(project) {
+                    resolve(project);
+                } else {
+                    resolve();
+                }
+            })
+            .catch(reject);
     });
 
     /* upsert project */
@@ -195,16 +210,18 @@ module.exports = function(overwriteMongoPath, callback) {
             return reject(new Error('db connection not healthy'));
         }
         queryProject({
-            projectame : project.projectname
+            shortname : project.shortname
         })
             .then(() => updateProject(project))
             .then(resolve)
             .catch((e) => {
-                e.message === 'error find one project' ?
+                if(e.message === 'error find one project') {
                     addProject(project)
                         .then(resolve)
-                        .catch(e=>reject(e)) :
-                reject(e);
+                        .catch(reject);
+                } else {
+                    reject(e);
+                }
             });
     });
 
@@ -214,7 +231,13 @@ module.exports = function(overwriteMongoPath, callback) {
             return reject(new Error('db connection not healthy'));
         }
         db.get('projects').find(pagination)
-            .then((projects) => projects?resolve(projects): reject({message: 'error find all projects', result: projects}))
+            .then((projects) => {
+                if(projects) {
+                    resolve(projects);
+                } else {
+                    reject({message: 'error find all projects', result: projects});
+                }
+            })
             .catch((e) => reject(e));
     });
 
@@ -230,24 +253,32 @@ module.exports = function(overwriteMongoPath, callback) {
             ],
             backup: {$exists: false}
         })
-        // the results should be access filtered
-        .then((projects) => projects?resolve(projects): reject({message: 'error find all projects', result: projects}))
-        .catch((e) => reject(e));
+            // @todo the results should be access filtered
+            .then((projects) => {
+                if(projects) {
+                    resolve(projects);
+                } else {
+                    reject({message: 'error find all projects', result: projects});
+                }
+            })
+            .catch(reject);
     });
 
-    db.then(() => {
-        connected = true;
+    db
+        .then(() => {
+            connected = true;
 
-        if(typeof callback !== 'undefined') {
-            callback();
-        }
+            console.log('connected successfully');
 
-        console.log('connected successfully');
-    }).catch((e) => {
-        // retry (?)
-        connected = false;
-        console.log('connection error', e);
-    });
+            if(typeof callback !== 'undefined') {
+                return callback();
+            }
+        })
+        .catch((e) => {
+            // retry (?)
+            connected = false;
+            console.log('connection error', e);
+        });
 
     return {
         addUser,
