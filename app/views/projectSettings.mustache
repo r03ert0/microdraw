@@ -4,15 +4,14 @@
 <head>
     {{> partials/header }}
     <link rel="stylesheet" type="text/css" href="/css/ui.css" />
-    <link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:100' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="/css/projectSettings-style.css">
-    <link rel="stylesheet" type="text/css" href="/css/access-style.css">
+    <link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:100' type='text/css' />
+    <link rel="stylesheet" type="text/css" href="/css/projectSettings-style.css" />
+    <link rel="stylesheet" type="text/css" href="/css/access-style.css" />
     <style>
         input {
             background: none;
             border: none;
             width: 100%;
-            text-align: center;
         }
     </style>
 </head>
@@ -52,12 +51,12 @@
                 <div id="projImage">
                     <a href='/project/{{projectShortname}}'><svg id="jdenticon" width="100%" height="100%"></svg></a>
                 </div>
-                
+
                 <div id="projDescription">
                     <a href='/project/{{projectShortname}}'><h1>{{projectShortname}}</h1></a>
-                    <input id="url" v-model="projectInfo.url" contentEditable=true class="noEmptyWithPlaceholder" placeholder="Enter a project website">
+                    <input v-model="projectInfo.url" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project website">
                     <p>by <a href='/user/{{owner}}'>{{owner}}</a></p>
-                    <input v-model="projectInfo.description" contentEditable=true class="noEmptyWithPlaceholder" placeholder="Enter a project description">
+                    <input v-model="projectInfo.description" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project description">
                     <p><span id="numCollaborators">[[projectInfo.collaborators.list.length]]</span> Collaborators</p>
                     <p><span id="numAnnotations">[[projectInfo.annotations.list.length]]</span> Annotations</p>
                     <p><span id="numFiles">[[projectInfo.files.list.length]]</span> Data Files</p>
@@ -87,8 +86,13 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="val in projectInfo.collaborators.list">
-                                        <td><input v-model="val.userID" class="noEmptyWithPlaceholder" placeholder="User ID"></td>
-                                        <td><input v-model="val.name" class="noEmptyWithPlaceholder" placeholder="User Name"></td>
+                                        <td>
+                                            <autocomplete-input v-model="val.userID" @change="updateName(val, event)" class="noEmptyWithPlaceholder" placeholder="Enter user ID"></autocomplete-input>
+                                            <!--<input v-model="val.userID" class="noEmptyWithPlaceholder" placeholder="User ID">-->
+                                        </td>
+                                        <td>
+                                            <input v-model="val.name" class="noEmptyWithPlaceholder" placeholder="User Name">
+                                        </td>
                                         <td>
                                             <div class='access' :data-level='["none","view","edit","add","remove"].indexOf(val.access.collaborators)'>
                                                 <span class='view' title='view collaborators'></span>
@@ -161,7 +165,7 @@
 
                             <!-- Tab Content 3: Data -->
                             <h2 class="selection-header">Data Files</h2>
-                            <table id="DataFiles" class="tabContent" style="padding:10px">
+                            <table id="files" class="tabContent" style="padding:10px">
                                 <thead>
                                     <tr>
                                         <th>URL</th>
@@ -244,6 +248,64 @@ var projectShortname = "{{{projectShortname}}}";
 <!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
 <script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>
 
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.css" />-->
+<script src="http://localhost/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+<link href="http://localhost/libs/awesomplete/1.1.5/awesomplete.css" rel="stylesheet" type="text/css" />
+<style>
+    .awesomplete > ul {
+        background: #222
+    }
+    .awesomplete > ul:before {
+        background: none;
+        border: none;
+    }
+    .awesomplete mark,
+    .awesomplete li[aria-selected="true"] mark {
+        background: #555;
+    }
+</style>
+
+<script>
+Vue.component('autocomplete-input', {
+  data () { return { list: [] } },
+  props: ['value'],
+  mounted () {
+    let self = this;
+    this.$nextTick(() => {
+        const input = self.$refs.awesomplete;
+        const aw = new Awesomplete(input, { minChars: 3, list: this.list });
+        input.addEventListener('input', (e) => {
+            if(input.value.length>=3) {
+                const xhr = new XMLHttpRequest();
+                xhr.onload = function () {
+                    const res = JSON.parse(xhr.responseText);
+                    if(xhr.status >= 200 && xhr.status < 300 && typeof res !== 'undefined') {
+                        aw.list = res.map((v)=>v.username);
+                        aw.evaluate();
+                    }
+                };
+                xhr.open('GET', `/search/json/users?q=${input.value}`);
+                xhr.send();
+            }
+        });
+        input.addEventListener('awesomplete-select', (e) => {
+            const self = this;
+            this.$emit('input', e.text.value);
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                const res = JSON.parse(xhr.responseText);
+                self.$emit('change');
+            };
+            xhr.open('GET', `/user/json/${e.text.value}`);
+            xhr.send();
+        })
+    })
+  },
+  template: `<input ref="awesomplete" v-bind:value="value" v-on:input="$emit('input',$event.target.value)"/>`
+});
+</script>
+
 <script>
 var app = new Vue({
   el: '#app',
@@ -252,6 +314,13 @@ var app = new Vue({
     projectInfo: projectInfo,
     annotationType: ['vectorial', 'text'],
     labelSets: ['Set I', 'Set II', 'Set III']
+  },
+  methods: {
+      updateName: function (ob, e) {
+          const res = JSON.parse(e.target.response);
+          ob.name = res.name;
+          this.$forceUpdate();
+      }
   }
 });
 
@@ -359,7 +428,7 @@ document.querySelector("#access").addEventListener('click', function (e) {
 document.querySelector("#annotations").addEventListener('click', function (e) {
     selectRow(e.target.closest('tr'));
 });
-document.querySelector("#DataFiles").addEventListener('click', function (e) {
+document.querySelector("#files").addEventListener('click', function (e) {
     selectRow(e.target.closest('tr'));
 });
 
@@ -380,7 +449,7 @@ Vue.nextTick(() => {
 });
 
 // select first data files row
-// document.querySelector("table#DataFiles tbody tr").classList.add("selected");
+// document.querySelector("table#files tbody tr").classList.add("selected");
 
 /*
 $("#importFilesDialogOk").click(importFilesDialog);
@@ -516,21 +585,8 @@ function addCollaborator() {
     });
 }
 function removeCollaborator(param) {
-    // remove row from table
-    var index=$(param.table).find("tbody .selected").index();
-    $(param.table).find('tbody tr:eq('+index+')').remove();
-    
-    // remove binding
-    JSON.stringify(param.info_proxy); // update projectInfo from projectInfoProxy
-    var irow=app.projectInfo.collaborators.list.length-1;
-    for(var icol=0; icol<param.objTemplate.length; icol++) {
-        tw.unbind2(param.info_proxy,param.objTemplate[icol].path.replace("#", irow));
-    }
-    
-    // remove row from BrainBox.info.data.atlas
-    app.projectInfo.collaborators.list.splice(index,1);
-
-    $("#projDescription #numCollaborators").text(app.projectInfo.collaborators.list.length);
+    var index=document.querySelector("table#access .selected").rowIndex - 1;
+    app.projectInfo.collaborators.list.splice(index, 1);
 }
 function addAnnotation() {
     app.projectInfo.annotations.list.push({
@@ -540,44 +596,15 @@ function addAnnotation() {
     });
 }
 function removeAnnotation(param) {
-    // remove row from table
-    var index=$(param.table).find("tbody .selected").index();
-    $(param.table).find('tbody tr:eq('+index+')').remove();
-    
-    // remove binding
-    JSON.stringify(param.info_proxy); // update projectInfo from projectInfoProxy
-    var irow=app.projectInfo.annotations.list.length-1;
-    for(var icol=0; icol<param.objTemplate.length; icol++) {
-        tw.unbind2(param.info_proxy,param.objTemplate[icol].path.replace("#", irow));
-    }
-    
-    // remove row from BrainBox.info.data.atlas
-    app.projectInfo.annotations.list.splice(index,1);
-
-    $("#projDescription #numAnnotations").text(app.projectInfo.annotations.list.length);
+    var index=document.querySelector("table#annotations .selected").rowIndex - 1;
+    app.projectInfo.annotations.list.splice(index, 1);
 }
 function addFile() {
     app.projectInfo.files.list.push({source:'', name:''});
 }
 function removeFile(param) {
-    // remove row from table
-    var index=$(param.table).find("tbody .selected").index();
-    $(param.table).find('tbody tr:eq('+index+')').remove();
-    
-    // remove binding
-    JSON.stringify(param.info_proxy); // update projectInfo from projectInfoProxy
-    var irow=app.projectInfo.files.list.length-1;
-    for(var icol=0; icol<param.objTemplate.length; icol++) {
-        tw.unbind2(param.info_proxy,param.objTemplate[icol].path.replace("#", irow));
-    }
-    
-    // remove row from BrainBox.info.data.atlas
-    app.projectInfo.files.list.splice(index,1);
-
-    $("#projDescription #numFiles").text(app.projectInfo.files.list.length);
-    
-    // select the closest remaining column
-    $(param.table).find('tbody tr:eq('+(Math.min(index,app.projectInfo.files.list.length-1))+')').addClass('selected');
+    var index=document.querySelector("table#files .selected").rowIndex - 1;
+    app.projectInfo.files.list.splice(index, 1);
 }
 function importFiles() {
     // var input=document.getElementById("i-open-mesh");

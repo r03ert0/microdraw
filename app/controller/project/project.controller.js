@@ -165,7 +165,7 @@ const projectNew = function (req, res) {
 };
 
 const apiProject = function (req, res) {
-    req.appConfig.db.queryProject({projectname: req.params.projectname, backup: {$exists: false}})
+    req.appConfig.db.queryProject({shortname: req.params.projectName, backup: {$exists: false}})
         .then((json) => {
             if (json) {
                 if (req.query.var) {
@@ -195,7 +195,7 @@ const apiProjectAll = function (req, res) {
 
     req.appConfig.db.queryAllProjects({backup: {$exists: false}}, {skip: page * nItemsPerPage, limit: nItemsPerPage, fields: {_id: 0}})
         .then((array) => {
-            res.send(array.map((o) => o.projectname ));
+            res.send(array.map((o) => o.shortname ));
         });
 };
 

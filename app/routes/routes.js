@@ -41,6 +41,8 @@ module.exports = (app) => {
 
     app.use('/project', require('../controller/project/'));
 
+    app.use('/search', require('../controller/search/'));
+
     app.get('/token', getTokenEndPoint)
 
     app.use('/api', authTokenMiddleware, require('../controller/api/'));
