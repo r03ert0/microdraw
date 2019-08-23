@@ -112,7 +112,6 @@ module.exports = function(overwriteMongoPath, callback) {
      * @returns {Promise} to resolve as an array of annotations
      */
     const findAnnotations = (searchQuery) => new Promise((resolve, reject) => {
-        console.log("search query", searchQuery);
         if (!checkHealth()) {
             return reject(new Error('db connection not healthy'));
         }
@@ -264,6 +263,31 @@ module.exports = function(overwriteMongoPath, callback) {
             .catch(reject);
     });
 
+    /* search users */
+    const searchUsers = (query) => new Promise((resolve, reject) => {
+        if(!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('users')
+            .find({ "username": { "$regex": query.q } }, {fields:['username', 'name'], limit: 10})
+            .then(resolve)
+            .catch(reject);
+    });
+
+    /* search projects */
+    const searchProjects = (query) => new Promise((resolve, reject) => {
+        if(!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('projects')
+            .find(
+                {"shortname": { '$regex': query.q } },
+                {fields: ["shortname", "name"], limit: 10 }
+            )
+            .then(resolve)
+            .catch(reject);
+    });
+
     db
         .then(() => {
             connected = true;
@@ -297,7 +321,9 @@ module.exports = function(overwriteMongoPath, callback) {
         addToken,
         findToken,
         db,
-        checkHealth
+        checkHealth,
+        searchUsers,
+        searchProjects
     };
 
     /* should discourage the use of db.db ... this renders it db specific ... */

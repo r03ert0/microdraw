@@ -10,7 +10,7 @@
 
 <body>
 
-<div style="width:100%;height:100%;display:flex;flex-direction:column">
+<div id="app" style="width:100%;height:100%;display:flex;flex-direction:column">
     
     <!-- Header (fixed height) -->
     <div id="header">
@@ -49,7 +49,7 @@
                     you can choose a longer display name later.
                 </p>
 
-                <input id="projectName" type="text" placeholder="Enter the project short name"></input>
+                <input v-model="projectName" id="projectName" @input="checkProjectName" type="text" placeholder="Enter the project short name" />
                 <div id='warning' style="display:none">
                 </div>
             </div>
@@ -79,12 +79,45 @@
     </div>
 </div>
 
+<!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
+<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>
+
 <script>
 const projectURL = '{{{projectURL}}}';
 </script>
 
 <script>
-/* global $ */
+var app = new Vue({
+  el: '#app',
+  delimiters: ['[[', ']]'],
+  data: {
+    projectName: '',
+  },
+  methods: {
+      checkProjectName: function () {
+        const self = this;
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            if(xhr.responseText !== '') {
+                const res = JSON.parse(xhr.responseText);
+                if(xhr.status >= 200 && xhr.status < 300 && typeof res !== 'undefined') {
+                    document.querySelector("#warning").innerHTML = "The project <a><strong>"+self.projectName+"</strong></a> already exists";
+                    document.querySelector("#warning a").setAttribute('href','/project/'+self.projectName);
+                    document.querySelector("#warning").style.display="inline-block";
+                    document.querySelector("#createProject").style.pointerEvents = 'none';
+                    document.querySelector("#createProject").style.opacity = 0.5;
+                }
+            } else {
+                document.querySelector("#warning").style.display = 'none';
+                document.querySelector("#createProject").style.pointerEvents = 'auto';
+                document.querySelector("#createProject").style.opacity = 1;
+            }
+        };
+        xhr.open('GET', `/project/json/${this.projectName}`);
+        xhr.send();
+      }
+  }
+});
 
 /*
 import $ from 'jquery';

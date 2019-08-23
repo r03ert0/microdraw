@@ -13,20 +13,20 @@
 td {
     word-break: break-word;
 }
-#DataFiles, #annotations, #access {
+#files, #annotations, #access {
     color:white;
     text-align:left;
     width:100%;
     border-collapse:collapse;
 }
-#DataFiles tr, #annotations tr, #access tr {
+#files tr, #annotations tr, #access tr {
     margin:0px 4px;
 }
-#DataFiles, #annotations, #access,
-#DataFiles th, #annotations th, #access th {
+#files, #annotations, #access,
+#files th, #annotations th, #access th {
     border-bottom:thin solid white;
 }
-#DataFiles a, #annotations a, #access a {
+#files a, #annotations a, #access a {
     text-decoration:none;
 }
 
