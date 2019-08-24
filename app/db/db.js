@@ -183,8 +183,8 @@ module.exports = function(overwriteMongoPath, callback) {
             { shortname : project.shortname },
             project
         )
-        .then(() => resolve(project) )
-        .catch(reject);
+            .then((o) => {console.log('updateProject', o); resolve(o)})
+            .catch(reject);
     });
 
     /* find project */
@@ -211,8 +211,8 @@ module.exports = function(overwriteMongoPath, callback) {
         queryProject({
             shortname : project.shortname
         })
-            .then(() => updateProject(project))
-            .then(resolve)
+            .then((o) => {console.log('upsertProject', o); return updateProject(project)})
+            .then((o) => {console.log('upsertProject2', o); resolve(o);})
             .catch((e) => {
                 if(e.message === 'error find one project') {
                     addProject(project)

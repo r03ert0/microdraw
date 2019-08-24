@@ -327,8 +327,6 @@ var app = new Vue({
 // Add icon based on project's name
 jdenticon.update(document.getElementById("jdenticon"),md5(projectShortname));
 
-// tw.bind2(projectInfoProxy,projectInfo,"name",$("#projectName"));
-
 var cursorFiles = 0;
 
 // Each project requires at least 1 vectorial-type annotation
@@ -361,10 +359,6 @@ function queryFiles() {
 
 function appendFiles(list) {
     app.projectInfo.files.list.push.apply(app.projectInfo.files.list, list);
-    for(var i=0;i<list.length;i++) {
-        BrainBox.appendAnnotationTableRow(cursorFiles + i, filesParam);
-    }
-    $("#numFiles").text(app.projectInfo.files.list.length);
 }
 
 // click event handler
@@ -418,6 +412,23 @@ document.addEventListener('click', function (e) {
     } else if(e.target.matches("#exportFiles")) {
         e.preventDefault();
         exportFiles();
+    } else
+
+    /* import files dialog */
+    if(e.target.matches("#importFilesDialogOk")) {
+        e.preventDefault();
+        importFilesDialog();
+    } else if(e.target.matches("#importFilesDialogCancel")) {
+        e.preventDefault();
+        document.querySelector("#importFilesDialog").style.display = 'none';
+    } else if(e.target.matches("#exportFiles")) {
+        e.preventDefault();
+        exportFiles();
+    } else
+    
+    /* add project menu button */
+    if(e.target.matches("#addProject")) {
+        location="/project/new";
     }
 });
 
@@ -452,12 +463,6 @@ Vue.nextTick(() => {
 // document.querySelector("table#files tbody tr").classList.add("selected");
 
 /*
-$("#importFilesDialogOk").click(importFilesDialog);
-$("#importFilesDialogCancel").click(function() {
-    $("#importFilesDialog").hide();
-});
-$("#addProject").click(function(){location="/project/new"});
-
 // listen to type of annotation changes
 $("#annotations tbody").on('change', "td:nth-child(2) select", function(e) {
     var irow=$(e.target).closest("tr").index();
@@ -532,40 +537,35 @@ function disableDeleteOnAnyoneUser(e) {
 
 function importFilesDialog() {
     var sum=0;
-    $("#importFilesDialog tbody tr").each(function(i,o) {
-        var url=$(o).find("td:eq(0)").text();
-        var name=$(o).find("td:eq(1)").text();
-        var i,found;
+    var rows = document.querySelectorAll("#importFilesDialog tbody tr");
+    for( let row=0;row<rows.length;row++) {
+        const tr = rows[row];
+        const cols = tr.querySelectorAll("td");
+        const url = cols[0].textContent;
+        const name = cols[1].textContent;
+        let i, found;
 
-        if(url.length<10)
-            return;
-        
-        // update the projectInfo object by calling the proxy's getters
-        JSON.stringify(app.projectInfoProxy);
+        if(url.length<10) {
+            console.log("Too short to be an url:", url);
+            continue;
+        }
         
         // look if the data file is not already in the list
         found=false;
         for(i in app.projectInfo.files.list) {
-            if(app.projectInfo.files.list[i].source==url) {
-                if(app.projectInfo.files.list[i].name=="")
-                    app.projectInfoProxy["files.list."+i+".name"]=name;
+            if(app.projectInfo.files.list[i].source === url) {
+                if(app.projectInfo.files.list[i].name === "") {
+                    app.projectInfo.files.list[i].name=name;
+                }
                 found=true;
                 break;
             }
         }
-        if(found===false) {
+        if(found === false) {
             app.projectInfo.files.list.push({source:url, name:name});
-
-            // add and bind new table row
-            var i=app.projectInfo.files.list.length-1;
-            BrainBox.appendAnnotationTableRow(i,filesParam);
-
-            $("#projDescription #numFiles").text(app.projectInfo.files.list.length);
-            
-            sum++;
         }
-    });
-    $("#importFilesDialog").hide();
+    };
+    document.querySelector("#importFilesDialog").style.display = 'none';
     console.log(sum,"files added");
 }
 
@@ -609,16 +609,17 @@ function removeFile(param) {
 function importFiles() {
     // var input=document.getElementById("i-open-mesh");
     console.log("importing files...");
-    $("body").append("<input id='importFilesInput' style='display:none'>");
-    var input=$("#importFilesInput")[0];
-    console.log(input);
+    const input = document.createElement('input');
     input.type="file";
-    input.onchange=function(e){
+    input.setAttribute('id', 'importFilesInput');
+    input.style.display = 'none';
+    document.querySelector("body").appendChild(input);
+    input.onchange=function (e) {
         var file=this.files[0];
         var reader = new FileReader();
         reader.onload = function(e) {
-            $("#importFilesInput").remove();
-            $("#importFilesDialog").show();
+            document.querySelector("body").removeChild(input);
+            document.querySelector("#importFilesDialog").style.display = 'inline-block';
             var result=e.target.result;
             var lines=result.split("\n");
             var html=[];
@@ -627,32 +628,33 @@ function importFiles() {
                 cols=lines[i].split(/[ ]*,[ ]*/);
                 html.push("<tr><td contentEditable='true'>"+cols[0]+"</td><td>"+cols[1]+"</td></tr>");
             }
-            $("#importFilesDialog tbody").append(html.join("\n"));
+            document.querySelector("#importFilesDialog tbody").innerHTML += html.join("\n");
         }
         reader.readAsText(file);
     }
     input.click();
 }
+
 function saveChanges() {
     var xhr = new XMLHttpRequest();
     xhr.onload = function () {
         if (xhr.status >= 200 && xhr.status < 300) {
             const res = JSON.parse(xhr.responseText);
             if(res.success) {
-                $("#saveFeedback").text("Successfully saved");
+                document.querySelector("#saveFeedback").textContent = "Successfully saved";
                 setTimeout(function() {
-                    $("#saveFeedback").text("");
+                    document.querySelector("#saveFeedback").textContent = "";
                 },2000);
             }
         } else {
-            $("#saveFeedback").text("Unable to save. Please try again later");
+            document.querySelector("#saveFeedback").textContent = "Unable to save. Please try again later";
             setTimeout(function() {
-                $("#saveFeedback").text("");
+                document.querySelector("#saveFeedback").textContent = "";
             },3000);
             console.log(err);
         }
     };
-    xhr.open('POST', `/project/json/{{projectShortname}}`);
+    xhr.open('POST', `/project/json/${app.projectInfo.shortname}`);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhr.send(`data=${JSON.stringify(app.projectInfo)}`);
 }
