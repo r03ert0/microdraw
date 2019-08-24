@@ -5,9 +5,7 @@
 /*eslint no-alert: "off"*/
 /*global paper*/
 /*global OpenSeadragon*/
-/*global localhost*/
 /*global Ontology*/
-
 
 // import ToolDraw from 'tools/draw.js';
 // import ToolDrawLine from '/js/tools/drawLine.js';
@@ -232,6 +230,7 @@ var Microdraw = (function () {
             // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit
 
             if (reg) {
+
                 /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector  needs to be #\\31 0 or tag will return null*/
                 var tag = document.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
 
@@ -735,9 +734,7 @@ var Microdraw = (function () {
             me.debugPrint("> mouseDown", 1);
 
             me.mouseUndo = me.getUndo();
-            var prevRegion = null;
             var point = paper.view.viewToProject(new paper.Point(x, y));
-            var hitResult;
 
             me.handle = null;
 
@@ -761,7 +758,6 @@ var Microdraw = (function () {
 
             // transform screen coordinate into world coordinate
             var point = paper.view.viewToProject(new paper.Point(x, y));
-            var i;
 
             // transform screen delta into world delta
             var orig = paper.view.viewToProject(new paper.Point(0, 0));
@@ -774,7 +770,7 @@ var Microdraw = (function () {
                 me.handle.point = point;
                 me.commitMouseUndo();
             } else if (me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseDrag) {
-                me.tools[me.selectedTool].mouseDrag(point,dpoint);
+                me.tools[me.selectedTool].mouseDrag(point, dpoint);
             }
             paper.view.draw();
         },
@@ -787,7 +783,9 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> mouseUp");
             }
-            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) me.tools[me.selectedTool].mouseUp();
+            if(me.tools[me.selectedTool] && me.tools[me.selectedTool].mouseUp) {
+                me.tools[me.selectedTool].mouseUp();
+            }
         },
 
         /**
@@ -1214,8 +1212,8 @@ var Microdraw = (function () {
         selectTool: function selectTool() {
             if( me.debug ) { console.log("> selectTool"); }
 
-            $("img.button").removeClass("selected");
-            $("img.button#" + me.selectedTool).addClass("selected");
+            $("img.button1").removeClass("selected");
+            $("img.button1#" + me.selectedTool).addClass("selected");
             //$("svg").removeClass("selected");
             //$("svg#" + me.selectedTool).addClass("selected");
         },
@@ -1236,7 +1234,7 @@ var Microdraw = (function () {
                 if( me.debug ) {
                     console.log("> default microdrawDBLoad promise, returning an empty array. Overwrite Microdraw.microdrawDBLoad() to load annotations.");
                 }
-                resolve([])
+                resolve([]);
             });
         },
 
@@ -1409,7 +1407,7 @@ var Microdraw = (function () {
 
             // change current section index (for loading and saving)
             me.section = me.currentImage;
-            me.fileID = `${me.source}`
+            me.fileID = `${me.source}`;
 
             // hide previous section
             if( me.prevImage && paper.projects[me.ImageInfo[me.prevImage].projectID] ) {
@@ -1437,14 +1435,29 @@ var Microdraw = (function () {
                             for( let i = 0; i < data.length; i += 1 ) {
                                 const reg = {};
                                 reg.name = data[i].annotation.name;
-                                //reg.page = data[i].annotation.page;
                                 const json = data[i].annotation.path;
-                                reg.path = new paper.Path();
+                                
+                                const type = json[0];
+                                if (type === 'Path') {
+                                    reg.path = new paper.Path();
 
-                                /** @todo Remove workaround once paperjs will be fixed */
-                                var {insert} = reg.path.insert;
-                                reg.path.importJSON(json);
-                                reg.path.insert = insert;
+                                    /** @todo Remove workaround once paperjs will be fixed */
+                                    var {insert} = reg.path.insert;
+                                    reg.path.importJSON(json);
+                                    reg.path.insert = insert;
+                                } else if (type === 'CompoundPath') {
+                                    reg.path = new paper.CompoundPath();
+                                    reg.path.importJSON(json);
+                                } else {
+                                    /**
+                                     * TODO catch future path types
+                                     */
+                                    reg.path = new paper.Path();
+                                    /** @todo Remove workaround once paperjs will be fixed */
+                                    var {insert} = reg.path.insert;
+                                    reg.path.importJSON(json);
+                                    reg.path.insert = insert;
+                                }
 
                                 me.newRegion({name:reg.name, path:reg.path});
                             }
@@ -1572,7 +1585,7 @@ var Microdraw = (function () {
                     console.log("> makeSVGInline promise");
                 }
 
-                $('img.button').each(function() {
+                $('img.button1').each(() => {
                     var $img = $(this);
                     var imgID = $img.attr('id');
                     var imgClass = $img.attr('class');
@@ -1828,8 +1841,8 @@ var Microdraw = (function () {
         loadSourceJson : function loadSourceJson() {
             if( me.debug ) { console.log('> loadSourceJson'); }
 
-            return new Promise((resolve, reject)=> {
-                const directFetch = new Promise((rs, rj)=> {
+            return new Promise((resolve, reject) => {
+                const directFetch = new Promise((rs, rj) => {
 
                     // decide between json (local) and jsonp (cross-origin)
                     var ext = me.params.source.split(".");
@@ -1930,7 +1943,7 @@ var Microdraw = (function () {
                 }),
 
                 // 2nd promise in array: load configuration file, then load the tools accordingly
-                fetch("js/configuration.json")
+                fetch("/js/configuration.json")
                     .then((r) => r.json())
                     .then((data) => {
                         me.config = data;
@@ -1941,7 +1954,7 @@ var Microdraw = (function () {
 
                                 /* attachDom */
                                 $('#toolsContainer').append(
-                                    `<img class="button" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
+                                    `<img class="button1" id="${item.id}" title="${item.name}" src="${item.iconPath}" />`
                                 );
 
                                 /* load script + extend me.tools */
@@ -2005,7 +2018,8 @@ var Microdraw = (function () {
 
 
             // Enable click on toolbar buttons
-            $("img.button").click(me.toolSelection);
+            // @todo the button1 class collides with that from MUI
+            $("img.button1").click(me.toolSelection);
 
             // set annotation loading flag to false
             me.annotationLoadingFlag = false;
@@ -2146,7 +2160,7 @@ var Microdraw = (function () {
             }
             me.viewer = new OpenSeadragon({
                 id: "openseadragon1",
-                prefixUrl: "lib/openseadragon/images/",
+                prefixUrl: "/lib/openseadragon/images/",
                 tileSources: [],
                 showReferenceStrip: false,
                 referenceStripSizeRatio: 0.2,
@@ -2249,8 +2263,6 @@ var Microdraw = (function () {
 
     return me;
 }());
-
-Microdraw.init();
 
 /*
     // Log microdraw

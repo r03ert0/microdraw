@@ -49,3 +49,7 @@ a {
     vertical-align: middle;
     cursor: pointer;
 }
+
+tr.selected{
+    background-color:#444;
+}

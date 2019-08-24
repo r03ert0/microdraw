@@ -1,9 +1,11 @@
 const TOKEN_DURATION = process.env.TOKEN_DURATION || 24 * (1000 * 3600);
 
 // eslint-disable-next-line func-style
+// eslint-disable-next-line max-statements
 const token = function token(req, res) {
-    const {db} = req.app
-    const {user} = req
+    const {db} = req.app;
+    const {user} = req;
+
     /**
      * TODO
      * use next({ status: 500 })
@@ -15,7 +17,6 @@ const token = function token(req, res) {
     if (!user) {
         return res.status(401).send('not logged in');
     }
-
 
     const a = Math.random()
                 .toString(36)
@@ -36,8 +37,8 @@ const token = function token(req, res) {
 
     // store it in the database for the user
     db.addToken(obj)
-        .then(token => res.json(token))
-        .catch(e => res.status(500).send(JSON.stringify(e)));
+        .then((theToken) => res.json(theToken))
+        .catch((e) => res.status(500).send(JSON.stringify(e)));
 
     /*
         // schedule its removal or log them forever?
@@ -48,49 +49,45 @@ const token = function token(req, res) {
     */
 };
 
-module.exports = (app) => {
-    console.log(`loading token module`);
+exports.authTokenMiddleware = function (req, res, next) {
+    console.log('>> Check token');
+    const theToken = req.params.token || req.query.token;
+    if (!theToken) {
+        console.log('>> No token');
+        next();
 
-    app.use(function (req, res, next) {
-        console.log('>> Check token');
-        const token = req.params.token || req.query.token;
-        if (!token) {
-            console.log('>> No token');
-            next();
-    
-            return;
-        }
-        const {db} = req.app;
+        return;
+    }
+    const {db} = req.app;
 
-        if (!db) {
-            return next();
-        }
+    if (!db) {
+        return next();
+    }
 
-        db && db.findToken(token)
-        .then( (obj) => {
-            if (obj) {
-                // Check token expiry date
-                const now = new Date();
-                if (now.getTime() - obj.expiryDate.getTime() < 0) {
-                    console.log('>> Authenticated by token');
-                    req.isTokenAuthenticated = true;
-                    req.tokenUsername = obj.username;
-                    req.user = {
-                        username: obj.username
-                    }
-                } else {
-                    console.log('>> Token expired');
-                    req.isTokenAuthenticated = false;
-                    req.tokenUsername = obj.username;
+    db && db.findToken(theToken)
+    .then( (obj) => {
+        if (obj) {
+            // Check token expiry date
+            const now = new Date();
+            if (now.getTime() - obj.expiryDate.getTime() < 0) {
+                console.log('>> Authenticated by token');
+                req.isTokenAuthenticated = true;
+                req.tokenUsername = obj.username;
+                req.user = {
+                    username: obj.username
                 }
+            } else {
+                console.log('>> Token expired');
+                req.isTokenAuthenticated = false;
+                req.tokenUsername = obj.username;
             }
-            next();
-        })
-        .catch( (err) => {
-            console.log('ERROR:', err);
-            next();
-        });
+        }
+        next();
+    })
+    .catch( (err) => {
+        console.log('ERROR:', err);
+        next();
     });
+};
 
-    app.get('/token', token);
-}
+exports.getTokenEndPoint = token;

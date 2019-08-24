@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {{> partials/header }}
+    <link rel="stylesheet" type="text/css" href="/css/ui.css" />
+    <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="/css/projectNew-style.css">
+</head>
+
+<body>
+
+<div id="app" style="width:100%;height:100%;display:flex;flex-direction:column">
+    
+    <!-- Header (fixed height) -->
+    <div id="header">
+        <!-- Top-right menu bar -->
+        <div id="menu">
+            <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
+            <a href="https://github.com/r03ert0/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
+            <a href="https://github.com/r03ert0/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
+            <div id="MyLogin">
+                <span>{{{login}}}</span>
+            </div>
+        </div>
+
+        <!-- Small left-top logo -->
+        <div style="display:inline-block;margin:10px">
+            <a href='/' style="text-decoration:none">
+                <img style='height:56px;vertical-align:middle' src='/img/microdraw-white.svg'/>
+            </a><span style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100;vertical-align:middle" id="fontLogo"> 
+                <a href='/' style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100; text-decoration:none">MicroDraw</a>
+            </span>
+        </div>
+    </div>
+    
+    <!-- Content (variable height) -->
+    <div id="content" style="flex:1 0 auto">
+
+        <!-- New Project Name -->
+        <div style="display:block;width:600px;margin:0 auto;padding:20px;background:#333">
+
+            <div style="max-width:480px;display:block;margin:0 auto">
+                <h1>Create a new project</h1>
+                <p>
+                    A project contains a list of histological files, a set of vectorials or
+                    text annotations, and a list of collaborators with their access rights.
+                    The short name of a project can only contain letters and numbers, but
+                    you can choose a longer display name later.
+                </p>
+
+                <input v-model="projectName" id="projectName" @input="checkProjectName" type="text" placeholder="Enter the project short name" />
+                <div id='warning' style="display:none">
+                </div>
+            </div>
+
+            <!-- Save or Cancel -->
+            <div style="display:block;margin:0 auto;width:200px">
+                <h2 id="createProject" class="pushButton">Create Project</h2>
+                <h2 id="cancelChanges" class="pushButton">Cancel</h2>
+            </div>
+        </div>
+    </div>
+    <!-- End Content -->
+    
+    <!-- Space (fixed height) -->
+    <div style="flex:0 0 50px">
+    </div>
+
+    <!-- Footer (fixed height) -->
+    <div style="flex:0 0 100px;background-color:#000">
+        <p style="width:100%;font-size:small;text-align:center"> 
+            <a target="_blank" href="http://neuroanatomy.github.io">
+                <img src="/img/naat-bw.svg" style="width:28px;height:28px;margin-right:4px;display:inline-block;vertical-align:middle"/></a>
+            <a target="_blank" href="http://neuroanatomy.github.io" class="linkNoULine">
+                groupe de neuroanatomie appliquée et théorique
+            </a>
+        </p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<!--<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>-->
+
+<script>
+const projectURL = '{{{projectURL}}}';
+</script>
+
+<script>
+var app = new Vue({
+  el: '#app',
+  delimiters: ['[[', ']]'],
+  data: {
+    projectName: '',
+  },
+  methods: {
+      checkProjectName: function () {
+        const self = this;
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            if(xhr.responseText !== '') {
+                const res = JSON.parse(xhr.responseText);
+                if(xhr.status >= 200 && xhr.status < 300 && typeof res !== 'undefined') {
+                    document.querySelector("#warning").innerHTML = "The project <a><strong>"+self.projectName+"</strong></a> already exists";
+                    document.querySelector("#warning a").setAttribute('href','/project/'+self.projectName);
+                    document.querySelector("#warning").style.display="inline-block";
+                    document.querySelector("#createProject").style.pointerEvents = 'none';
+                    document.querySelector("#createProject").style.opacity = 0.5;
+                }
+            } else {
+                document.querySelector("#warning").style.display = 'none';
+                document.querySelector("#createProject").style.pointerEvents = 'auto';
+                document.querySelector("#createProject").style.opacity = 1;
+            }
+        };
+        xhr.open('GET', `/project/json/${this.projectName}`);
+        xhr.send();
+      }
+  }
+});
+
+/*
+import $ from 'jquery';
+import 'jquery-ui/themes/base/core.css';
+import 'jquery-ui/themes/base/theme.css';
+import 'jquery-ui/themes/base/autocomplete.css';
+import 'jquery-ui/ui/core';
+import 'jquery-ui/ui/widgets/autocomplete';
+import * as DOMPurify from '../../../downloads/purify.min.js';
+
+import '../style/style.css';
+import '../style/ui.css';
+import '../style/projectNew-style.css';
+*/
+
+/*
+var host = "ws://" + window.location.hostname + ":8080/";
+let ws;
+if (window.WebSocket) {
+    ws = new WebSocket(host);
+} else if (window.MozWebSocket) {
+    ws = new MozWebSocket(host);
+}
+ws.onopen = function(msg) {
+    ws.send(JSON.stringify({"type":"autocompleteClient"}));
+}
+ws.onmessage = function(message) {
+    message = JSON.parse(message.data);
+    if (message.type === "projectNameQuery") {
+        if(message.metadata) {
+            $("#warning").html("The project <a><strong>"+message.metadata.shortname+"</strong></a> already exists");
+            $("#warning a").attr('href','/project/'+message.metadata.shortname);
+            $("#warning").show();
+            $("#createProject").css({'pointer-events':'none',opacity:0.5});
+        } else {
+            $("#warning").hide();
+            $("#createProject").css({'pointer-events':'auto',opacity:1});
+        }
+    }
+}
+
+$("#projectName").on('keyup',function(e) {
+    var name=DOMPurify.sanitize($("#projectName").val());
+    
+    // check if name is alphanumeric
+    if(/[^a-zA-Z0-9]+/.test(name) === true) {
+        $("#warning").html("The name <strong>"+name+"</strong> is not allowed. Project short names can only contain letters and numbers");
+        $("#warning").show();
+        $("#createProject").css({'pointer-events':'none',opacity:0.5});
+    } else {
+    // check if name already exists
+        ws.send(JSON.stringify({"type":"projectNameQuery", "metadata":{"name":name}}));
+    }
+});
+*/
+
+document.addEventListener('click', function (ev) {
+    if(ev.target.matches('#createProject')) {
+        ev.preventDefault();
+        const projectName = document.getElementById('projectName').value;
+        location.pathname='/project/' + projectName + '/settings';
+    } else if(ev.target.matches('#cancelChanges')){
+        ev.preventDefault();
+        location.pathname=projectURL;
+    }
+});
+</script>
+
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-50078058-2', 'auto');
+    ga('send', 'pageview');
+</script>
+
+</body>
+</html>

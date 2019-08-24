@@ -1,55 +1,59 @@
-.tab {
-    padding-right:12px;
-    padding-left:12px;
+/******************************** table ***************************************/
+.selection-header {
     padding-bottom:4px;
-    cursor: pointer;
+    text-align:left;
     height:20px;
 }
 .tab.selected {
     background:#333;
 }
+.tabContent {
+    margin-left:10px;
+}
 td {
     word-break: break-word;
 }
-#dataFiles, #atlasFiles, #projects {
+#files, #annotations, #access {
     color:white;
     text-align:left;
     width:100%;
     border-collapse:collapse;
 }
-#dataFiles td, #atlasFiles td, #projects td,
-#dataFiles th, #atlasFiles th, #projects th {
-    padding:0px 4px;
+#files tr, #annotations tr, #access tr {
+    margin:0px 4px;
 }
-#dataFiles, #atlasFiles, #projects,
-#dataFiles th, #atlasFiles th, #projects th {
+#files, #annotations, #access,
+#files th, #annotations th, #access th {
     border-bottom:thin solid white;
 }
-#dataFiles a, #atlasFiles a, #projects a {
+#files a, #annotations a, #access a {
     text-decoration:none;
 }
 
-/************************* link to project settings  ********************/
-/* when hovering over project name */
-.settings {
-    opacity: 0.5;
-    transition: opacity 500ms;
-}
-.projectName:hover + .settings {
-    opacity: 0.7;
-}
-.settings:hover {
-    opacity: 1.0;
+/************************************ checkbox for display ******************************/ 
+[data-check="0"] .check:before {
+    background-image: url("/img/check.svg");
 }
 
+[data-check="1"] .check:before {
+    background-image: url("/img/checked.svg");
+}
 
-/*************************** resizable layout **************************/
+/******************************** resizable layout ******************************/
+#littleDescription:focus:before {
+    content: none !important;
+}
+
+#littleDescription {
+    outline: none;
+}
+
 #centeringDiv {
     position:relative;
     display:block;
     margin:0 auto;
 }
-#userImage {
+#projImage {
     position:relative;
     display: inline-block;
     background:#333;
@@ -57,22 +61,24 @@ td {
     height:200px;
     vertical-align: top;
 }
-#userDescription {
+#projDescription {
     position: relative;
     display: inline-block;
     vertical-align: top;
 }
-#userDescription p {
-    margin: 0;
-}
-#userTable {		
+#projTable {		
     position: relative;
     display:inline-block;
     min-height:400px;
     max-width: 900px;
+    background:#333;
+    padding:20px; 
     text-decoration:none;
     vertical-align: top;
-    margin-top: 20px;
+}
+
+#projDescription p {
+    margin: 0;
 }
 
 /* for larger screen (computer, big iPad, small iPad landscape) */
@@ -81,19 +87,19 @@ td {
         width:984px;
         padding:20px;
     }
-    #userImage {
+    #projImage {
         float: left;
     }
-    #userDescription {
+    #projDescription {
         float: left;
         clear: both;
         width: 200px;
     }		
-    #userTable {
+    #projTable {
         max-width: 900px;
-        width: calc(100% - 220px);
+        width: calc(100% - 260px);
+        padding: 20px;
         margin-left: 20px;
-        margin-top: 0px;
     }
 }
 
@@ -103,7 +109,7 @@ td {
         width:700px;
         padding:20px;
     }
-    #userDescription {
+    #projDescription {
         position: relative;
         top: 0px;
         left: 0px;
@@ -112,11 +118,11 @@ td {
         width:calc(100% - 300px);
         text-align: justify;
     }
-    #userTable {
+    #projTable {
         position: relative;
         max-width: 700px;
         width:calc(100% - 40px);
-        top: 0px;
+        top: 20px;
         left: 0px;
     }
 }
@@ -128,7 +134,7 @@ td {
         width:600px;
         padding:10px;
     }
-    #userDescription {
+    #projDescription {
         position: relative;
         top: 0px;
         left: 0px;
@@ -136,15 +142,14 @@ td {
         width:calc(100% - 20px);
         text-align: justify;
     }
-    #userTable {
+    #projTable {
         position: relative;
         max-width: 600px;
         width:calc(100% - 40px);
-        top: 0px;
+        top: 20px;
         left: 0px;
     }
 }
-
 /* for even still smaller screen (phone) */ 
 @media not all and (min-width: 639px) {
     #centeringDiv {
@@ -152,7 +157,7 @@ td {
         width:480px;
         padding:10px;
     }
-    #userDescription {
+    #projDescription {
         position: relative;
         top: 0px;
         left: 0px;
@@ -160,11 +165,17 @@ td {
         width:calc(100% - 20px);
         text-align: justify;
     }
-    #userTable {
+    #projTable {
         position: relative;
         max-width: 420px;
         width:calc(100% - 40px);
-        top: 0px;
+        top: 20px;
         left: 0px;
     }
+}
+
+/* button disabled */
+.disabled {
+    opacity: 0.4;
+    pointer-events: none;
 }

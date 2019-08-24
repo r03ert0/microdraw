@@ -1,10 +1,23 @@
 /*global Microdraw*/
-/*global paper*/
 /*global $*/
 
-var dbroot = '/api'
+var dbroot = '/api';
 
-var ToolSave = { save : (function(){
+var ToolSave = { save : (function() {
+
+    const configureValuesToSave = function (sl) {
+        var section = Microdraw.ImageInfo[sl];
+        var value = {};
+        value.Regions = [];
+        for( i = 0; i < section.Regions.length; i += 1 ) {
+            var el = {};
+            el.path = JSON.parse(section.Regions[i].path.exportJSON());
+            el.name = section.Regions[i].name;
+            value.Regions.push(el);
+        }
+
+        return value;
+    }
 
     /**
      * @function microdrawDBSave
@@ -20,28 +33,21 @@ var ToolSave = { save : (function(){
         var promiseArray = [];
         var savedSections = "Saving sections: ";
 
-        Object.keys(Microdraw.ImageInfo).forEach(function(sl) {
+        Object.keys(Microdraw.ImageInfo).forEach(function (sl) {
             if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
                 return;
             }
             // configure value to be saved
-            var section = Microdraw.ImageInfo[sl];
-            var value = {};
-            value.Regions = [];
-            for( i = 0; i < section.Regions.length; i += 1 ) {
-                var el = {};
-                el.path = JSON.parse(section.Regions[i].path.exportJSON());
-                el.name = section.Regions[i].name;
-                value.Regions.push(el);
-            }
+            const value = configureValuesToSave(sl);
 
             // check if the section annotations have changed since loaded by computing a hash
-            var h = Microdraw.hash(JSON.stringify(value.Regions)).toString(16);
+            const h = Microdraw.hash(JSON.stringify(value.Regions)).toString(16);
+            var section = Microdraw.ImageInfo[sl];
             if( Microdraw.debug > 1 ) { console.log("hash:", h, "original hash:", section.Hash); }
-            // if the section hash is undefined, this section has not yet been loaded. do not save anything for this section
+            // if the section hash is undefined, this section has not yet been loaded. Do not save anything for this section
             if( typeof section.Hash === "undefined" || h === section.Hash ) {
                 if( Microdraw.debug > 1 ) { console.log(`sl ${sl}`, "No change, no save"); }
-                value.Hash = h;
+                // value.Hash = h; /** @todo remove */
 
                 return;
             }
@@ -93,7 +99,7 @@ var ToolSave = { save : (function(){
             $("#saveDialog")
             .fadeOut(500);
         }, 2000);
-    }
+    };
 
     var tool = {
 
@@ -108,8 +114,8 @@ var ToolSave = { save : (function(){
             microdrawDBSave();
             Microdraw.backToPreviousTool(prevTool);
         }
-    }
-    
+    };
+
     return tool;
 }())}
 
@@ -119,19 +125,18 @@ var ToolSave = { save : (function(){
  * @returns {Promise} A promise to return an array of paths of the current section.
 
  */
-Microdraw.microdrawDBLoad = function(){
-    return new Promise(function(resolve,reject){
-        if( Microdraw.debug ){
+Microdraw.microdrawDBLoad = function() {
+    return new Promise(function(resolve,reject) {
+        if( Microdraw.debug ) {
             console.log("> save.js microdrawDBLoad promise")
         }
 
-        $.getJSON(dbroot,{
+        $.getJSON(dbroot, {
             action : "load_last",
             source : Microdraw.source,
             slice: Microdraw.currentImage
         })
-            .success(function (data){
-                var i, json, reg;
+            .success(function (data) {
                 Microdraw.annotationLoadingFlag = false;
 
                 // Because of asynchrony, the section that just loaded may not be the one that the user
@@ -140,23 +145,21 @@ Microdraw.microdrawDBLoad = function(){
                 if( Microdraw.section !== Microdraw.currentImage ) {
                     console.log("> save.js microdrawDBLoad: Loaded section does not correspond with the current section.")
                     Microdraw.microdrawDBLoad()
-                        .then(function(data){
+                        .then(function(data) {
                             resolve(data)
                         })
-                        .catch(function(error){
+                        .catch(function(error) {
                             reject(error)
                         })
 
-                }else{
-                    if( $.isEmptyObject(data) ) {
-                        Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
-                        if( Microdraw.debug ){
-                            console.log("< save.js microdrawDBLoad: returned data is an empty object")
-                        }
-                        resolve([]);
-                    }else{
-                        resolve(data)
+                } else if( $.isEmptyObject(data) ) {
+                    Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
+                    if( Microdraw.debug ) {
+                        console.log("< save.js microdrawDBLoad: returned data is an empty object");
                     }
+                    resolve([]);
+                } else {
+                    resolve(data);
                 }
             })
             .error(function(jqXHR, textStatus, err) {
@@ -164,6 +167,5 @@ Microdraw.microdrawDBLoad = function(){
                 Microdraw.annotationLoadingFlag = false;
                 reject(err);
             });
-            
-    })
-}
+    });
+};

@@ -29,7 +29,7 @@ const user = function (req, res) {
     req.session.returnTo = req.originalUrl;
 
     req.appConfig.db.queryUser({nickname:requestedUser})
-        .then(json => {
+        .then((json) => {
             if (json) {
                 const context = {
                     username: json.name,
@@ -38,7 +38,7 @@ const user = function (req, res) {
                     avatar: json.avatarURL,
                     title: requestedUser,
                     userInfo: JSON.stringify(json),
-                    tab: req.query.tab || 'mri',
+                    tab: req.query.tab || 'data',
                     login
                 };
                 res.render('user', context);
@@ -46,7 +46,7 @@ const user = function (req, res) {
                 res.status(404).send('User Not Found');
             }
         })
-        .catch(err => {
+        .catch((err) => {
             console.log('ERROR:', err);
             res.status(400).send('Error');
         });
@@ -54,12 +54,12 @@ const user = function (req, res) {
 
 const api_user = function (req, res) {
     req.appConfig.db.queryUser({nickname: req.params.userName, backup: {$exists: false}})
-        .then(json => {
+        .then((json) => {
             if (json) {
                 if (req.query.var) {
-                    let i,
-                        arr = req.query.var.split('/');
-                    for (i in arr) {
+                    let i;
+                    const arr = req.query.var.split('/');
+                    for (i of arr) {
                         json = json[arr[i]];
                     }
                 }
@@ -74,6 +74,7 @@ const api_userAll = function (req, res) {
     console.log('api_userAll');
     if (!req.query.page) {
         res.json({error: 'The \'pages\' parameter has to be specified'});
+
         return;
     }
 
@@ -81,18 +82,19 @@ const api_userAll = function (req, res) {
     const nItemsPerPage = 20;
 
     req.appConfig.db.queryAllUsers({backup: {$exists: false}}, {skip: page * nItemsPerPage, limit: nItemsPerPage, fields: {_id: 0}})
-        .then(array => {
-            res.send(array.map(o => {
-                return o.nickname;
-            }));
+        .then((array) => {
+            res.send(array.map((o) => o.nickname));
         });
 };
 
-/**
- * @function api_userFiles
- */
+
 /**
  * @todo Check access rights for this route
+ */
+
+ /**
+ * @function api_userFiles
+ * @returns {void}
  */
 const api_userFiles = function (req, res) {
     const userName = req.params.userName;
@@ -100,7 +102,16 @@ const api_userFiles = function (req, res) {
     const length = parseInt(req.query.length);
 
     console.log('userName:', userName, 'start:', start, 'length:', length);
-    res.send({});
+    res.send({
+        success:true,
+        message:'WARNING: THIS FUNCTION IS NOT YET IMPLEMENTED',
+        list: [
+            {name: 'test1', dimensions: '3000x2000x200', included: 'yes'},
+            {name: 'test2', dimensions: '4000x3000x300', included: 'yes'},
+            {name: 'test3', dimensions: '5000x4000x400', included: 'yes'}
+        ]
+    });
+
     /*
     dataSlices.getUserFilesSlice(req, userName, start, length)
     .then(result => {
@@ -112,19 +123,30 @@ const api_userFiles = function (req, res) {
     });
     */
 };
+
 /**
  * @function api_userAtlas
  */
-/**
+
+ /**
  * @todo Check access rights for this route
  */
+
 const api_userAtlas = function (req, res) {
     const userName = req.params.userName;
     const start = parseInt(req.query.start);
     const length = parseInt(req.query.length);
 
     console.log('userName:', userName, 'start:', start, 'length:', length);
-    res.send({});
+    res.send({
+        successful: true,
+        message: "WARNING: THIS FUNCTIONALITY IS NOT YET IMPLEMENTED",
+        list: [
+            {parent: 'Test 1', name: 'test 1', project: 'testproject1', lastModified: (new Date()).toJSON()},
+            {parent: 'Test 2', name: 'test 2', project: 'testproject2', lastModified: (new Date()).toJSON()}
+        ]
+    });
+
     /*
     dataSlices.getUserAtlasSlice(req, userName, start, length)
     .then(result => {
@@ -136,29 +158,27 @@ const api_userAtlas = function (req, res) {
     });
     */
 };
+
 /**
- * @function api_userProjects
+* @function api_userProjects
  */
+
 /**
  * @todo Check access rights for this route
  */
+
 const api_userProjects = function (req, res) {
     const userName = req.params.userName;
     const start = parseInt(req.query.start);
     const length = parseInt(req.query.length);
 
-    console.log('userName:', userName, 'start:', start, 'length:', length);
-    res.send({});
-    /*
-    dataSlices.getUserProjectsSlice(req, userName, start, length)
-    .then(result => {
-        res.send(result);
-    })
-    .catch(err => {
-        console.log('ERROR:', err);
-        res.send({success: false, list: []});
+    req.appConfig.db.queryUserProjects(userName)
+    .then((result) => {
+        res.send({
+            successful: true,
+            list: result
+        });
     });
-    */
 };
 
 const userController = function () {
