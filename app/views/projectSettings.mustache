@@ -8,7 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/css/projectSettings-style.css" />
     <link rel="stylesheet" type="text/css" href="/css/access-style.css" />
     <style>
-        input {
+        input, textarea {
             background: none;
             border: none;
             width: 100%;
@@ -56,7 +56,7 @@
                     <a href='/project/{{projectShortname}}'><h1>{{projectShortname}}</h1></a>
                     <input v-model="projectInfo.url" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project website">
                     <p>by <a href='/user/{{owner}}'>{{owner}}</a></p>
-                    <input v-model="projectInfo.description" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project description">
+                    <textarea v-model="projectInfo.description" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project description"></textarea>
                     <p><span id="numCollaborators">[[projectInfo.collaborators.list.length]]</span> Collaborators</p>
                     <p><span id="numAnnotations">[[projectInfo.annotations.list.length]]</span> Annotations</p>
                     <p><span id="numFiles">[[projectInfo.files.list.length]]</span> Data Files</p>
