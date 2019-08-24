@@ -61,6 +61,42 @@ Microdraw uses [mongodb](https://docs.mongodb.com/) to manage the annotations by
 
 You can set a custom endpoint for mongodb by setting the environment variable : `MONGODB=url-to-mongo:27017/db_name`
 
+#### Programmatic access of annotations
+In order to access the user specific annotation, logged in user can visit `token` endpoint on a logged in browser. This will generate a token, which, when appended as a query param with the key `token` can be used as proxy to user login.
+
+```
+# get annotations
+curl -XGET /api?source=/path/to/file&slice=12&token=FAKE_TOKEN
+```
+
+```
+# save annotation
+curl -XPOST /api?source=/path/to/file&slice=12token=FAKE_TOKEN -H "Content-Type: application/json" -d"{\"hello\":\"world\"}"
+```
+
+```
+# save annotation via API
+# note that only the files in the `data` field is parsed and saved
+curl -XPOST /api?action=save&source=/path/to/file&slice=12token=FAKE_TOKEN -F "data=@/path/to/file.json"
+```
+
+```
+# append annotation via API
+# note that only the files in the data field is parsed and appended
+curl -XPOST /api?action=append&source=/path/to/file&slice=12token=FAKE_TOKEN -F "data=@/path/to/file.json"
+```
+
+> ### saving strategy
+> [multer](https://www.npmjs.com/package/multer) is used to handle uploaded file. An optional TMP_DIR environmental variable can be set for the uploaded json file to be saved to disk. If unset, multer is configured to use buffer storage.
+
+The token expires after 24 hours by default (can be changed by setting env `TOKEN_DURATION`)
+
+#### Example data.json file
+TODO
+
+#### Saving annotation via file upload
+Deploy environments may not allow for `fs` access. As a result, Microdraw uses [memory storage](https://github.com/expressjs/multer#memorystorage) by default. This can lead to OOM. If `TMP_DIR` env is set, Microdraw will use `TMP_DIR` to write uploaded file. 
+
 ### Set up your own local data folder
 * cd to /public directory, put yourDataFolder here which must contain
     * a folder with the folders with your data tiles in dzi format

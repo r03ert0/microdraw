@@ -1,4 +1,6 @@
-const TOKEN_DURATION = process.env.TOKEN_DURATION || 24 * (1000 * 3600);
+const tokenFromEnv = process.env.TOKEN_DURATION && Number(process.env.TOKEN_DURATION)
+
+const TOKEN_DURATION = (tokenFromEnv > 0 && tokenFromEnv) || 24 * (1000 * 3600);
 
 // eslint-disable-next-line func-style
 // eslint-disable-next-line max-statements

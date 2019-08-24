@@ -17,17 +17,13 @@ describe('Mocha Started',()=>{
 const test_txt = 'test_javalin'
 const github_keys = {"clientID": "testclientID","clientSecret": "testclientsecret","callbackURL": "testcallbackurl"}
 
-const getMockfsConfig = (filename, content) => {
-    const obj = {}
-    obj[path.join(__dirname, filename)] = content
-    return obj
-}
+const { getMockfsConfig } = require('../../test/mocha.test.util')
 
 describe('mock-fs works properly',()=>{
     before(()=>{
         const config = {
-            ...getMockfsConfig('test.txt', test_txt),
-            ...getMockfsConfig('github-keys.json', JSON.stringify(github_keys))
+            ...getMockfsConfig(__dirname, 'test.txt', test_txt),
+            ...getMockfsConfig(__dirname, 'github-keys.json', JSON.stringify(github_keys))
         }
         mock(config)
     })
@@ -68,7 +64,7 @@ const containLocalLoginMethod = (loginMethods) => loginMethods.findIndex(loginMe
 /* must declare auth before mock-fs, or else require will fail */
 const auth = require('./auth')
 
-describe('auth api works properly',()=>{
+describe('auth.js',()=>{
 
     afterEach(() => {
         mock.restore()
@@ -84,7 +80,7 @@ describe('auth api works properly',()=>{
         })
 
         it('with mal-formed github-key.json, app.loginMethods will not be populated with github methods',()=>{
-            mock(getMockfsConfig('github-keys.json', test_txt))
+            mock(getMockfsConfig(__dirname, 'github-keys.json', test_txt))
             const app = express()
             auth(app)
             const loginMethods = app.get('loginMethods')
@@ -92,7 +88,7 @@ describe('auth api works properly',()=>{
         })
 
         it('with valid github-keys.json, app.loginMethods will be populated with github methods',()=>{
-            mock(getMockfsConfig('github-keys.json', JSON.stringify(github_keys)))
+            mock(getMockfsConfig(__dirname, 'github-keys.json', JSON.stringify(github_keys)))
             const app = express()
             auth(app)
             const loginMethods = app.get('loginMethods')
