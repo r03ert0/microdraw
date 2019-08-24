@@ -221,8 +221,13 @@ const postProject = function (req, res) {
     // const {username} = req.user;
     const projectInfo = JSON.parse(req.body.data);
 
-    req.appConfig.db.upsertProject(projectInfo);
-}
+    req.appConfig.db.upsertProject(projectInfo)
+        .then((o) => {console.log('postProject', o); res.send({success: true, response: o});})
+        .catch((e) => res
+            .send(e)
+            .status(403)
+            .end());
+};
 
 const projectController = function () {
     this.validator = validator;
