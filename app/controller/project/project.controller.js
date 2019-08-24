@@ -165,6 +165,7 @@ const projectNew = function (req, res) {
 };
 
 const apiProject = function (req, res) {
+    console.log("GET project", req.params);
     req.appConfig.db.queryProject({shortname: req.params.projectName, backup: {$exists: false}})
         .then((json) => {
             if (json) {
@@ -219,6 +220,7 @@ const apiProjectFiles = function (req, res) {
 const postProject = function (req, res) {
     // const {projectName} = req.params;
     // const {username} = req.user;
+    console.log("POST project", req.body);
     const projectInfo = JSON.parse(req.body.data);
 
     req.appConfig.db.upsertProject(projectInfo)

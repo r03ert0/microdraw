@@ -211,17 +211,18 @@ module.exports = function(overwriteMongoPath, callback) {
         queryProject({
             shortname : project.shortname
         })
-            .then((o) => {console.log('upsertProject', o); return updateProject(project)})
-            .then((o) => {console.log('upsertProject2', o); resolve(o);})
-            .catch((e) => {
-                if(e.message === 'error find one project') {
+            .then((o) => {
+                if(typeof o === 'undefined') {
                     addProject(project)
                         .then(resolve)
                         .catch(reject);
                 } else {
-                    reject(e);
+                    updateProject(project)
+                        .then(resolve)
+                        .catch(reject);
                 }
-            });
+            })
+            .catch(reject);
     });
 
     /* query all projects */
