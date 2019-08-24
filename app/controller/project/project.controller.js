@@ -134,10 +134,11 @@ var settings = function(req, res) {
  */
 const projectNew = function (req, res) {
     console.log("New Project");
+
     const login = (req.user) ?
                 ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
                 ('<a href=\'/auth/github\'>Log in with GitHub</a>');
-    var loggedUser = "anonymous";
+    let loggedUser = "anonymous";
     if(req.isAuthenticated()) {
         loggedUser = req.user.username;
     } else
@@ -149,18 +150,16 @@ const projectNew = function (req, res) {
     req.session.returnTo = req.originalUrl;
 
     if(loggedUser === "anonymous" ) {
-        var context = {
+        res.render('askForLogin', {
             title: "MicroDraw: New Project",
             functionality: "create a new project",
             login: login
-        };
-        res.render('askForLogin',context);
+        });
     } else {
-        var context = {
+        res.render('projectNew', {
             title: "MicroDraw: New Project",
             login: login
-        };
-        res.render('projectNew',context);
+        });
     }
 };
 
@@ -231,6 +230,39 @@ const postProject = function (req, res) {
             .end());
 };
 
+const deleteProject = function (req, res) {
+    console.log("DELETE Project");
+
+    let loggedUser = "anonymous";
+    if(req.isAuthenticated()) {
+        loggedUser = req.user.username;
+    } else
+    if(req.isTokenAuthenticated) {
+        loggedUser = req.tokenUsername;
+    }
+
+    // Store return path in case of login
+    req.session.returnTo = req.originalUrl;
+
+    if(loggedUser === "anonymous" ) {
+        res.send({message: "Log in required"})
+            .status(403)
+            .end();
+    } else {
+        const {projectName} = req.params;
+
+        req.appConfig.db.deleteProject({shortname: projectName})
+            .then((o) => {
+                    console.log('DELETE Project', o);
+                    res.send({success: true, response: o});
+            })
+            .catch((e) => res
+                .send(e)
+                .status(403)
+                .end());
+    }
+};
+
 const projectController = function () {
     this.validator = validator;
     this.apiProject = apiProject;
@@ -239,7 +271,8 @@ const projectController = function () {
     this.project = project;
     this.projectNew = projectNew;
     this.settings = settings;
-    this.postProject = postProject; 
+    this.postProject = postProject;
+    this.deleteProject = deleteProject;
 };
 
 module.exports = new projectController();

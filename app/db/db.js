@@ -171,7 +171,17 @@ module.exports = function(overwriteMongoPath, callback) {
         }
         db.get('projects').insert(project)
             .then(() => resolve(project))
-            .catch((e) => reject(e));
+            .catch(reject);
+    });
+
+    /* delete project */
+    const deleteProject = (projectQuery) => new Promise((resolve, reject) => {
+        if (!checkHealth()) {
+            return reject(new Error('db connection not healthy'));
+        }
+        db.get('projects').remove(projectQuery)
+            .then(resolve)
+            .catch(reject);
     });
 
     const updateProject = (project) => new Promise((resolve, reject) => {
@@ -183,7 +193,10 @@ module.exports = function(overwriteMongoPath, callback) {
             { shortname : project.shortname },
             project
         )
-            .then((o) => {console.log('updateProject', o); resolve(o)})
+            .then((o) => {
+                console.log('updateProject', o);
+                resolve(o);
+            })
             .catch(reject);
     });
 
@@ -314,6 +327,7 @@ module.exports = function(overwriteMongoPath, callback) {
         findAnnotations,
         updateAnnotation,
         addProject,
+        deleteProject,
         queryProject,
         updateProject,
         upsertProject,
