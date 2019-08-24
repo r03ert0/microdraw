@@ -462,25 +462,6 @@ Vue.nextTick(() => {
 // select first data files row
 // document.querySelector("table#files tbody tr").classList.add("selected");
 
-/*
-// listen to type of annotation changes
-$("#annotations tbody").on('change', "td:nth-child(2) select", function(e) {
-    var irow=$(e.target).closest("tr").index();
-    var t=$(e.target).prop('selectedIndex');
-    if(t==0) {
-        var arr= [
-            "<select>",
-            BrainBox.labelSets.map(function(o){return "<option>"+o.name+"</option>"}),
-            "</select>"
-        ];
-        var str=$.map(arr,function(o){return o}).join("");
-        $("#annotations tbody  tr:eq("+irow+") td:eq(2)").html(str);
-    } else {
-        $("#annotations tbody  tr:eq("+irow+") td:eq(2)").html("");
-    }
-});
-*/
-
 /**
  * @function onAccessClicked
  * @desc Handles click on one of the 5 access levels: 0=none, 1=view, 2=edit, 3=add, 4=remove
