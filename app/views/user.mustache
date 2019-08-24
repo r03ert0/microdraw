@@ -210,16 +210,7 @@ queryFiles();
 queryAtlas();
 queryProjects();
 
-/*
-document.addEventListener('click', function(ev) {
-    if(!ev.target.matches('#addProject')) {
-        return;
-    }
-    ev.preventDefault();
-    location.href = "/project/new";
-});
 document.querySelector("#addProject").addEventListener('click', () => {location="/project/new"});
-*/
 
 function selectTab(tab) {
     for(tab2 of document.querySelectorAll(".tab")) {
