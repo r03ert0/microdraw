@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "debug": "node --inspect-brk ./bin/www",
     "test": "node test.js",
     "mocha": "node node_modules/mocha/bin/mocha",
     "lint": "eslint",

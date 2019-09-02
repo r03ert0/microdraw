@@ -15,30 +15,47 @@ const storage = TMP_DIR
 // API routes
 
 router.get('/', function (req, res) {
-
     console.warn("call to GET api");
+    console.warn(req.query);
 
     const user = (req.user && req.user.username) || 'anonymous';
+    const project = (req.query.project) || '';
 
-    console.warn(req.query);
-    const { source, slice } = req.query;
+    // find project users
+    req.app.db.queryProject({shortname: project})
+    .then((result) => {
+        const users = [];
+        
+        if(typeof result !== 'undefined') {
+            users.push(...result.collaborators.list.map((u)=>u.username));
+        }
+        console.log(`users: [${JSON.stringify(users)}]`);
 
-    req.app.db.findAnnotations({
-        fileID : `${source}&slice=${slice}`,
-        user : user
+        // find annotations
+        req.app.db.findAnnotations({
+            fileID: buildFileID(req.query),
+            user: { $in: users },
+            project: project
+        })
+            .then(annotations=>res.status(200).send(annotations))
+            .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
     })
-        .then(annotations=>res.status(200).send(annotations))
-        .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
+    .catch((err) => console.log("ERROR api/index.js", err));
 });
 
-const saveFromGUI = function (req, res) {
-    const { source, slice, Hash, annotation } = req.body;
+function buildFileID({source, slice}) {
+    return `${source}&slice=${slice}`;
+}
 
+const saveFromGUI = function (req, res) {
+    const { Hash, annotation } = req.body;
     const user = (req.user && req.user.username) || 'anonymous';
+    const project = (req.body.project) || '';
 
     req.app.db.updateAnnotation({
-        fileID : `${source}&slice=${slice}`,
+        fileID : buildFileID(req.body),
         user,
+        project,
         Hash,
         annotation
     })
@@ -76,26 +93,24 @@ const loadAnnotationFile = function (annotationPath) {
 };
 
 const saveFromAPI = async function (req, res) {
+    const fileID = buildFileID(req.query);
     const user = req.user && req.user.username;
-    const { source, slice, Hash } = req.query;
-
+    const { project, Hash } = req.query;
     const rawString = TMP_DIR
         ? fs.readFileSync(req.files[0].path).toString()
-        : req.files[0].buffer.toString()
+        : req.files[0].buffer.toString();
     const json = JSON.parse(rawString);
-
     if (typeof user === 'undefined') {
-        res.status(401).json({msg: "API upload requires a valid token authentication"});
+        res.status(401).send({msg: "Invalid user token"});
+    } else if (typeof project === 'undefined') {
+        res.status(401).send({msg: "Invalid project"});
     } else if(!jsonIsValid(json)) {
         res.status(401).json({msg: "Invalid annotation file"});
     } else {
-        const { source, slice, Hash } = req.query;
-        const fileID = `${source}&slice=${slice}`;
-
-        const { action } = req.query
+        const { action } = req.query;
         const annotations = action === 'append'
-            ? await req.app.db.findAnnotations({ fileID, user })
-            : { Regions: [] }
+            ? await req.app.db.findAnnotations({ fileID, user, project })
+            : { Regions: [] };
 
         /**
          * use object destruction to avoid mutation of annotations object
@@ -105,6 +120,7 @@ const saveFromAPI = async function (req, res) {
         req.app.db.updateAnnotation({
             fileID,
             user,
+            project,
             Hash,
             annotation: JSON.stringify({
                 ...rest,
@@ -129,7 +145,7 @@ router.post('/', function (req, res) {
 const filterAuthorizedUserOnly = (req, res, next) => {
     const user = req.user && req.user.username;
     if (typeof user === 'undefined') {
-        return res.status(401).send({msg:'API upload requires a valid token authentication'});
+        return res.status(401).send({msg:'Invalid user'});
     } else {
         return next()
     }

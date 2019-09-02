@@ -166,7 +166,7 @@ var Microdraw = (function () {
                 }
                 str = [
                         "<div class='region-tag' id='" + uid + "' style='padding:2px'>",
-                        "<img class='eye' title='Region visible' id='eye_" + uid + "' src='img/eyeOpened.svg' />",
+                        "<img class='eye' title='Region visible' id='eye_" + uid + "' src='/img/eyeOpened.svg' />",
                         "<div class='region-color'",
                         "style='background-color:rgba(",
                         parseInt(color.red*mult, 10),
@@ -279,12 +279,12 @@ var Microdraw = (function () {
                     reg.path.strokeWidth = 0;
                     reg.path.fullySelected = false;
                     reg.storeName = reg.name;
-                    $('#eye_' + reg.uid).attr('src', 'img/eyeClosed.svg');
+                    $('#eye_' + reg.uid).attr('src', '/img/eyeClosed.svg');
                 } else {
                     reg.path.fillColor = reg.path.storeColor;
                     reg.path.strokeWidth = 1;
                     reg.name = reg.storeName;
-                    $('#eye_' + reg.uid).attr('src', 'img/eyeOpened.svg');
+                    $('#eye_' + reg.uid).attr('src', '/img/eyeOpened.svg');
                 }
                 paper.view.draw();
                 $(".region-tag#" + reg.uid + ">.region-name").text(reg.name);
@@ -700,7 +700,7 @@ var Microdraw = (function () {
          * @returns {void}
          */
         dragEndHandler: function dragEndHandler(event) {
-            if( me.debug ) { console.log("> dragEndHandler"); }
+            if( me.debug>1 ) { console.log("> dragEndHandler"); }
 
             if( !me.navEnabled ) {
                 event.stopHandlers = true;
@@ -715,7 +715,7 @@ var Microdraw = (function () {
          * @returns {void}
          */
         scrollHandler: function scrollHandler(ev) {
-            if( me.debug ) { console.log("> scrollHandler") }
+            if( me.debug>1 ) { console.log("> scrollHandler") }
 
             if( me.tools[me.selectedTool]
                 && me.tools[me.selectedTool].scrollHandler ) {
@@ -1372,7 +1372,7 @@ var Microdraw = (function () {
          * @returns {void}
          */
         resizeAnnotationOverlay: function resizeAnnotationOverlay() {
-            if( me.debug ) { console.log("> resizeAnnotationOverlay"); }
+            if( me.debug>1 ) { console.log("> resizeAnnotationOverlay"); }
 
             var width = $("#paperjs-container").width();
             var height = $("#paperjs-container").height();
@@ -1382,6 +1382,7 @@ var Microdraw = (function () {
                 width,
                 height
             ];
+            me.transform();
         },
 
         /**
@@ -1436,25 +1437,25 @@ var Microdraw = (function () {
                                 const reg = {};
                                 reg.name = data[i].annotation.name;
                                 const json = data[i].annotation.path;
-                                
-                                const type = json[0];
+
+                                const [type] = json;
                                 if (type === 'Path') {
                                     reg.path = new paper.Path();
 
                                     /** @todo Remove workaround once paperjs will be fixed */
-                                    var {insert} = reg.path.insert;
+                                    const {insert} = reg.path;
                                     reg.path.importJSON(json);
                                     reg.path.insert = insert;
                                 } else if (type === 'CompoundPath') {
                                     reg.path = new paper.CompoundPath();
                                     reg.path.importJSON(json);
                                 } else {
-                                    /**
-                                     * TODO catch future path types
-                                     */
+
+                                    /** @todo catch future path types */
                                     reg.path = new paper.Path();
+
                                     /** @todo Remove workaround once paperjs will be fixed */
-                                    var {insert} = reg.path.insert;
+                                    const {insert} = reg.path;
                                     reg.path.importJSON(json);
                                     reg.path.insert = insert;
                                 }
@@ -1514,10 +1515,12 @@ var Microdraw = (function () {
             var z = me.viewer.viewport.viewportToImageZoom(me.viewer.viewport.getZoom(true));
             var sw = me.viewer.source.width;
             var bounds = me.viewer.viewport.getBounds(true);
-            var x = me.magicV * bounds.x;
-            var y = me.magicV * bounds.y;
-            var w = me.magicV * bounds.width;
-            var h = me.magicV * bounds.height;
+            const [x, y, w, h] = [
+                me.magicV * bounds.x,
+                me.magicV * bounds.y,
+                me.magicV * bounds.width,
+                me.magicV * bounds.height
+            ];
             paper.view.setCenter(x + (w/2), y + (h/2));
             paper.view.zoom = (sw * z) / me.magicV;
         },
@@ -1529,6 +1532,7 @@ var Microdraw = (function () {
         deparam: function deparam() {
             if( me.debug ) { console.log("> deparam"); }
 
+            /** @todo Use URLSearchParams instead */
             var search = location.search.substring(1);
             var result = search?
                         JSON.parse('{"' + search.replace(/[&]/g, '","').replace(/[=]/g, '":"') + '"}',
@@ -1802,12 +1806,17 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log('> updateURL');
             }
-            const oldURL = window.location.href;
-            const URLparts = oldURL.split('=');
-            const oldSliceNumber = URLparts[2];
-            URLparts[2] = newIndex;
-
-            const newURL = URLparts[0] + '=' + URLparts[1] + '=' + URLparts[2];
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('slice', newIndex);
+            const newURL = [
+                    window.location.protocol,
+                    '//',
+                    window.location.host,
+                    window.location.pathname,
+                    '?',
+                    urlParams.toString()
+            ].join('');
+            console.log(newURL);
             const stateObj = {
                 oldURL: newURL
             };
@@ -1824,9 +1833,17 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log('> addSliceToURL');
             }
-            const oldURL = window.location.href;
-
-            const newURL = oldURL + '&slice=' + newIndex;
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('slice', newIndex);
+            const newURL = [
+                window.location.protocol,
+                '//',
+                window.location.host,
+                window.location.pathname,
+                '?',
+                urlParams.toString()
+            ].join('');
+            console.log(newURL);
             const stateObj = {
                 oldURL: newURL
             };
@@ -1889,7 +1906,8 @@ var Microdraw = (function () {
                             })
                             .catch((e) => rj(e));
                     }
-                })
+                });
+
                 directFetch
                     .then( function (json) {
                             resolve(json);
@@ -2009,13 +2027,6 @@ var Microdraw = (function () {
             if( me.debug ) {
                 console.log("> initMicrodraw promise");
             }
-
-            // Subscribe to login changes
-            //MyLoginWidget.subscribe(loginChanged);
-
-            // extend Microdraw with tools
-            // load scripts dynamically since import is not currently supported by browsers
-
 
             // Enable click on toolbar buttons
             // @todo the button1 class collides with that from MUI
@@ -2248,6 +2259,9 @@ var Microdraw = (function () {
                                 me.params = me.deparam();
                                 me.section = me.currentImage;
                                 me.source = me.params.source;
+                                if(typeof me.params.project !== 'undefined') {
+                                    me.project = me.params.project;
+                                }
                                 // updateUser();
                             })
                             .then(me.initMicrodraw);

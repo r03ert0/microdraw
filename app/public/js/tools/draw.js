@@ -68,18 +68,18 @@ var ToolDraw = { draw: (function () {
                     origSegments = Microdraw.region.path.segments.length;
                 }
 
-                // pixels per dot (dot is a device-independent psuedo-pixel with a
-                // resolution of roughly 72 dpi)
-                var ppd = paper.view.pixelRatio;
-        
-                // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
-                var pixelSelectAccuracy = 4.0*ppd;
-        
-                // ratio between project coordinates and browser pixels
-                var coordsPerPixel = paper.view.size.width/paper.view.viewSize.width;
+                var
+                    // pixels per dot (dot is a device-independent psuedo-pixel with a resolution of roughly 72 dpi)
+                    ppd = paper.view.pixelRatio,
 
-                // accuracy by which curves can reasonably be simplified
-                var simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy;
+                    // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
+                    pixelSelectAccuracy = 4.0*ppd,
+
+                    // ratio between project coordinates and browser pixels
+                    coordsPerPixel = paper.view.size.width/paper.view.viewSize.width,
+
+                    // accuracy by which curves can reasonably be simplified
+                    simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy;
 
                 // the simplify function looks at the maximum squared distance from curve to original points
                 Microdraw.region.path.simplify(simplifyAccuracy*simplifyAccuracy);
