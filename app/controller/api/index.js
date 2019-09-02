@@ -61,12 +61,12 @@ const saveFromGUI = function (req, res) {
  * @param {object} obj An annotation object to validate.
  * @returns {boolean} True if the object is valid
  */
-const validateAnnotation = function (obj) {
+const jsonIsValid = function (obj) {
     if(typeof obj === 'undefined') {
         return false;
     } else if(obj.constructor !== Array) {
         return false;
-    } else if(typeof obj[0].path === 'undefined') {
+    } else if(!obj.every(item => item.annotation && item.annotation.path)) {
         return false;
     }
 
@@ -80,7 +80,7 @@ const validateAnnotation = function (obj) {
  */
 const loadAnnotationFile = function (annotationPath) {
     const json = JSON.parse(fs.readFileSync(annotationPath).toString());
-    if(validateAnnotation(json) === true) {
+    if(jsonIsValid(json) === true) {
         return json;
     }
 };
@@ -89,20 +89,17 @@ const saveFromAPI = async function (req, res) {
     const fileID = buildFileID(req.query);
     const user = req.user && req.user.username;
     const { project, Hash } = req.query;
-    const json = loadAnnotationFile(req.files[0].path);
-
+    const rawString = TMP_DIR
+        ? fs.readFileSync(req.files[0].path).toString()
+        : req.files[0].buffer.toString();
+    const json = JSON.parse(rawString);
     if (typeof user === 'undefined') {
         res.status(401).send({msg: "Invalid user token"});
     } else if (typeof project === 'undefined') {
         res.status(401).send({msg: "Invalid project"});
-    } else if(typeof json === "undefined") {
-            res.status(401).send({msg: "Invalid annotation file"});
+    } else if(!jsonIsValid(json)) {
+        res.status(401).json({msg: "Invalid annotation file"});
     } else {
-        const rawString = TMP_DIR
-            ? fs.readFileSync(req.files[0].path).toString()
-            : req.files[0].buffer.toString()
-        const json = JSON.parse(rawString);
-
         const { action } = req.query;
         const annotations = action === 'append'
             ? await req.app.db.findAnnotations({ fileID, user, project })

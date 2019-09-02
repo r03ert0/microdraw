@@ -206,9 +206,17 @@ describe('controller/api/index.js', () => {
             action
         })
 
-        const makeChaiRequest = ({ action = 'append' } = {}) => chai.request(url)
+        const makeChaiRequest = ({ action = 'append', illFormedJson = false } = {}) => chai.request(url)
             .post('/upload')
-            .attach('data', fs.readFileSync(FILENAME1), FILENAME1)
+            .attach(
+                'data',
+                illFormedJson
+                    ? fs.readFileSync(FILENAME2)
+                    : fs.readFileSync(FILENAME1),
+                illFormedJson
+                    ? FILENAME2
+                    : FILENAME1
+            )
             .query(getQueryParam({ action }))
     
         let readFileStub
@@ -221,7 +229,8 @@ describe('controller/api/index.js', () => {
                 returnFoundAnnotation = true
     
                 readFileStub = sinon.stub(fs, 'readFileSync')
-                readFileStub.returns(Buffer.from(JSON.stringify(correctJson)))
+                readFileStub.withArgs(FILENAME1).returns(Buffer.from(JSON.stringify(correctJson)))
+                readFileStub.withArgs(FILENAME2).returns(Buffer.from(JSON.stringify(incorrectJSON)))
     
                 authenticated = true
             })
@@ -231,6 +240,31 @@ describe('controller/api/index.js', () => {
             })
 
             const action = 'save'
+
+            it('if unauthenticated, should response 401', (done) => {
+                authenticated = false
+                makeChaiRequest({ action })
+                    .end((err, res) => {
+                        assert(!err)
+                        expect(res.status).equal(401)
+                        expect(res).to.be.json
+                        expect(res.body).to.deep.equal({msg: "API upload requires a valid token authentication"})
+                        done()
+                    })
+            })
+
+            it('if attaches invalid json, should respond 401', (done) => {
+
+                makeChaiRequest({ action, illFormedJson: true })
+                    .end((err, res) => {
+                        assert(!err)
+                        expect(res.status).equal(401)
+                        expect(res).to.be.json
+                        expect(res.body).to.deep.equal({msg: "Invalid annotation file"})
+                        done()
+                    })
+            })
+
             it('response is as expected', (done) => {
                 makeChaiRequest({ action })
                     .end((err, res) => {
