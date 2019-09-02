@@ -42,7 +42,7 @@ app.use(require('./index'))
 chai.use(chaiHttp)
 
 describe('Mocha works', () => {
-    it('mocha works in routes.spec.js', () => {
+    it('mocha works in api.spec.js', () => {
         assert.equal(1, 1)
     })
 })
@@ -248,7 +248,7 @@ describe('controller/api/index.js', () => {
                         assert(!err)
                         expect(res.status).equal(401)
                         expect(res).to.be.json
-                        expect(res.body).to.deep.equal({msg: "API upload requires a valid token authentication"})
+                        expect(res.body).to.deep.equal({msg: "Invalid user"})
                         done()
                     })
             })
@@ -260,7 +260,7 @@ describe('controller/api/index.js', () => {
                         assert(!err)
                         expect(res.status).equal(401)
                         expect(res).to.be.json
-                        expect(res.body).to.deep.equal({msg: "Invalid annotation file"})
+                        expect(res.body).to.deep.equal({msg: "Invalid project"})
                         done()
                     })
             })
