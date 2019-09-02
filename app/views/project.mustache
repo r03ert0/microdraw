@@ -111,8 +111,8 @@
 const projectInfo={{{projectInfo}}};
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/vue"></script>
-<!--<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/vue"></script>-->
+<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>
 
 <script>
 var app = new Vue({
@@ -137,6 +137,11 @@ let objTemplate;
 let aParam;
 let hashOld;
 
+// interface elements
+const resizeButton = document.querySelector("#resizeButton");
+const body = document.querySelector("body");
+
+
 // collect the project's text annotations
 for(k=0;k<app.projectInfo.annotations.list.length;k++) {
     if (app.projectInfo.annotations.list[k].type === "text" |
@@ -152,14 +157,6 @@ for(k=0;k<app.projectInfo.annotations.list.length;k++) {
         annotations.volume.push(app.projectInfo.annotations.list[k]);
     }
 }
-
-/*
-$("#resizeButton").data({flag:-1,x0:0,y0:0});
-$("#resizeButton").on('mousedown touchstart',function(e){$(this).data({flag:0,x0:e.pageX,y0:e.pageY})});
-$("body").on('mousemove',function(e){resizeButton({x:e.pageX,y:e.pageY})});
-$("body").on('touchmove',function(e){resizeButton({x:e.originalEvent.changedTouches[0].pageX,y:e.originalEvent.changedTouches[0].pageY})});
-$("body").on('mouseup touchend',function(e){$("#resizeButton").data({flag:-1})});
-*/
 
 document.querySelector("#addProject").addEventListener('click', function() {
     location="/project/new";
@@ -179,7 +176,7 @@ document.querySelector("#vecAnnotations tbody tr").classList.add("selected");
 document.querySelector("#projectFiles").addEventListener('click', function (e) {
     const row = e.target.closest('tr');
     const index = row.rowIndex - 1;
-    location.href = `/project/${projShortname}?source=${projectInfo.files.list[index].source}`;
+    location.href = `/project/${projShortname}?source=${projectInfo.files.list[index].source}&project=${projShortname}`;
 });
 document.querySelector("#vecAnnotations").addEventListener('click', function (e) {
     selectRow(e.target.closest('tr'));
@@ -200,7 +197,7 @@ if(search !== "") {
 }
 selectRow(document.querySelectorAll("#projectFiles tbody tr")[fileIndex]);
 if(typeof result === 'undefined') {
-    location.search = `source=${projectInfo.files.list[0].source}`;
+    location.search = `source=${projectInfo.files.list[0].source}&project=${projShortname}`;
 }
 Microdraw.init();
 
@@ -472,20 +469,70 @@ function saveAnnotations(param) {
     AtlasMakerWidget.sendSaveMetadataMessage(BrainBox.info);
     hashOld = BrainBox.hash(JSON.stringify(BrainBox.info));
 }
+
 /**
- * @func resizeButton
- * @desc Resize left tool bar
+ * @func resizeStart
  */
-function resizeButton(p) {
-    if($("#resizeButton").data("flag")==0) {
-        $("#resizeButton").data({flag:1,x0:p.x,y0:p.y});
-    } else if($("#resizeButton").data("flag")==1) {
-        var d=$("#resizeButton").data("x0")-p.x;
-        $("#left").css({'flex-basis':$("#left").width()-d});
-        $("#resizeButton").data({x0:p.x,y0:p.y});
-        AtlasMakerWidget.resizeWindow();
+const configureResizeButton = function () {
+    resizeButton.setAttribute('data', JSON.stringify({flag:-1,x0:0,y0:0}));
+    resizeButton.addEventListener('mousedown', resizeStart);
+    resizeButton.addEventListener('touchstart', resizeStart);
+    body.addEventListener('mousemove',resizeMove);
+    body.addEventListener('touchmove',resizeMove);
+    body.addEventListener('mouseup',resizeEnd);
+    body.addEventListener('touchend',resizeEnd);
+}
+
+/**
+ * @func resizeStart
+ */
+const resizeStart = function (e) {
+    document.querySelector("#resizeButton").setAttribute('data', JSON.stringify({
+        flag: 0,
+        x0: e.pageX,
+        y0: e.pageY
+    }));
+}
+
+/**
+ * @func resizeMove
+ */
+function resizeMove(e) {
+    let x, y;
+    switch(e.type) {
+        case 'mousemove':
+            x = e.pageX;
+            y = e.pageY;
+            break;
+        case 'touchmove':
+            x = e.originalEvent.changedTouches[0].pageX;
+            y = e.originalEvent.changedTouches[0].pageY;
+            break;
+        default:
+            x = 0;
+            y = 0;
+    }
+
+    const {flag, x0, y0} = JSON.parse(resizeButton.getAttribute('data'));
+    if(flag === 0) {
+        resizeButton.setAttribute('data', JSON.stringify({flag:1, x0: x, y0: y}));
+    } else if(flag === 1) {
+        const d = x0 - x;
+        const newFlexBasis = `${document.querySelector("#left").clientWidth - d}px`;
+        document.querySelector("#left").style.flexBasis = newFlexBasis;
+        resizeButton.setAttribute('data', JSON.stringify({flag: 1, x0: x, y0: y}));
+        Microdraw.resizeAnnotationOverlay();
     }
 }
+
+/**
+ * @func resizeEnd
+ */
+const resizeEnd = function (e) {
+    resizeButton.setAttribute('data', JSON.stringify({flag: -1}));
+}
+
+configureResizeButton();
 
 function selectRow(tr) {
     for(row of tr.closest("tbody").rows) {
