@@ -22,9 +22,15 @@ router.get('/', function (req, res) {
     const project = (req.query.project) || '';
 
     // find project users
-    req.app.db.queryProject(project)
+    req.app.db.queryProject({shortname: project})
     .then((result) => {
-        const users = result.collaborators.list;
+        const users = [];
+        
+        if(typeof result !== 'undefined') {
+            users.push(...result.collaborators.list.map((u)=>u.username));
+        }
+        console.log(`users: [${JSON.stringify(users)}]`);
+
         // find annotations
         req.app.db.findAnnotations({
             fileID: buildFileID(req.query),
@@ -34,6 +40,7 @@ router.get('/', function (req, res) {
             .then(annotations=>res.status(200).send(annotations))
             .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
     })
+    .catch((err) => console.log("ERROR api/index.js", err));
 });
 
 function buildFileID({source, slice}) {
