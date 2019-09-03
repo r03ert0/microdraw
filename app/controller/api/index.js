@@ -14,7 +14,7 @@ const storage = TMP_DIR
 
 // API routes
 
-router.get('/', function (req, res) {
+router.get('/', async function (req, res) {
     console.warn("call to GET api");
     console.warn(req.query);
 
@@ -22,25 +22,15 @@ router.get('/', function (req, res) {
     const project = (req.query.project) || '';
 
     // find project users
-    req.app.db.queryProject({shortname: project})
-    .then((result) => {
-        const users = [];
-        
-        if(typeof result !== 'undefined') {
-            users.push(...result.collaborators.list.map((u)=>u.username));
-        }
-        console.log(`users: [${JSON.stringify(users)}]`);
+    const result = await req.app.db.queryProject({shortname: project});
+    const users = result && result.collaborators && result.collaborators.list && result.collaborators.list.map((u)=>u.username) ;
+    const annotations = await req.app.db.findAnnotations({
+        fileID: buildFileID(req.query),
+        user: { $in: users || [] },
+        project: project
+    });
 
-        // find annotations
-        req.app.db.findAnnotations({
-            fileID: buildFileID(req.query),
-            user: { $in: users },
-            project: project
-        })
-            .then(annotations=>res.status(200).send(annotations))
-            .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
-    })
-    .catch((err) => console.log("ERROR api/index.js", err));
+    res.status(200).send(annotations);
 });
 
 function buildFileID({source, slice}) {
@@ -100,10 +90,8 @@ const saveFromAPI = async function (req, res) {
         ? fs.readFileSync(req.files[0].path).toString()
         : req.files[0].buffer.toString();
     const json = JSON.parse(rawString);
-    if (typeof user === 'undefined') {
-        res.status(401).send({msg: "Invalid user token"});
-    } else if (typeof project === 'undefined') {
-        res.status(401).send({msg: "Invalid project"});
+    if (typeof project === 'undefined') {
+        res.status(401).json({msg: "Invalid project"});
     } else if(!jsonIsValid(json)) {
         res.status(401).json({msg: "Invalid annotation file"});
     } else {
@@ -116,7 +104,6 @@ const saveFromAPI = async function (req, res) {
          * use object destruction to avoid mutation of annotations object
          */
         const { Regions, ...rest } = annotations
-
         req.app.db.updateAnnotation({
             fileID,
             user,
