@@ -11,6 +11,10 @@ const app = express()
 
 let authorized = false
 
+function buildFileID({source, slice}) {
+    return `${source}&slice=${slice}`;
+}
+
 app.use((req, res, next) => {
     if (authorized) {
         req.user = {
@@ -78,11 +82,21 @@ describe('controller/api/index.js', () => {
         returnFoundAnnotation = true,
         updateAnnotation = sinon.fake.resolves(), 
         findAnnotations = sinon.fake.resolves(returnFoundAnnotation ? annoationInDb : {Regions: []})
+        queryProject = sinon.fake.resolves({ 
+            collaborators: {
+                list: [{
+                    username: 'alice'
+                }, {
+                    username: 'bob'
+                }]
+            } 
+        })
     
     before(() => {
         app.db = {
             updateAnnotation,
-            findAnnotations
+            findAnnotations,
+            queryProject
         }
         _server = app.listen(port, () => console.log(`mocha test listening at ${port}`))
     })
@@ -90,6 +104,7 @@ describe('controller/api/index.js', () => {
     beforeEach(() => {
         updateAnnotation.resetHistory()
         findAnnotations.resetHistory()
+        queryProject.resetHistory()
     })
 
     after(() => {
@@ -98,54 +113,129 @@ describe('controller/api/index.js', () => {
 
     describe('saveFromGUI', () => {
 
-        it('should find annotation fine', (done) => {
-            chai.request(url)
-                .get('/')
-                .end((err, res) => {
-                    expect(res).to.have.status(200)
-                    assert(findAnnotations.called)
-                    done()
-                })
-        })
+        describe('/GET', () => {
+            it('should return status 200', (done) => {
+                chai.request(url)
+                    .get('/')
+                    .query({
+                        project: 'testProject'
+                    })
+                    .end((err, res) => {
+                        expect(res).to.have.status(200)
+                        done()
+                    })
+            })
     
-        it('should find fileID & section fine', (done) => {
-            chai.request(url)
-                .get('/?source=/path/to/json.json&slice=42')
-                .end((err, res) => {
-                    expect(res).to.have.status(200)
-                    assert(findAnnotations.calledWith({
-                        fileID: '/path/to/json.json&slice=42',
-                        user: 'anonymous'
-                    }))
-                    done()
-                })
+            it('fetching annotation from different project names work', (done) => {
+                const getTest = name => chai.request(url)
+                    .get('/')
+                    .query({
+                        project: name
+                    })
+                    .then((res) => {
+                        assert(queryProject.called)
+                        assert(queryProject.calledWith({ shortname: name }))
+                    })
+                
+                Promise.all( [
+                    getTest(''),
+                    getTest('test1'),
+                    getTest('test2'),
+                    chai.request(url)
+                        .get('/')
+                        .then((res) => {
+                            assert(queryProject.called)
+                            assert(queryProject.calledWith({ shortname: '' }))
+                        })
+                    ] ).then(() => {
+                        done()
+                    }).catch(done)
+            })
         })
-    
-        it('should post fileID & section fine', (done) => {
-            const sendItem = {
-                action: 'save',
-                source: '/path/to/json.json',
-                slice: 24,
-                Hash: 'testworld',
-                annotation: 'testworld'
-            }
-            chai.request(url)
-                .post('/')
-                .set('content-type', 'application/x-www-form-urlencoded')
-                .send(sendItem)
-                .end((err, res) => {
-                    expect(res).to.have.status(200)
-                    
-                    const { action, source, slice, ...rest } = sendItem
+
+        describe('/POST', () => {
+
+            it('varying source and slice should call findAnnotation with the correct call sig', (done) => {
+                const project = 'projectIsAlreadyTestedAbove'
+                const getTest = ({ source, slice, project }) => chai.request(url)
+                    .get('/')
+                    .query({
+                        source,
+                        slice,
+                        project
+                    })
+                    .then(res => {
+                        assert(findAnnotations.calledWith({
+                            fileID: `${source}&slice=${slice}`,
+                            user: {
+                                $in: ['alice', 'bob']
+                            },
+                            project
+                        }))
+                    })
+                Promise.all([
+                    getTest({ source: 'test1', slice: '123', project }),
+                    getTest({ source: 'test2', slice: '1234', project }),
+                    getTest({ source: '', slice: '', project }),
+                    chai.request(url)
+                        .get('/')
+                        .query({
+                            project
+                        })
+                        .then(res => {
+                            assert(findAnnotations.calledWith({
+                                fileID: `undefined&slice=undefined`,
+                                user: {
+                                    $in: ['alice', 'bob']
+                                },
+                                project
+                            }))
+                        })
+                ]).then(() => done())
+                .catch(done)
+            })
+
+            it('varying authenticated state should result in different username being associated', (done) => {
+                const sendItem = {
+                    action: 'save',
+                    source: '/path/to/json.json',
+                    slice: 24,
+                    Hash: 'testworld',
+                    annotation: 'testworld',
+                    project: 'alreadyTestedPreviously'
+                }
+
+                const { action, source, slice, ...rest } = sendItem
+
+                const getTest = () => chai.request(url)
+                    .post('/')
+                    .set('content-type', 'application/x-www-form-urlencoded')
+                    .send(sendItem)
+
+                const doTest = async () => {
+                    await getTest()
                     assert(updateAnnotation.calledWith({
                         fileID: '/path/to/json.json&slice=24',
                         user: 'anonymous',
                         ...rest
                     }))
-    
-                    done()
-                })
+
+                    authenticated = true
+
+                    await getTest()
+                    assert(updateAnnotation.calledWith({
+                        fileID: '/path/to/json.json&slice=24',
+                        user: 'bobby',
+                        ...rest
+                    }))
+                }
+
+                doTest()
+                    .then(() => done())
+                    .catch(done)
+            })
         })
+
     })
 
     describe('saveFromAPI', () => {
@@ -203,10 +293,11 @@ describe('controller/api/index.js', () => {
             source: '/path/to/json.json',
             slice: 24,
             Hash: 'hello world',
-            action
+            action,
+            project: 'alreadyTestedPreviously'
         })
 
-        const makeChaiRequest = ({ action = 'append', illFormedJson = false } = {}) => chai.request(url)
+        const getTest = (queryParam, { illFormedJson = false } = {}) => chai.request(url)
             .post('/upload')
             .attach(
                 'data',
@@ -217,12 +308,11 @@ describe('controller/api/index.js', () => {
                     ? FILENAME2
                     : FILENAME1
             )
-            .query(getQueryParam({ action }))
+            .query(queryParam)
     
         let readFileStub
         
-
-        describe('action=save', () => {
+        describe('/POST', () => {
 
             beforeEach(() => {
                 authenticated = true
@@ -231,142 +321,96 @@ describe('controller/api/index.js', () => {
                 readFileStub = sinon.stub(fs, 'readFileSync')
                 readFileStub.withArgs(FILENAME1).returns(Buffer.from(JSON.stringify(correctJson)))
                 readFileStub.withArgs(FILENAME2).returns(Buffer.from(JSON.stringify(incorrectJSON)))
-    
-                authenticated = true
             })
         
             afterEach(() => {
                 readFileStub.restore()
             })
 
-            const action = 'save'
 
-            it('if unauthenticated, should response 401', (done) => {
-                authenticated = false
-                makeChaiRequest({ action })
-                    .end((err, res) => {
-                        assert(!err)
-                        expect(res.status).equal(401)
-                        expect(res).to.be.json
-                        expect(res.body).to.deep.equal({msg: "Invalid user"})
-                        done()
-                    })
-            })
+            describe('authenciation status behave expectedly', () => {
+                it('unauthenticated user gets 401, and findannotations/update annotations NOT called', (done) => {
+                    authenticated = false
+                    
+                    const doTest = async () => {
 
-            it('if attaches invalid json, should respond 401', (done) => {
+                        const res = await getTest({ ...getQueryParam({ action: 'save' }) })
 
-                makeChaiRequest({ action, illFormedJson: true })
-                    .end((err, res) => {
-                        assert(!err)
-                        expect(res.status).equal(401)
-                        expect(res).to.be.json
-                        expect(res.body).to.deep.equal({msg: "Invalid project"})
-                        done()
-                    })
-            })
+                        assert(findAnnotations.notCalled)
+                        assert(updateAnnotation.notCalled)
+                        assert(res.status === 401)
+                        expect(res.body).to.deep.equal({
+                            msg: 'Invalid user'
+                        })
 
-            it('response is as expected', (done) => {
-                makeChaiRequest({ action })
-                    .end((err, res) => {
-                        assert(!err)
-                        expect(res.status).equal(200)
-                        done()
-                    })
-            })
+                        const res2 = await getTest({ ...getQueryParam({ action: 'append' }) })
 
-            it('db.findAnnotation NOT called', (done) => {
-                makeChaiRequest({ action })
-                    .end((err, res) => {
-                        assert(!err)
-                        assert(!findAnnotations.called)
-                        done()
-                    })
-            })
-    
-            it('db.updateAnnotation called', (done) => {
-                makeChaiRequest({ action })
-                    .end((err, res) => {
-                        assert(!err)
-                        assert(updateAnnotation.called)
-                        const { source, slice, Hash, action } = getQueryParam()
-                        const { Regions } = annoationInDb
-                        const annotation = {
-                            Regions: correctJson.map(v => v.annotation)
-                        }
-    
+                        assert(findAnnotations.notCalled)
+                        assert(updateAnnotation.notCalled)
+                        assert(res2.status === 401)
+                        expect(res2.body).to.deep.equal({
+                            msg: 'Invalid user'
+                        })
+                    }
+
+                    doTest()
+                        .then(() => done())
+                        .catch(done)
+                })
+
+                it('authenticated user gets 200, findannotation and updateannotation called', (done) => {
+                    authenticated = true
+
+                    const doTest = async () => {
+                        
+                        const param = getQueryParam({ action: 'save' })
+                        const { source, slice, action, project, ...rest } = param
+                        const res = await getTest(param)
+
+                        /**
+                         * action=save does not call findAnnotation
+                         */
+                        assert(findAnnotations.notCalled)
                         assert(updateAnnotation.calledWith({
-                            fileID: `${source}&slice=${slice}`,
-                            user: USER,
-                            Hash,
-                            annotation: JSON.stringify(annotation)
+                            fileID: buildFileID({ source, slice }),
+                            user: 'bobby',
+                            project,
+                            annotation: JSON.stringify({
+                                Regions: correctJson.map(v => v.annotation)
+                            }),
+                            ...rest,
+
                         }))
-                        done()
-                    })
-            })
-    
-        })
+                        assert(res.status === 200)
+                        expect(res.body).to.deep.equal({
+                            msg: 'Annotation successfully saved'
+                        })
 
-        describe('action=append', () => {
+                        const res2 = await getTest({ ...getQueryParam({ action: 'append' }) })
 
-            beforeEach(() => {
-                authenticated = true
-                returnFoundAnnotation = true
-    
-                readFileStub = sinon.stub(fs, 'readFileSync')
-                readFileStub.returns(Buffer.from(JSON.stringify(correctJson)))
-    
-                authenticated = true
-            })
-        
-            afterEach(() => {
-                readFileStub.restore()
-            })
-
-            const action = 'append'
-            
-            it('response is as expected', (done) => {
-                makeChaiRequest({ action })
-                    .end((err, res) => {
-                        assert(!err)
-                        expect(res.status).equal(200)
-                        done()
-                    })
-            })
-    
-            it('db.findAnnotation called', (done) => {
-                makeChaiRequest({ action })
-                    .end((err, res) => {
-                        assert(!err)
-                        assert(findAnnotations.called)
-    
-                        const { source, slice, Hash, action } = getQueryParam()
                         assert(findAnnotations.calledWith({
-                            fileID: `${source}&slice=${slice}`,
-                            user: USER
+                            fileID: buildFileID({ source, slice}),
+                            user: 'bobby',
+                            project
                         }))
-                        done()
-                    })
-            })
-    
-            it('db.updateAnnotation called', (done) => {
-                makeChaiRequest({ action })
-                    .end((err, res) => {
-                        assert(!err)
-                        assert(updateAnnotation.called)
-                        const { source, slice, Hash, action } = getQueryParam()
-                        const { Regions } = annoationInDb
-                        const annotation = {
-                            Regions: Regions.concat(correctJson.map(v => v.annotation))
-                        }
-    
                         assert(updateAnnotation.calledWith({
-                            fileID: `${source}&slice=${slice}`,
-                            user: USER,
-                            Hash,
-                            annotation: JSON.stringify(annotation)
+                            fileID: buildFileID({ source, slice}),
+                            user: 'bobby',
+                            project,
+                            annotation: JSON.stringify({
+                                Regions: correctJson.map(v => v.annotation)
+                            }),
+                            ...rest,
+
                         }))
-                        done()
-                    })
+                        assert(res2.status === 200)
+                        expect(res2.body).to.deep.equal({
+                            msg: 'Annotation successfully saved'
+                        })
+                    }
+
+                    doTest().then(() => done()).catch(done)
+                })
             })
         })
     })
