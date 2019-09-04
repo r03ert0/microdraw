@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "debug": "node --inspect-brk ./bin/www",
     "test": "node test.js",
     "mocha": "node node_modules/mocha/bin/mocha",
     "lint": "eslint",
@@ -12,6 +13,7 @@
   "dependencies": {
     "bcrypt": "^3.0.5",
     "body-parser": "^1.18.3",
+    "bson": ">=1.0.5",
     "connect-mongo": "^2.0.1",
     "cookie-parser": "latest",
     "dateformat": "^3.0.2",
@@ -31,6 +33,7 @@
   },
   "main": "app.js",
   "devDependencies": {
+    "bson": ">=1.0.5",
     "chai": "^4.2.0",
     "chai-http": "^4.2.1",
     "eslint": "^5.16.0",

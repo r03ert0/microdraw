@@ -12,3 +12,4 @@ services:
             - '3000:3000'
         environment:
             - MONGODB=mongodb://mongo:27017/microdraw
+            - TOKEN_DURATION=86400000

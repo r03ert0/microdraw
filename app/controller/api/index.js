@@ -2,35 +2,50 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const multer = require('multer');
+
 const fs = require('fs');
+
+const TMP_DIR = process.env.TMP_DIR
+const storage = TMP_DIR
+    ? multer.diskStorage({
+        destination: TMP_DIR
+    })
+    : multer.memoryStorage()
 
 // API routes
 
-router.get('/', function (req, res) {
-
+router.get('/', async function (req, res) {
     console.warn("call to GET api");
+    console.warn(req.query);
 
     const user = (req.user && req.user.username) || 'anonymous';
+    const project = (req.query.project) || '';
 
-    console.warn(req.query);
-    const { source, slice } = req.query;
+    // find project users
+    const result = await req.app.db.queryProject({shortname: project});
+    const users = result && result.collaborators && result.collaborators.list && result.collaborators.list.map((u)=>u.username) ;
+    const annotations = await req.app.db.findAnnotations({
+        fileID: buildFileID(req.query),
+        user: { $in: users || [] },
+        project: project
+    });
 
-    req.app.db.findAnnotations({
-        fileID : `${source}&slice=${slice}`,
-        user : user
-    })
-        .then(annotations=>res.status(200).send(annotations))
-        .catch(e=>res.status(500).send({err:JSON.stringify(e)}))
+    res.status(200).send(annotations);
 });
 
-const saveFromGUI = function (req, res) {
-    const { source, slice, Hash, annotation } = req.body;
+function buildFileID({source, slice}) {
+    return `${source}&slice=${slice}`;
+}
 
+const saveFromGUI = function (req, res) {
+    const { Hash, annotation } = req.body;
     const user = (req.user && req.user.username) || 'anonymous';
+    const project = (req.body.project) || '';
 
     req.app.db.updateAnnotation({
-        fileID : `${source}&slice=${slice}`,
+        fileID : buildFileID(req.body),
         user,
+        project,
         Hash,
         annotation
     })
@@ -43,12 +58,12 @@ const saveFromGUI = function (req, res) {
  * @param {object} obj An annotation object to validate.
  * @returns {boolean} True if the object is valid
  */
-const validateAnnotation = function (obj) {
+const jsonIsValid = function (obj) {
     if(typeof obj === 'undefined') {
         return false;
     } else if(obj.constructor !== Array) {
         return false;
-    } else if(typeof obj[0].path === 'undefined') {
+    } else if(!obj.every(item => item.annotation && item.annotation.path)) {
         return false;
     }
 
@@ -62,38 +77,37 @@ const validateAnnotation = function (obj) {
  */
 const loadAnnotationFile = function (annotationPath) {
     const json = JSON.parse(fs.readFileSync(annotationPath).toString());
-    if(validateAnnotation(json) === true) {
+    if(jsonIsValid(json) === true) {
         return json;
     }
 };
 
 const saveFromAPI = async function (req, res) {
+    const fileID = buildFileID(req.query);
     const user = req.user && req.user.username;
-    const { source, slice, Hash } = req.query;
-    const json = loadAnnotationFile(req.files[0].path);
-
-    if (typeof user === 'undefined') {
-        res.status(401).send({msg: "API upload requires a valid token authentication"});
-    } else if(typeof json === "undefined") {
-            res.status(401).send({msg: "Invalid annotation file"});
+    const { project, Hash } = req.query;
+    const rawString = TMP_DIR
+        ? fs.readFileSync(req.files[0].path).toString()
+        : req.files[0].buffer.toString();
+    const json = JSON.parse(rawString);
+    if (typeof project === 'undefined') {
+        res.status(401).json({msg: "Invalid project"});
+    } else if(!jsonIsValid(json)) {
+        res.status(401).json({msg: "Invalid annotation file"});
     } else {
-        const { source, slice, Hash } = req.query;
-        const fileID = `${source}&slice=${slice}`;
-        const json = JSON.parse(fs.readFileSync(req.files[0].path).toString());
-
-        const { action } = req.query
+        const { action } = req.query;
         const annotations = action === 'append'
-            ? await req.app.db.findAnnotations({ fileID, user })
-            : { Regions: [] }
+            ? await req.app.db.findAnnotations({ fileID, user, project })
+            : { Regions: [] };
 
         /**
          * use object destruction to avoid mutation of annotations object
          */
         const { Regions, ...rest } = annotations
-
         req.app.db.updateAnnotation({
             fileID,
             user,
+            project,
             Hash,
             annotation: JSON.stringify({
                 ...rest,
@@ -115,7 +129,16 @@ router.post('/', function (req, res) {
     }
 });
 
-router.post('/upload', multer({dest: path.join(__dirname, 'tmp')}).array('data'), function (req, res) {
+const filterAuthorizedUserOnly = (req, res, next) => {
+    const user = req.user && req.user.username;
+    if (typeof user === 'undefined') {
+        return res.status(401).send({msg:'Invalid user'});
+    } else {
+        return next()
+    }
+}
+
+router.post('/upload', filterAuthorizedUserOnly, multer({ storage }).array('data'), function (req, res) {
     console.warn("call to POST from API");
 
     const { action } = req.query
@@ -127,7 +150,6 @@ router.post('/upload', multer({dest: path.join(__dirname, 'tmp')}).array('data')
         default:
             return res.status(500).send({err: `actions other than save and append are no longer supported`})
     }
-    
 });
 
 router.use('', (req, res) => {

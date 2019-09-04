@@ -239,19 +239,20 @@ var projectInfo={{{projectInfo}}};
 var projectShortname = "{{{projectShortname}}}";
 </script>
 
+<!--
 <script src="https://cdn.jsdelivr.net/npm/jdenticon@2.2.0"></script>
-<!--<script src="http://localhost/libs/jdenticon/2.2.0/jdenticon@2.2.0"></script>-->
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/blueimp-md5/2.11.1/js/md5.min.js"></script>
-<!--<script src="http://localhost/libs/blueimp-md5/2.11.1/md5.min.js"></script>-->
-
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-<!--<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>-->
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/awesomplete/1.1.5/awesomplete.css" />
-<!--<script src="http://localhost/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
-<link href="http://localhost/libs/awesomplete/1.1.5/awesomplete.css" rel="stylesheet" type="text/css" />-->
+-->
+
+<script src="http://localhost/libs/jdenticon/2.2.0/jdenticon@2.2.0"></script>
+<script src="http://localhost/libs/blueimp-md5/2.11.1/md5.min.js"></script>
+<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>
+<script src="http://localhost/libs/awesomplete/1.1.5/awesomplete.min.js"></script>
+<link href="http://localhost/libs/awesomplete/1.1.5/awesomplete.css" rel="stylesheet" type="text/css" />
+
 <style>
     .awesomplete > ul {
         background: #222
@@ -462,25 +463,6 @@ Vue.nextTick(() => {
 // select first data files row
 // document.querySelector("table#files tbody tr").classList.add("selected");
 
-/*
-// listen to type of annotation changes
-$("#annotations tbody").on('change', "td:nth-child(2) select", function(e) {
-    var irow=$(e.target).closest("tr").index();
-    var t=$(e.target).prop('selectedIndex');
-    if(t==0) {
-        var arr= [
-            "<select>",
-            BrainBox.labelSets.map(function(o){return "<option>"+o.name+"</option>"}),
-            "</select>"
-        ];
-        var str=$.map(arr,function(o){return o}).join("");
-        $("#annotations tbody  tr:eq("+irow+") td:eq(2)").html(str);
-    } else {
-        $("#annotations tbody  tr:eq("+irow+") td:eq(2)").html("");
-    }
-});
-*/
-
 /**
  * @function onAccessClicked
  * @desc Handles click on one of the 5 access levels: 0=none, 1=view, 2=edit, 3=add, 4=remove
@@ -570,8 +552,18 @@ function importFilesDialog() {
 }
 
 function exportFiles() {
-    // @todo Implement this function
-    alert("implement export csv with files in project");
+    var filename=prompt("File name",`${app.projectInfo.shortname}`);
+    if(filename === null) {
+        return;
+    }
+
+    const csv = app.projectInfo.files.list.map((o) => `${o.source},${o.name}`).join("\n");
+    var csvData = 'data:text/ascii;charset=utf-8,'+encodeURIComponent(csv);
+    var a = document.createElement('a');
+    a.href = csvData;
+    a.download = filename+'.csv';
+    document.body.appendChild(a);
+    a.click();
 }
 
 function addCollaborator() {

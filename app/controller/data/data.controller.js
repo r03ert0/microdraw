@@ -1,6 +1,6 @@
 "use strict";
 
-function data(req, res) {
+const data = function (req, res) {
     // store return path in case of login
     req.session.returnTo = req.originalUrl;
 
@@ -10,7 +10,7 @@ function data(req, res) {
         params: JSON.stringify(req.query),
         user : req.user
     });
-}
+};
 
 function DataController() {
     this.data = data;

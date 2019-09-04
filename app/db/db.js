@@ -133,18 +133,18 @@ module.exports = function(overwriteMongoPath, callback) {
     /**
      * @function updateAnnotation
      * @description Update annotation object
-     * @param {Object} saveQuery having fields : fileID : string, user : string, Hash : string, annotation : JSON.stringify(Object { Regions : string[] }), hash : string
+     * @param {Object} saveQuery having fields: fileID: string, user: string, project: string, Hash: string, annotation: JSON.stringify(Object{Regions: string[]})
      * @returns {Promise} to resolve when saving is complete
      */
     const updateAnnotation = (saveQuery) => new Promise((resolve, reject) => {
         if (!checkHealth()) {
             return reject(new Error('db connection not healthy'));
         }
-        const { fileID, user, Hash, annotation } = saveQuery;
+        const { fileID, user, project, Hash, annotation } = saveQuery;
         db.get('annotations').update(
             Object.assign(
                 {},
-                { fileID, user },
+                { fileID, user, project },
                 { backup: { $exists: false } }
             ),
             { $set: { backup: true } },
@@ -155,6 +155,7 @@ module.exports = function(overwriteMongoPath, callback) {
             const arrayTobeSaved = allAnnotation.Regions.map((region) => ({
                 fileID,
                 user,
+                project,
                 Hash,
                 annotation: region
             }));
