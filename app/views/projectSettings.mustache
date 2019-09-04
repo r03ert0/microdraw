@@ -552,8 +552,18 @@ function importFilesDialog() {
 }
 
 function exportFiles() {
-    // @todo Implement this function
-    alert("implement export csv with files in project");
+    var filename=prompt("File name",`${app.projectInfo.shortname}`);
+    if(filename === null) {
+        return;
+    }
+
+    const csv = app.projectInfo.files.list.map((o) => `${o.source},${o.name}`).join("\n");
+    var csvData = 'data:text/ascii;charset=utf-8,'+encodeURIComponent(csv);
+    var a = document.createElement('a');
+    a.href = csvData;
+    a.download = filename+'.csv';
+    document.body.appendChild(a);
+    a.click();
 }
 
 function addCollaborator() {
