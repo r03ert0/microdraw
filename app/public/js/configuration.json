@@ -196,6 +196,16 @@
               ],
               "scriptPath": "/js/tools/delete.js",
               "iconPath": "/img/delete.svg"
+            },
+            {
+              "name": "FindContours",
+              "id": "findContours",
+              "desc": "Interactively find contours using a threshold",
+              "exportedVar": [
+                "ToolFindContours"
+              ],
+              "scriptPath": "/js/tools/findContours.js",
+              "iconPath": "/img/findContours.svg"
             }
           ]
     }
