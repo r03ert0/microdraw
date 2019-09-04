@@ -44,7 +44,7 @@ var ToolDraw = { draw: (function () {
          * @param {object} dpoint The movement of the point
          * @return {void}
         */
-        mouseDrag: function mouseDrag(point,dpoint) {
+        mouseDrag: function mouseDrag(point, dpoint) {
             Microdraw.region.path.add(point);
         },
 
@@ -52,6 +52,7 @@ var ToolDraw = { draw: (function () {
          * @function mouseUp
          * @returns {void}
          */
+        // eslint-disable-next-line max-statements
         mouseUp: function mouseUp() {
             if( Microdraw.newRegionFlag === true ) {
                 Microdraw.region.path.closed = true;
@@ -68,18 +69,17 @@ var ToolDraw = { draw: (function () {
                     origSegments = Microdraw.region.path.segments.length;
                 }
 
-                var
-                    // pixels per dot (dot is a device-independent psuedo-pixel with a resolution of roughly 72 dpi)
-                    ppd = paper.view.pixelRatio,
+                // pixels per dot (dot is a device-independent psuedo-pixel with a resolution of roughly 72 dpi)
+                const ppd = paper.view.pixelRatio;
 
-                    // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
-                    pixelSelectAccuracy = 4.0*ppd,
+                // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
+                const pixelSelectAccuracy = 4.0*ppd;
 
-                    // ratio between project coordinates and browser pixels
-                    coordsPerPixel = paper.view.size.width/paper.view.viewSize.width,
+                // ratio between project coordinates and browser pixels
+                const coordsPerPixel = paper.view.size.width/paper.view.viewSize.width;
 
-                    // accuracy by which curves can reasonably be simplified
-                    simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy;
+                // accuracy by which curves can reasonably be simplified
+                const simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy;
 
                 // the simplify function looks at the maximum squared distance from curve to original points
                 Microdraw.region.path.simplify(simplifyAccuracy*simplifyAccuracy);
