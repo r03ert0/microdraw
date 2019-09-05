@@ -14,7 +14,7 @@ describe('annotation saved by puppeteer can be retrieved', () => {
     it('works', (done) => {
 
         db.findAnnotations({
-            user: 'anonymous'
+            user: 'anyone'
         }).then(annotations => {
             annotations.forEach(a => {
                 const path = a && a.annotation && a.annotation.path

@@ -115,11 +115,11 @@ module.exports = function(overwriteMongoPath, callback) {
         if (!checkHealth()) {
             return reject(new Error('db connection not healthy'));
         }
-        db.get('annotations').find(
-            Object.assign({}, searchQuery, {
-                backup : { $exists : false }
-            })
-        )
+        const query = Object.assign({}, searchQuery, {
+            backup : { $exists : false }
+        });
+        console.log("findAnnotations query", query);
+        db.get('annotations').find(query)
             .then((annotations) => {
                 if(annotations) {
                     resolve(annotations);

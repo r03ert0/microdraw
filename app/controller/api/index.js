@@ -18,17 +18,24 @@ router.get('/', async function (req, res) {
     console.warn("call to GET api");
     console.warn(req.query);
 
-    const user = (req.user && req.user.username) || 'anonymous';
+    const user = (req.user && req.user.username) || 'anyone';
+    console.log("user", user);
+
     const project = (req.query.project) || '';
 
     // find project users
     const result = await req.app.db.queryProject({shortname: project});
-    const users = result && result.collaborators && result.collaborators.list && result.collaborators.list.map((u)=>u.username) ;
-    const annotations = await req.app.db.findAnnotations({
+    const users = result && result.collaborators && result.collaborators.list && result.collaborators.list.map((u)=>u.username);
+
+    /** @todo permissions are yet to be enforced */
+    const query = {
         fileID: buildFileID(req.query),
-        user: { $in: users || [] },
+        user: { $in: users || [user] },
         project: project
-    });
+    };
+    console.log("api get query", query);
+
+    const annotations = await req.app.db.findAnnotations(query);
 
     res.status(200).send(annotations);
 });
@@ -39,7 +46,7 @@ function buildFileID({source, slice}) {
 
 const saveFromGUI = function (req, res) {
     const { Hash, annotation } = req.body;
-    const user = (req.user && req.user.username) || 'anonymous';
+    const user = (req.user && req.user.username) || 'anyone';
     const project = (req.body.project) || '';
 
     req.app.db.updateAnnotation({

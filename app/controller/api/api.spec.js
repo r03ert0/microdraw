@@ -216,7 +216,7 @@ describe('controller/api/index.js', () => {
                     await getTest()
                     assert(updateAnnotation.calledWith({
                         fileID: '/path/to/json.json&slice=24',
-                        user: 'anonymous',
+                        user: 'anyone',
                         ...rest
                     }))
 

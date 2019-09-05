@@ -248,6 +248,24 @@ var ToolFindContours = {findContours: (function() {
       }
     },
 
+    /**
+     * @description Decreases "stairs" effect by resampling to the middle of each edge
+     * @param {array} con Contour, represented as an array of 2d coordinates [x, y]
+     * @returns {void} Changes the array in-place
+     */
+    resampleContour: function (con) {
+      let [prevx, prevy] = con[con.length-1];
+      let x, y;
+      for(let i=0; i<con.length; i++) {
+        [x, y] = con[i];
+        con[i][0] = (prevx+x)/2;
+        con[i][1] = (prevy+y)/2;
+        [prevx, prevy] = [x, y];
+      }
+
+      return con;
+    },
+
     // eslint-disable-next-line max-statements
     getContours: function ({grey, dim}) {
       const [W, H] = dim;
@@ -289,7 +307,7 @@ var ToolFindContours = {findContours: (function() {
                 tmp[y*W + x] = 2;
               }
               if(con.length>=me.smallestContour) {
-                contourArray.push(con);
+                contourArray.push(me.resampleContour(con));
               }
               [a, b] = [a0, b0];
             }
@@ -420,6 +438,8 @@ var ToolFindContours = {findContours: (function() {
       const pixelSize = me.canvas.width/me.canvas.clientWidth;
       for(const con of me.contourArray) {
         const path = new paper.Path({segments: con.map((p) => paper.view.viewToProject(new paper.Point(p[0]/pixelSize, p[1]/pixelSize)))});
+        path.simplify();
+        console.log(path.length);
         Microdraw.region = Microdraw.newRegion({path});
         Microdraw.region.path.closed = true;
         // Microdraw.region.path.fullySelected = true;

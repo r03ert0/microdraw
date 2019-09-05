@@ -49,7 +49,7 @@ var settings = function(req, res) {
                 : ("<a href='/auth/github'>Log in with GitHub</a>");
     const requestedProject = req.params.projectName;
 
-    var loggedUser = "anonymous";
+    var loggedUser = "anyone";
     if(req.isAuthenticated()) {
         loggedUser = req.user.username;
     } else
@@ -138,7 +138,7 @@ const projectNew = function (req, res) {
     const login = (req.user) ?
                 ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
                 ('<a href=\'/auth/github\'>Log in with GitHub</a>');
-    let loggedUser = "anonymous";
+    let loggedUser = "anyone";
     if(req.isAuthenticated()) {
         loggedUser = req.user.username;
     } else
@@ -149,7 +149,7 @@ const projectNew = function (req, res) {
     // Store return path in case of login
     req.session.returnTo = req.originalUrl;
 
-    if(loggedUser === "anonymous" ) {
+    if(loggedUser === "anyone" ) {
         res.render('askForLogin', {
             title: "MicroDraw: New Project",
             functionality: "create a new project",
@@ -233,7 +233,7 @@ const postProject = function (req, res) {
 const deleteProject = function (req, res) {
     console.log("DELETE Project");
 
-    let loggedUser = "anonymous";
+    let loggedUser = "anyone";
     if(req.isAuthenticated()) {
         loggedUser = req.user.username;
     } else
@@ -244,7 +244,7 @@ const deleteProject = function (req, res) {
     // Store return path in case of login
     req.session.returnTo = req.originalUrl;
 
-    if(loggedUser === "anonymous" ) {
+    if(loggedUser === "anyone" ) {
         res.send({message: "Log in required"})
             .status(403)
             .end();
