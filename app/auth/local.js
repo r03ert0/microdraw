@@ -1,38 +1,32 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
-const bcrypt = require('bcrypt')
-const md5 = require('md5')
 
 const saltRounds = 10
 
 module.exports = (app)=>{
 
-  passport.use(new LocalStrategy(
-    (username,password,done)=>{
-      console.log('querying db')
-      app.db.queryUser({
-        username 
-      })
-        .then(user=>{
-
-          /* never use md5 to store passwords*/
-          // done(null, user ? 
-          //   user.password === md5(password) ?
-          //     user :
-          //     false :
-          //   false)
-
-          /* bcrypt -> more secure */
-          bcrypt.compare(password,user.passhash)
-            .then(res=>done(null,res ? user : false))
-            .catch(e=>done(e))
+  if (process.env.LOCALSIGNIN && process.env.LOCALSIGNIN === 'true') {
+    const bcrypt = require('bcrypt')
+    passport.use(new LocalStrategy(
+      (username,password,done)=>{
+        console.log('querying db')
+        app.db.queryUser({
+          username 
         })
-        .catch(e=>{
-          console.log(JSON.stringify(e))
-          done(null,false)
-        })
-    }
-  ))
+          .then(user=>{
+  
+            /* bcrypt -> more secure */
+            bcrypt.compare(password,user.passhash)
+              .then(res=>done(null,res ? user : false))
+              .catch(e=>done(e))
+          })
+          .catch(e=>{
+            console.log(JSON.stringify(e))
+            done(null,false)
+          })
+      }
+    ))
+  }
 
   app.post(
     '/localLogin',
