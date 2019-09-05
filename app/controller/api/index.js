@@ -27,6 +27,7 @@ router.get('/', async function (req, res) {
     const result = await req.app.db.queryProject({shortname: project});
     const users = result && result.collaborators && result.collaborators.list && result.collaborators.list.map((u)=>u.username);
 
+    /** @todo permissions are yet to be enforced */
     const query = {
         fileID: buildFileID(req.query),
         user: { $in: users || [user] },
