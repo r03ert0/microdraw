@@ -1,8 +1,6 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const bcrypt = require('bcrypt')
-const md5 = require('md5')
-
 const saltRounds = 10
 
 module.exports = (app)=>{
@@ -14,13 +12,6 @@ module.exports = (app)=>{
         username 
       })
         .then(user=>{
-
-          /* never use md5 to store passwords*/
-          // done(null, user ? 
-          //   user.password === md5(password) ?
-          //     user :
-          //     false :
-          //   false)
 
           /* bcrypt -> more secure */
           bcrypt.compare(password,user.passhash)

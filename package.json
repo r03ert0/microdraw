@@ -11,34 +11,30 @@
     "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/save.spec"
   },
   "dependencies": {
-    "bcrypt": "^3.0.5",
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.18.3",
-    "bson": ">=1.0.5",
     "connect-mongo": "^2.0.1",
-    "cookie-parser": "latest",
     "dateformat": "^3.0.2",
     "debug": "^4.1.1",
     "express": "^4.16.3",
     "express-session": "latest",
-    "md5": "^2.2.1",
     "monk": "^6.0.6",
-    "morgan": "latest",
     "multer": "^1.4.1",
     "mustache-express": "latest",
     "passport": "^0.4.0",
     "passport-github": "latest",
     "passport-local": "^1.0.0",
-    "serve-favicon": "latest",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "serve-favicon": "latest"
   },
   "main": "app.js",
   "devDependencies": {
-    "bson": ">=1.0.5",
     "chai": "^4.2.0",
     "chai-http": "^4.2.1",
     "eslint": "^5.16.0",
     "mocha": "^6.1.4",
     "mock-fs": "^4.5.0",
+    "morgan": "^1.9.1",
     "nock": "^10.0.6",
     "puppeteer": "latest",
     "sinon": "^7.3.1"
