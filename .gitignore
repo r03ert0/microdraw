@@ -20,3 +20,4 @@ test/*.png
 .DS_Store
 .vscode
 access.log
+package-lock.json
