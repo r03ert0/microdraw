@@ -18,7 +18,7 @@ router.get('/', async function (req, res) {
     console.warn("call to GET api");
     console.warn(req.query);
 
-    const user = (req.user && req.user.username) || 'anonymous';
+    const user = (req.user && req.user.username) || 'anyone';
     console.log("user", user);
 
     const project = (req.query.project) || '';
@@ -46,7 +46,7 @@ function buildFileID({source, slice}) {
 
 const saveFromGUI = function (req, res) {
     const { Hash, annotation } = req.body;
-    const user = (req.user && req.user.username) || 'anonymous';
+    const user = (req.user && req.user.username) || 'anyone';
     const project = (req.body.project) || '';
 
     req.app.db.updateAnnotation({

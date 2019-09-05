@@ -79,7 +79,7 @@ describe('testing db.js',()=>{
 
     const dummyAnnotation2 = {
         fileID : 'dummy fileID 2',
-        user : 'anonymouse',
+        user : 'anyone',
         annotation : JSON.stringify({
             annotationKey1 : 'dummy annotation 2 annotation value 1',
             annotationkey2 : 'dummy annotation 2 annotation value 2',
@@ -90,12 +90,12 @@ describe('testing db.js',()=>{
 
     const expectedSavedDummy2 = [{
         fileID : 'dummy fileID 2',
-        user : 'anonymouse',
+        user : 'anyone',
         annotation : 'dummy annotation 2 region1',
         Hash : '123abc'
     },{
         fileID : 'dummy fileID 2',
-        user : 'anonymouse',
+        user : 'anyone',
         annotation : 'dummy annotation 2 region2',
         Hash : '123abc'
     }]
