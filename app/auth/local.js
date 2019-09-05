@@ -1,32 +1,29 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
-
+const bcrypt = require('bcrypt')
 const saltRounds = 10
 
 module.exports = (app)=>{
 
-  if (process.env.LOCALSIGNIN && process.env.LOCALSIGNIN === 'true') {
-    const bcrypt = require('bcrypt')
-    passport.use(new LocalStrategy(
-      (username,password,done)=>{
-        console.log('querying db')
-        app.db.queryUser({
-          username 
+  passport.use(new LocalStrategy(
+    (username,password,done)=>{
+      console.log('querying db')
+      app.db.queryUser({
+        username 
+      })
+        .then(user=>{
+
+          /* bcrypt -> more secure */
+          bcrypt.compare(password,user.passhash)
+            .then(res=>done(null,res ? user : false))
+            .catch(e=>done(e))
         })
-          .then(user=>{
-  
-            /* bcrypt -> more secure */
-            bcrypt.compare(password,user.passhash)
-              .then(res=>done(null,res ? user : false))
-              .catch(e=>done(e))
-          })
-          .catch(e=>{
-            console.log(JSON.stringify(e))
-            done(null,false)
-          })
-      }
-    ))
-  }
+        .catch(e=>{
+          console.log(JSON.stringify(e))
+          done(null,false)
+        })
+    }
+  ))
 
   app.post(
     '/localLogin',

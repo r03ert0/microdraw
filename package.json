@@ -11,6 +11,7 @@
     "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/save.spec"
   },
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "body-parser": "^1.18.3",
     "connect-mongo": "^2.0.1",
     "dateformat": "^3.0.2",
