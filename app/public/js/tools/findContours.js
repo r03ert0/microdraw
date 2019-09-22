@@ -34,12 +34,11 @@ var ToolFindContours = {findContours: (function() {
       backCtx.drawImage(me.canvas, 0, 0);
     },
 
-    end: function () {
-      console.log("ContourWidget ending");
+    close: function () {
+      console.log("ContourWidget closing");
       const ctx = me.canvas.getContext('2d');
       ctx.drawImage(me.canvasBackup, 0, 0);
       document.querySelector("body").removeChild(me.widget);
-      me.addRegions();
     },
 
     initWidget: function () {
@@ -82,7 +81,11 @@ var ToolFindContours = {findContours: (function() {
         me.findContours();
       });
       document.getElementById('cwClose').addEventListener('click', () => {
-        me.end();
+        me.close();
+        me.addRegions();
+      });
+      document.getElementById('cwCancel').addEventListener('click', () => {
+        me.close();
       });
     },
     boxFilter: function ({img, dim, radius, order} = {img:null, dim:null, radius:1, order:1}) {
