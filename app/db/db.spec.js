@@ -1,7 +1,10 @@
 const assert = require('assert')
 const expect = require('chai').expect
 
-const db = require('./db')()
+const mongoDbPath = process.env.MONGODB_TEST
+if (!mongoDbPath) throw new Error(`MONGODB_TEST must be explicitly set to avoid overwriting production `)
+
+const db = require('./db')(mongoDbPath)
 const garbageDb = require('./db')('GARBAGE_MONGO:27017/GARBAGE_MONGO')
 
 describe('Mocha Started',()=>{
@@ -100,16 +103,10 @@ describe('testing db.js',()=>{
         Hash : '123abc'
     }]
 
-    before(()=>{
-        db.db.get('users').drop()
-        db.db.get('annotations').drop()
-    })
+    before(() => db.db._db.dropDatabase())
 
-    after(()=>{
-        db.db.get('users').drop()
-        db.db.get('annotations').drop()
-        db.db.close()
-    })
+    after(() => db.db._db.dropDatabase()
+            .then(() => db.db.close()))
 
     it('health check should reflect db health', () => {
         expect(db.checkHealth()).to.be.equal(true)

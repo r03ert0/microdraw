@@ -1,9 +1,9 @@
 const monk = require('monk');
-const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw';
+const MONGODB = process.env.MONGODB_TEST || process.env.MONGODB || '127.0.0.1:27017/microdraw';
 
 // eslint-disable-next-line max-statements
 module.exports = function(overwriteMongoPath, callback) {
-    console.log(`connecting to mongodb at: ${MONGODB}`);
+    console.log(`connecting to mongodb at: ${overwriteMongoPath || MONGODB}`);
 
     const db = monk(overwriteMongoPath || MONGODB);
     let connected = false;
