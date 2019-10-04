@@ -6,7 +6,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'a mi no me gusta la sémol
 const github = require('./github')
 const local = require('./local')
 
-const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw'
+const MONGODB = process.env.MONGODB_TEST || process.env.MONGODB || '127.0.0.1:27017/microdraw'
 
 const _URL = (MONGODB.slice(0,10) === 'mongodb://'
         ? ''
