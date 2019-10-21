@@ -1321,6 +1321,11 @@ var Microdraw = (function () {
          */
         loadImage: function loadImage(imageNumber) {
             if( me.debug ) { console.log("> loadImage(" + imageNumber + ")"); }
+
+            // when load a new image, deselect any currently selecting regions
+            // n.b. this needs to be called before me.currentImage is set
+            me.selectRegion(null);
+
             // save previous image for some (later) cleanup
             me.prevImage = me.currentImage;
 
