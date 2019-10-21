@@ -1468,6 +1468,10 @@ var Microdraw = (function () {
                                 me.newRegion({name:reg.name, path:reg.path});
                             }
                             paper.view.draw();
+
+                            // on db load, do not select any region by default
+                            me.selectRegion(null);
+                            
                             // if image has no hash, save one
                             me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
 
