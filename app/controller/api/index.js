@@ -30,7 +30,7 @@ router.get('/', async function (req, res) {
     /** @todo permissions are yet to be enforced */
     const query = {
         fileID: buildFileID(req.query),
-        user: { $in: users || [user] },
+        user: { $in: [...users, user] },
         project: project
     };
     console.log("api get query", query);
