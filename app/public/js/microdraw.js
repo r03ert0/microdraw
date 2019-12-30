@@ -1321,6 +1321,11 @@ var Microdraw = (function () {
          */
         loadImage: function loadImage(imageNumber) {
             if( me.debug ) { console.log("> loadImage(" + imageNumber + ")"); }
+
+            // when load a new image, deselect any currently selecting regions
+            // n.b. this needs to be called before me.currentImage is set
+            me.selectRegion(null);
+
             // save previous image for some (later) cleanup
             me.prevImage = me.currentImage;
 
@@ -1463,6 +1468,10 @@ var Microdraw = (function () {
                                 me.newRegion({name:reg.name, path:reg.path});
                             }
                             paper.view.draw();
+
+                            // on db load, do not select any region by default
+                            me.selectRegion(null);
+                            
                             // if image has no hash, save one
                             me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
 

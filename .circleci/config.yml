@@ -11,9 +11,14 @@ jobs:
           name: Run server in background
           command: 'npm start'
           environment :
-            MONGODB : 127.0.0.1:27017/circleci_test
+            MONGODB_TEST : 127.0.0.1:27017/circleci_test
           background: true
       - run: sleep 5
+      # microdraw.spec.js needs a clean mongodb instance
+      # hence run before Query host
+      - run: 
+          name: Test microdraw.js
+          command: npm run mocha -- ./test/e2e/microdraw.spec.js
       - run:
           name: Query host
           command: 'node host.js'
@@ -24,4 +29,4 @@ jobs:
           name: Unit tests with Mocha
           command: 'npm run mocha'
           environment :
-            MONGODB : 127.0.0.1:27017/circleci_test
+            MONGODB_TEST : 127.0.0.1:27017/circleci_test
