@@ -62,8 +62,32 @@ function buildFileID({source, slice}) {
 
 const saveFromGUI = function (req, res) {
     const { Hash, annotation } = req.body;
+    
+    // current user
     const user = (req.user && req.user.username) || 'anyone';
+    console.log(`current user: ${user}`);
+
+    // project name
     const project = (req.body.project) || '';
+    console.log(`current project: ${project}`);
+
+    // project owner and project users
+    const result = await req.app.db.queryProject({shortname: project});
+    const owner = result
+                    && result.owner;
+    const users = result
+                    && result.collaborators
+                    && result.collaborators.list
+                    && result.collaborators.list.map((u)=>u.username);
+    console.log(`project owner: ${owner}, users: ${users}`);
+
+    // check if user is among the allowed project's users
+    userIndex = [...users, owner].indexOf(user);
+    if(userIndex<0) {
+        res.status(403).send(`User ${user} not part of project ${project}`);
+
+        return;
+    }
 
     req.app.db.updateAnnotation({
         fileID : buildFileID(req.body),

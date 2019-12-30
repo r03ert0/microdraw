@@ -14,6 +14,7 @@ var ToolFindContours = {findContours: (function() {
     canvasBackup: null,
     widget: null,
     contourArray: [],
+    down: false,
 
     // structurant element for morphological operations
     element: [
@@ -38,9 +39,10 @@ var ToolFindContours = {findContours: (function() {
       console.log("ContourWidget closing");
       const ctx = me.canvas.getContext('2d');
       ctx.drawImage(me.canvasBackup, 0, 0);
-      document.querySelector("body").removeChild(me.widget);
+      document.querySelector("#microdrawView").removeChild(me.widget);
     },
 
+    // eslint-disable-next-line max-statements
     initWidget: function () {
       const content = `
       <style>
@@ -49,7 +51,6 @@ var ToolFindContours = {findContours: (function() {
           position: absolute;
           top: 10px;
           left: 10px;
-          padding: 10px;
           border: thin solid black;
           background: white;
           z-index:10;
@@ -59,24 +60,31 @@ var ToolFindContours = {findContours: (function() {
         }
       </style>
       <div id="cwContent">
-        <span>Threshold</span>
-        <input id="cwThreshold" type="range" min=0 max=255 />
-        <br />
-        <span id="cwMessage"></span>
-        <br />
-        <button id="cwCancel">Cancel</button>
-        <button id="cwClose">Add Regions</button>
+        <div id="cwHeader" style="background:#aaa">Find Contours</div>
+        <div style="padding:10px">
+          <span>Threshold</span>
+          <input id="cwThreshold" type="range" min=0 max=255 />
+          <br />
+          <span id="cwMessage"></span>
+          <br />
+          <button id="cwCancel">Cancel</button>
+          <button id="cwClose">Add Regions</button>
+        </div>
       </div>
       `;
       me.widget = document.createElement("span");
       me.widget.innerHTML = content;
-      document.querySelector("body").appendChild(me.widget);
+      document.querySelector("#microdrawView").appendChild(me.widget);
 
       document.getElementById('cwThreshold').addEventListener('input', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.thresholdImage();
       });
       document.getElementById('cwThreshold').addEventListener('change', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.findContours();
       });
@@ -86,6 +94,25 @@ var ToolFindContours = {findContours: (function() {
       });
       document.getElementById('cwCancel').addEventListener('click', () => {
         me.close();
+      });
+      document.getElementById('cwHeader').addEventListener('mousedown', (e) => {
+        me.down = true;
+        me.prevX = e.screenX;
+        me.prevY = e.screenY;
+      });
+      document.querySelector('body').addEventListener('mousemove', (e) => {
+        if(me.down === true) {
+          const div = document.querySelector('#cwContent');
+          const [x, y] = [e.screenX, e.screenY];
+          const [dx, dy] = [x - me.prevX, y - me.prevY];
+          const {offsetLeft, offsetTop} = div;
+          [me.prevX, me.prevY] = [x, y];
+          div.style.left = `${parseFloat(offsetLeft)+dx}px`;
+          div.style.top = `${parseFloat(offsetTop)+dy}px`;
+        }
+      });
+      document.querySelector('body').addEventListener('mouseup', () => {
+        me.down = false;
       });
     },
     boxFilter: function ({img, dim, radius, order} = {img:null, dim:null, radius:1, order:1}) {

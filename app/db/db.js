@@ -144,7 +144,7 @@ module.exports = function(overwriteMongoPath, callback) {
         db.get('annotations').update(
             Object.assign(
                 {},
-                { fileID, user, project },
+                { fileID, /*user, */project }, // update annotations authored by anyone
                 { backup: { $exists: false } }
             ),
             { $set: { backup: true } },
