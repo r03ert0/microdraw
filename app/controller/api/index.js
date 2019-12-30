@@ -60,7 +60,7 @@ function buildFileID({source, slice}) {
     return `${source}&slice=${slice}`;
 }
 
-const saveFromGUI = function (req, res) {
+const saveFromGUI = async function (req, res) {
     const { Hash, annotation } = req.body;
     
     // current user
