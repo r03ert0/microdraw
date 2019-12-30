@@ -18,19 +18,35 @@ router.get('/', async function (req, res) {
     console.warn("call to GET api");
     console.warn(req.query);
 
+    // current user
     const user = (req.user && req.user.username) || 'anyone';
-    console.log("user", user);
+    console.log(`current user: ${user}`);
 
+    // project name
     const project = (req.query.project) || '';
+    console.log(`current project: ${project}`);
 
-    // find project users
+    // project owner and project users
     const result = await req.app.db.queryProject({shortname: project});
-    const users = result && result.collaborators && result.collaborators.list && result.collaborators.list.map((u)=>u.username);
+    const owner = result
+                  && result.owner;
+    const users = result
+                  && result.collaborators
+                  && result.collaborators.list
+                  && result.collaborators.list.map((u)=>u.username);
+    console.log(`project owner: ${owner}, users: ${users}`);
 
-    /** @todo permissions are yet to be enforced */
+    // check if user is among the allowed project's users
+    userIndex = [...users, owner].indexOf(user);
+    if(userIndex<0) {
+        res.status(403).send(`User ${user} not part of project ${project}`);
+
+        return;
+    }
+
     const query = {
         fileID: buildFileID(req.query),
-        user: { $in: users || [user] },
+        // user: { $in: [...users, user] },
         project: project
     };
     console.log("api get query", query);
@@ -44,10 +60,34 @@ function buildFileID({source, slice}) {
     return `${source}&slice=${slice}`;
 }
 
-const saveFromGUI = function (req, res) {
+const saveFromGUI = async function (req, res) {
     const { Hash, annotation } = req.body;
+    
+    // current user
     const user = (req.user && req.user.username) || 'anyone';
+    console.log(`current user: ${user}`);
+
+    // project name
     const project = (req.body.project) || '';
+    console.log(`current project: ${project}`);
+
+    // project owner and project users
+    const result = await req.app.db.queryProject({shortname: project});
+    const owner = result
+                    && result.owner;
+    const users = result
+                    && result.collaborators
+                    && result.collaborators.list
+                    && result.collaborators.list.map((u)=>u.username);
+    console.log(`project owner: ${owner}, users: ${users}`);
+
+    // check if user is among the allowed project's users
+    userIndex = [...users, owner].indexOf(user);
+    if(userIndex<0) {
+        res.status(403).send(`User ${user} not part of project ${project}`);
+
+        return;
+    }
 
     req.app.db.updateAnnotation({
         fileID : buildFileID(req.body),
