@@ -216,6 +216,16 @@
               ],
               "scriptPath": "/js/tools/undo.js",
               "iconPath": "/img/undo.svg"
+            },
+            {
+              "name": "Redo",
+              "id": "redo",
+              "desc": "redo last action(s)",
+              "exportedVar": [
+                "ToolRedo"
+              ],
+              "scriptPath": "/js/tools/redo.js",
+              "iconPath": "/img/redo.svg"
             }
           ]
     }
