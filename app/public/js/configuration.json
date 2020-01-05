@@ -206,6 +206,16 @@
               ],
               "scriptPath": "/js/tools/findContours.js",
               "iconPath": "/img/findContours.svg"
+            },
+            {
+              "name": "Undo",
+              "id": "undo",
+              "desc": "undo last action(s)",
+              "exportedVar": [
+                "ToolUndo"
+              ],
+              "scriptPath": "/js/tools/undo.js",
+              "iconPath": "/img/undo.svg"
             }
           ]
     }
