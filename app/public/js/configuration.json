@@ -148,7 +148,7 @@
               "iconPath": "/img/toBezier.svg"
             },
             {
-              "name": "Copy",
+              "name": "Copy (\u2318C)",
               "id": "copy",
               "desc": "",
               "exportedVar": [
@@ -158,7 +158,7 @@
               "iconPath": "/img/copy.svg"
             },
             {
-              "name": "Paste",
+              "name": "Paste (\u2318V)",
               "id": "paste",
               "desc": "",
               "exportedVar": [
@@ -188,7 +188,7 @@
               "iconPath": "/img/screenshot.svg"
             },
             {
-              "name": "Delete",
+              "name": "Delete (\u232b)",
               "id": "delete",
               "desc": "",
               "exportedVar": [
@@ -208,7 +208,7 @@
               "iconPath": "/img/findContours.svg"
             },
             {
-              "name": "Undo",
+              "name": "Undo (\u2318Z)",
               "id": "undo",
               "desc": "undo last action(s)",
               "exportedVar": [
@@ -218,7 +218,7 @@
               "iconPath": "/img/undo.svg"
             },
             {
-              "name": "Redo",
+              "name": "Redo (\u21e7\u2318Z)",
               "id": "redo",
               "desc": "redo last action(s)",
               "exportedVar": [
