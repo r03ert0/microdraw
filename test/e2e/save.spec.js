@@ -1,5 +1,9 @@
 const assert = require('assert')
-const db = require('../../app/db/db')()
+
+const mongoDbPath = process.env.MONGODB_TEST
+if (!mongoDbPath) throw new Error(`MONGODB_TEST must be explicitly set to avoid overwriting production `)
+
+const db = require('../../app/db/db')(mongoDbPath)
 
 describe('mocha works', () => {
     it('mocha works', () => {
@@ -14,7 +18,7 @@ describe('annotation saved by puppeteer can be retrieved', () => {
     it('works', (done) => {
 
         db.findAnnotations({
-            user: 'anonymous'
+            user: 'anyone'
         }).then(annotations => {
             annotations.forEach(a => {
                 const path = a && a.annotation && a.annotation.path

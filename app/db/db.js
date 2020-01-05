@@ -1,9 +1,9 @@
 const monk = require('monk');
-const MONGODB = process.env.MONGODB || process.env.MONGODB_TEST_DEFAULT || '127.0.0.1:27017/microdraw';
+const MONGODB = process.env.MONGODB_TEST || process.env.MONGODB || '127.0.0.1:27017/microdraw';
 
 // eslint-disable-next-line max-statements
 module.exports = function(overwriteMongoPath, callback) {
-    console.log(`connecting to mongodb at: ${MONGODB}`);
+    console.log(`connecting to mongodb at: ${overwriteMongoPath || MONGODB}`);
 
     const db = monk(overwriteMongoPath || MONGODB);
     let connected = false;
@@ -115,11 +115,11 @@ module.exports = function(overwriteMongoPath, callback) {
         if (!checkHealth()) {
             return reject(new Error('db connection not healthy'));
         }
-        db.get('annotations').find(
-            Object.assign({}, searchQuery, {
-                backup : { $exists : false }
-            })
-        )
+        const query = Object.assign({}, searchQuery, {
+            backup : { $exists : false }
+        });
+        console.log("findAnnotations query", query);
+        db.get('annotations').find(query)
             .then((annotations) => {
                 if(annotations) {
                     resolve(annotations);
@@ -144,7 +144,7 @@ module.exports = function(overwriteMongoPath, callback) {
         db.get('annotations').update(
             Object.assign(
                 {},
-                { fileID, user, project },
+                { fileID, /*user, */project }, // update annotations authored by anyone
                 { backup: { $exists: false } }
             ),
             { $set: { backup: true } },

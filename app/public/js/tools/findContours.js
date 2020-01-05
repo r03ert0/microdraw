@@ -14,6 +14,7 @@ var ToolFindContours = {findContours: (function() {
     canvasBackup: null,
     widget: null,
     contourArray: [],
+    down: false,
 
     // structurant element for morphological operations
     element: [
@@ -34,14 +35,14 @@ var ToolFindContours = {findContours: (function() {
       backCtx.drawImage(me.canvas, 0, 0);
     },
 
-    end: function () {
-      console.log("ContourWidget ending");
+    close: function () {
+      console.log("ContourWidget closing");
       const ctx = me.canvas.getContext('2d');
       ctx.drawImage(me.canvasBackup, 0, 0);
-      document.querySelector("body").removeChild(me.widget);
-      me.addRegions();
+      document.querySelector("#microdrawView").removeChild(me.widget);
     },
 
+    // eslint-disable-next-line max-statements
     initWidget: function () {
       const content = `
       <style>
@@ -50,7 +51,6 @@ var ToolFindContours = {findContours: (function() {
           position: absolute;
           top: 10px;
           left: 10px;
-          padding: 10px;
           border: thin solid black;
           background: white;
           z-index:10;
@@ -60,29 +60,59 @@ var ToolFindContours = {findContours: (function() {
         }
       </style>
       <div id="cwContent">
-        <span>Threshold</span>
-        <input id="cwThreshold" type="range" min=0 max=255 />
-        <br />
-        <span id="cwMessage"></span>
-        <br />
-        <button id="cwCancel">Cancel</button>
-        <button id="cwClose">Add Regions</button>
+        <div id="cwHeader" style="background:#aaa">Find Contours</div>
+        <div style="padding:10px">
+          <span>Threshold</span>
+          <input id="cwThreshold" type="range" min=0 max=255 />
+          <br />
+          <span id="cwMessage"></span>
+          <br />
+          <button id="cwCancel">Cancel</button>
+          <button id="cwClose">Add Regions</button>
+        </div>
       </div>
       `;
       me.widget = document.createElement("span");
       me.widget.innerHTML = content;
-      document.querySelector("body").appendChild(me.widget);
+      document.querySelector("#microdrawView").appendChild(me.widget);
 
       document.getElementById('cwThreshold').addEventListener('input', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.thresholdImage();
       });
       document.getElementById('cwThreshold').addEventListener('change', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.findContours();
       });
       document.getElementById('cwClose').addEventListener('click', () => {
-        me.end();
+        me.close();
+        me.addRegions();
+      });
+      document.getElementById('cwCancel').addEventListener('click', () => {
+        me.close();
+      });
+      document.getElementById('cwHeader').addEventListener('mousedown', (e) => {
+        me.down = true;
+        me.prevX = e.screenX;
+        me.prevY = e.screenY;
+      });
+      document.querySelector('body').addEventListener('mousemove', (e) => {
+        if(me.down === true) {
+          const div = document.querySelector('#cwContent');
+          const [x, y] = [e.screenX, e.screenY];
+          const [dx, dy] = [x - me.prevX, y - me.prevY];
+          const {offsetLeft, offsetTop} = div;
+          [me.prevX, me.prevY] = [x, y];
+          div.style.left = `${parseFloat(offsetLeft)+dx}px`;
+          div.style.top = `${parseFloat(offsetTop)+dy}px`;
+        }
+      });
+      document.querySelector('body').addEventListener('mouseup', () => {
+        me.down = false;
       });
     },
     boxFilter: function ({img, dim, radius, order} = {img:null, dim:null, radius:1, order:1}) {
@@ -248,6 +278,24 @@ var ToolFindContours = {findContours: (function() {
       }
     },
 
+    /**
+     * @description Decreases "stairs" effect by resampling to the middle of each edge
+     * @param {array} con Contour, represented as an array of 2d coordinates [x, y]
+     * @returns {void} Changes the array in-place
+     */
+    resampleContour: function (con) {
+      let [prevx, prevy] = con[con.length-1];
+      let x, y;
+      for(let i=0; i<con.length; i++) {
+        [x, y] = con[i];
+        con[i][0] = (prevx+x)/2;
+        con[i][1] = (prevy+y)/2;
+        [prevx, prevy] = [x, y];
+      }
+
+      return con;
+    },
+
     // eslint-disable-next-line max-statements
     getContours: function ({grey, dim}) {
       const [W, H] = dim;
@@ -289,7 +337,7 @@ var ToolFindContours = {findContours: (function() {
                 tmp[y*W + x] = 2;
               }
               if(con.length>=me.smallestContour) {
-                contourArray.push(con);
+                contourArray.push(me.resampleContour(con));
               }
               [a, b] = [a0, b0];
             }
@@ -420,6 +468,8 @@ var ToolFindContours = {findContours: (function() {
       const pixelSize = me.canvas.width/me.canvas.clientWidth;
       for(const con of me.contourArray) {
         const path = new paper.Path({segments: con.map((p) => paper.view.viewToProject(new paper.Point(p[0]/pixelSize, p[1]/pixelSize)))});
+        path.simplify();
+        console.log(path.length);
         Microdraw.region = Microdraw.newRegion({path});
         Microdraw.region.path.closed = true;
         // Microdraw.region.path.fullySelected = true;

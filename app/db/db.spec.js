@@ -1,7 +1,10 @@
 const assert = require('assert')
 const expect = require('chai').expect
 
-const db = require('./db')()
+const mongoDbPath = process.env.MONGODB_TEST
+if (!mongoDbPath) throw new Error(`MONGODB_TEST must be explicitly set to avoid overwriting production `)
+
+const db = require('./db')(mongoDbPath)
 const garbageDb = require('./db')('GARBAGE_MONGO:27017/GARBAGE_MONGO')
 
 describe('Mocha Started',()=>{
@@ -79,7 +82,7 @@ describe('testing db.js',()=>{
 
     const dummyAnnotation2 = {
         fileID : 'dummy fileID 2',
-        user : 'anonymouse',
+        user : 'anyone',
         annotation : JSON.stringify({
             annotationKey1 : 'dummy annotation 2 annotation value 1',
             annotationkey2 : 'dummy annotation 2 annotation value 2',
@@ -90,26 +93,20 @@ describe('testing db.js',()=>{
 
     const expectedSavedDummy2 = [{
         fileID : 'dummy fileID 2',
-        user : 'anonymouse',
+        user : 'anyone',
         annotation : 'dummy annotation 2 region1',
         Hash : '123abc'
     },{
         fileID : 'dummy fileID 2',
-        user : 'anonymouse',
+        user : 'anyone',
         annotation : 'dummy annotation 2 region2',
         Hash : '123abc'
     }]
 
-    before(()=>{
-        db.db.get('users').drop()
-        db.db.get('annotations').drop()
-    })
+    before(() => db.db._db.dropDatabase())
 
-    after(()=>{
-        db.db.get('users').drop()
-        db.db.get('annotations').drop()
-        db.db.close()
-    })
+    after(() => db.db._db.dropDatabase()
+            .then(() => db.db.close()))
 
     it('health check should reflect db health', () => {
         expect(db.checkHealth()).to.be.equal(true)

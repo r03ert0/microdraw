@@ -1,8 +1,6 @@
 /*global Microdraw*/
 /*global $*/
 
-var dbroot = '/api';
-
 var ToolSave = { save : (function() {
 
     const configureValuesToSave = function (sl) {
@@ -25,7 +23,7 @@ var ToolSave = { save : (function() {
 
         var pr = new Promise((resolve, reject) => {
             $.ajax({
-                url: dbroot,
+                url: '/api',
                 type: "POST",
                 data: data,
                 success: (result) => {
@@ -81,9 +79,10 @@ var ToolSave = { save : (function() {
 
             // if the section hash is undefined, this section has not yet been loaded.
             // Do not save anything for this section
-            if( (typeof section.Hash === "undefined" || h === section.Hash) && Microdraw.debug > 1 ) {
-                 console.log(`sl ${sl}`, "No change, no save");
-                // value.Hash = h; /** @todo remove */
+            if( typeof section.Hash === "undefined" || h === section.Hash ) {
+                if(Microdraw.debug > 1) {
+                    console.log(`sl ${sl}`, "No change, no save");
+                }
 
                 return;
             }
@@ -152,7 +151,7 @@ Microdraw.microdrawDBLoad = function() {
         if(typeof Microdraw.project !== 'undefined') {
             query.project = Microdraw.project;
         }
-        $.getJSON(dbroot, query)
+        $.getJSON('/api', query)
             .success(function (data) {
                 Microdraw.annotationLoadingFlag = false;
 
