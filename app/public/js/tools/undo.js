@@ -20,15 +20,7 @@ var ToolUndo = {undo: (function() {
             }
         },
 
-      /**
-       * @function click
-       * @desc simplify. Simplify the selected path.
-       * @param {string} prevTool The previous tool to which the selection goes back
-       * @returns {void}
-       */
-
-
-        /*
+        /**
          * @function click
          * @desc Perform an undo
          * @param {string} prevTool The previous tool to which the selection goes back
