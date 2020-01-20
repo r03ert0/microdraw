@@ -28,9 +28,9 @@ module.exports = function(overwriteMongoPath, callback) {
             return reject(new Error('db connection not healthy'));
         }
         db.get('user').update({
-            username : user.username
+            username: user.username
         }, {
-            $set : user
+            $set: user
         })
         .then(() => resolve(user))
         .catch(reject);
@@ -189,13 +189,12 @@ module.exports = function(overwriteMongoPath, callback) {
         if (!checkHealth()) {
             return reject(new Error('db connection not healthy'));
         }
-        console.log('updateProject:', project);
+        delete project._id;
         db.get('projects').update(
-            { shortname : project.shortname },
-            project
+            { shortname: project.shortname },
+            { $set: project }
         )
             .then((o) => {
-                console.log('updateProject', o);
                 resolve(o);
             })
             .catch(reject);
