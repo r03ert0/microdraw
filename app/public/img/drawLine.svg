@@ -1,26 +1,104 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="38px" height="38px" viewBox="0 0 38 38" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
-    <title>drawLine</title>
-    <desc>Created with Sketch.</desc>
-    <defs>
-        <linearGradient x1="49.1160236%" y1="90.4391211%" x2="50.857717%" y2="-103.130011%" id="linearGradient-1">
-            <stop stop-color="#FFFFFF" offset="0%"></stop>
-            <stop stop-color="#FFFFFF" stop-opacity="0" offset="100%"></stop>
-        </linearGradient>
-    </defs>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="drawLine" transform="translate(-1.000000, -1.000000)">
-            <g id="g4157">
-                <path d="M19.65697,0.99688 C9.34697,0.99688 0.99697,9.35688 0.99697,19.65688 C0.99697,29.95688 9.35697,38.31688 19.65697,38.31688 C29.95697,38.31688 38.31697,29.95688 38.31697,19.65688 C38.31697,9.35688 29.95697,0.99688 19.65697,0.99688" id="path24366-1" fill="url(#linearGradient-1)"></path>
-                <g id="g24749" transform="translate(24.715143, 20.471701) rotate(45.000000) translate(-24.715143, -20.471701) translate(20.715143, 7.971701)">
-                    <path d="M0.559999999,2.23 L0.559999999,3.52999999 C0.559999999,5.19999999 0.679999999,14.5 0.589999999,19.33 C0.949999998,21.05 3.01999999,24.12 3.89999999,24.12 C4.77999999,24.12 6.75999999,21.03 7.15999999,19.33 C7.15999999,14.89 7.18999999,5.66999999 7.18999999,3.52999999 L7.18999999,2.23 L0.559999999,2.23 Z" id="path24741" fill="#FFFFFF"></path>
-                    <path d="M0.559999999,5.62999999 L0.559999999,19.42 C1.26,19.42 1.73,18.96 3.93999999,18.96 C6.13999999,18.96 6.57999999,19.42 7.22999999,19.42 L7.22999999,5.62999999 L0.559999999,5.62999999 Z" id="path24743" fill="#000000"></path>
-                    <path d="M1.83,0.639999999 C0.859999999,0.639999999 0.539999999,1.4 0.529999999,2.51 L0.529999999,2.58 L0.529999999,4.64999999 L7.20999999,4.64999999 L7.20999999,2.58 L7.20999999,2.51 C7.18999999,1.4 6.79999999,0.639999999 5.82999999,0.639999999 L1.83,0.639999999 Z" id="path24745" fill="#000000"></path>
-                    <path d="M3.90999999,21.69 C3.27999999,21.69 1.75,21.76 2.15,22.75 C2.43,23.45 2.89,23.98 3.38999999,24.41 C3.55999999,24.56 3.78999999,24.59 3.90999999,24.59 C4.02999999,24.59 4.25999999,24.56 4.42999999,24.41 C4.92999999,23.98 5.39999999,23.45 5.67999999,22.75 C6.06999999,21.76 4.53999999,21.69 3.90999999,21.69 L3.90999999,21.69 Z" id="path24747" fill="#000000"></path>
-                </g>
-                <path d="M16,28 L6,16" id="Line" stroke="#000000" stroke-width="2" stroke-linecap="square"></path>
-            </g>
-        </g>
-    </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.1-dev (bc69992, 2020-04-15)"
+   sodipodi:docname="drawLine.svg"
+   id="svg1733"
+   version="1.1"
+   viewBox="0 0 44 44"
+   height="44"
+   width="44">
+  <metadata
+     id="metadata1737">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>drawLine</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:current-layer="svg1733"
+     inkscape:window-maximized="0"
+     inkscape:window-y="23"
+     inkscape:window-x="0"
+     inkscape:cy="16.764705"
+     inkscape:cx="-9.6746321"
+     inkscape:zoom="7.1578948"
+     showgrid="false"
+     id="namedview1735"
+     inkscape:window-height="961"
+     inkscape:window-width="1512"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#19191b"
+     width="44px" />
+  <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
+  <title
+     id="title1712">drawLine</title>
+  <desc
+     id="desc1714">Created with Sketch.</desc>
+  <defs
+     id="defs1721">
+    <linearGradient
+       gradientTransform="translate(-1,-1)"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient-1"
+       y2="-37.491238"
+       x2="19.97707"
+       y1="34.748756"
+       x1="19.32707">
+      <stop
+         id="stop1716"
+         offset="0%"
+         stop-color="#FFFFFF" />
+      <stop
+         id="stop1718"
+         offset="100%"
+         stop-opacity="0"
+         stop-color="#FFFFFF" />
+    </linearGradient>
+  </defs>
+  <path
+     fill="#ffffff"
+     id="path24741"
+     d="m 36.044329,9.1531929 -1.31027,1.3102701 c -1.683192,1.683192 -10.935709,11.177605 -15.894576,15.955049 -1.370743,2.096431 -2.378643,7.277035 -1.491691,8.163986 0.886952,0.886952 5.997003,-0.231817 8.113592,-1.542085 4.475074,-4.475074 13.798145,-13.737672 15.955049,-15.894576 l 1.31027,-1.31027 z"
+     style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.42539" />
+  <path
+     fill="#000000"
+     id="path24743"
+     d="M 32.617471,12.580051 18.718537,26.478985 c 0.705528,0.70553 1.642876,0.715609 3.870334,2.943067 2.217379,2.217379 2.19722,3.124489 2.852355,3.779624 L 39.34016,19.302741 Z"
+     style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.42539" />
+  <path
+     fill="#000000"
+     id="path24745"
+     d="M 38.926922,8.830665 C 37.949259,7.8530026 36.860728,8.2964783 35.73188,9.4051678 l -0.07056,0.070552 -2.086354,2.0863522 6.73277,6.732769 2.086352,-2.086352 0.07056,-0.07056 c 1.098611,-1.138927 1.471533,-2.298012 0.493871,-3.275673 z"
+     style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.42539" />
+  <path
+     fill="#000000"
+     id="path24747"
+     d="m 19.807068,32.143382 c -0.634977,-0.634978 -2.247616,-2.106511 -2.842277,-0.70553 -0.423318,0.987741 -0.493872,1.985562 -0.423318,2.922908 0.02015,0.322529 0.221737,0.584582 0.342685,0.70553 0.120944,0.120944 0.383003,0.322527 0.705531,0.342687 0.937346,0.07056 1.945245,0.01012 2.932988,-0.41324 1.3909,-0.604739 -0.08063,-2.217379 -0.715609,-2.852355 z"
+     style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.42539" />
+  <path
+     sodipodi:nodetypes="cc"
+     d="M 15.995293,34.540457 2.300264,17.854952"
+     id="Line"
+     stroke="#000000"
+     stroke-width="2.85077"
+     stroke-linecap="square"
+     style="fill:none;fill-rule:evenodd;stroke:#ffffff;stroke-opacity:1" />
 </svg>
