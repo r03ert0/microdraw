@@ -11,6 +11,7 @@ var ToolHome = { home : (function(){
          * @returns {void}
          */
         click : function click(prevTool) {
+            Microdraw.viewer.viewport.goHome();
             Microdraw.backToPreviousTool(prevTool);
         }
     }

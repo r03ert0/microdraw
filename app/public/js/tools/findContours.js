@@ -7,6 +7,7 @@
 /*global paper*/
 
 var ToolFindContours = {findContours: (function() {
+  const {dom} = Microdraw;
   const me = {
     threshold: 200,
     smallestContour: 100,
@@ -25,7 +26,7 @@ var ToolFindContours = {findContours: (function() {
 
     start: function (canvasElem) {
       console.log("ContourWidget starting");
-      me.canvas = document.querySelector(canvasElem);
+      me.canvas = dom.querySelector(canvasElem);
       me.initWidget();
 
       me.canvasBackup = document.createElement('canvas');
@@ -39,7 +40,7 @@ var ToolFindContours = {findContours: (function() {
       console.log("ContourWidget closing");
       const ctx = me.canvas.getContext('2d');
       ctx.drawImage(me.canvasBackup, 0, 0);
-      document.querySelector("#microdrawView").removeChild(me.widget);
+      dom.querySelector("#microdrawView").removeChild(me.widget);
     },
 
     // eslint-disable-next-line max-statements
@@ -49,18 +50,19 @@ var ToolFindContours = {findContours: (function() {
         div#cwContent {
           display: inline-block;
           position: absolute;
-          top: 10px;
-          left: 10px;
+          top: 50%;
+          left: 50%;
+          transform: translate( -50%, -50% );
           border: thin solid black;
-          background: white;
           z-index:10;
         }
         #cwContent * {
-          color: black;
+          background:#555;
+          color: white;
         }
       </style>
       <div id="cwContent">
-        <div id="cwHeader" style="background:#aaa">Find Contours</div>
+        <div id="cwHeader" style="background:#333">Find Contours</div>
         <div style="padding:10px">
           <span>Threshold</span>
           <input id="cwThreshold" type="range" min=0 max=255 />
@@ -74,35 +76,35 @@ var ToolFindContours = {findContours: (function() {
       `;
       me.widget = document.createElement("span");
       me.widget.innerHTML = content;
-      document.querySelector("#microdrawView").appendChild(me.widget);
+      dom.querySelector("#microdrawView").appendChild(me.widget);
 
-      document.getElementById('cwThreshold').addEventListener('input', (e) => {
+      dom.getElementById('cwThreshold').addEventListener('input', (e) => {
         e.preventDefault();
         e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.thresholdImage();
       });
-      document.getElementById('cwThreshold').addEventListener('change', (e) => {
+      dom.getElementById('cwThreshold').addEventListener('change', (e) => {
         e.preventDefault();
         e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.findContours();
       });
-      document.getElementById('cwClose').addEventListener('click', () => {
+      dom.getElementById('cwClose').onclick = () => {
         me.close();
         me.addRegions();
-      });
-      document.getElementById('cwCancel').addEventListener('click', () => {
+      };
+      dom.getElementById('cwCancel').onclick = () => {
         me.close();
-      });
-      document.getElementById('cwHeader').addEventListener('mousedown', (e) => {
+      };
+      dom.getElementById('cwHeader').addEventListener('mousedown', (e) => {
         me.down = true;
         me.prevX = e.screenX;
         me.prevY = e.screenY;
       });
-      document.querySelector('body').addEventListener('mousemove', (e) => {
+      dom.querySelector('body').addEventListener('mousemove', (e) => {
         if(me.down === true) {
-          const div = document.querySelector('#cwContent');
+          const div = dom.querySelector('#cwContent');
           const [x, y] = [e.screenX, e.screenY];
           const [dx, dy] = [x - me.prevX, y - me.prevY];
           const {offsetLeft, offsetTop} = div;
@@ -111,7 +113,7 @@ var ToolFindContours = {findContours: (function() {
           div.style.top = `${parseFloat(offsetTop)+dy}px`;
         }
       });
-      document.querySelector('body').addEventListener('mouseup', () => {
+      dom.querySelector('body').addEventListener('mouseup', () => {
         me.down = false;
       });
     },
@@ -461,7 +463,7 @@ var ToolFindContours = {findContours: (function() {
       }
 
       // display information message
-      document.querySelector("#cwMessage").innerHTML = `${me.contourArray.length} contours detected`;
+      dom.querySelector("#cwMessage").innerHTML = `${me.contourArray.length} contours detected`;
     },
 
     addRegions: function () {
@@ -484,6 +486,7 @@ var ToolFindContours = {findContours: (function() {
      */
     click : function click(prevTool) {
       me.start('#openseadragon1 canvas');
+      Microdraw.selectedTool = prevTool;
     }
   };
 

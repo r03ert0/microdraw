@@ -296,7 +296,7 @@ Vue.component('autocomplete-input', {
             const xhr = new XMLHttpRequest();
             xhr.onload = function () {
                 const res = JSON.parse(xhr.responseText);
-                self.$emit('change');
+                self.$emit('change', e);
             };
             xhr.open('GET', `/user/json/${e.text.value}`);
             xhr.send();

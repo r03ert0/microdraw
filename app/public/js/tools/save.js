@@ -42,7 +42,8 @@ var ToolSave = { save : (function() {
                     reject(err);
                 }
             });
-        });
+        })
+        .catch(console.log);
 
         return pr;
     };
@@ -100,9 +101,10 @@ var ToolSave = { save : (function() {
             }));
         });
 
-        Promise.all(promiseArray).then(function(values) {
-            console.log(values);
-        });
+        Promise.all(promiseArray).then((values) => {
+          console.log(values);
+        })
+        .catch(console.log);
 
         //show dialog box with timeout
         $('#saveDialog')

@@ -4,7 +4,7 @@
 <head>
     {{> partials/header }}
     <link rel="stylesheet" href="/css/ui.css" type="text/css" />
-    <link rel="stylesheet" href="/css/microdraw.css" type="text/css" />
+    <!-- <link rel="stylesheet" href="/css/microdraw.css" type="text/css" /> -->
     <link rel="stylesheet" href="/css/data-style.css" type="text/css" />
     <link rel="stylesheet" href="/css/project-style.css" type="text/css" />
     <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
@@ -97,10 +97,8 @@
             
             <div id="right" style="flex:1 0;position:relative">
                 <!-- MicroDraw -->
-                <div id="stereotaxic" style="width:100%;height:100%">
-                    {{> partials/microdraw }}
-                </div>
-                <!-- End of AtlasMaker -->
+                <div id="microdraw" style="width:100%;height:100%;background:white"></div>
+                <!-- End of MicroDraw -->
             </div>
 
         </div>
@@ -109,6 +107,35 @@
 
 <script>
 const projectInfo={{{projectInfo}}};
+</script>
+
+<script>
+function loadScript (path, testScriptPresent) {
+  return new Promise((resolve, reject) => {
+      if(testScriptPresent && testScriptPresent()) {
+          resolve();
+      }
+      const s = document.createElement("script");
+      s.src = path;
+      s.onload=resolve;
+      s.onerror=reject;
+      document.body.appendChild(s);
+  });
+}
+
+async function attach () {
+  const res = await fetch("/microdraw");
+  const txt = await res.text();
+  const parser = new DOMParser();
+  const elem = parser.parseFromString(txt, 'text/html').documentElement;
+  const shadow = document.querySelector("#microdraw").attachShadow({mode: 'open'});
+  shadow.appendChild(elem);
+  loadScript("/js/microdraw.js")
+  .then(() => {
+      Microdraw.init(shadow);
+  });
+}
+attach();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -141,7 +168,6 @@ let hashOld;
 const resizeButton = document.querySelector("#resizeButton");
 const body = document.querySelector("body");
 
-
 // collect the project's text annotations
 for(k=0;k<app.projectInfo.annotations.list.length;k++) {
     if (app.projectInfo.annotations.list[k].type === "text" |
@@ -158,29 +184,53 @@ for(k=0;k<app.projectInfo.annotations.list.length;k++) {
     }
 }
 
-document.querySelector("#addProject").addEventListener('click', function() {
-    location="/project/new";
-});
-document.querySelector("#settings").addEventListener('click', function() {
+// setup event handling
+document.querySelector("#addProject").onclick = () => { location="/project/new"; };
+document.querySelector("#settings").onclick = () => {
     var pathname=location.pathname;
     if(pathname.slice(-1)=="/")
         location=pathname+"settings";
     else
         location=pathname+"/settings";
+};
+document.querySelector("#projectFiles").onclick = (e) => {
+    const prevRow = document.querySelector("#projectFiles").querySelector("tr.selected");
+    const prevIndex = prevRow.rowIndex - 1;
+    const row = e.target.closest('tr');
+    const index = row.rowIndex - 1;
+    if(index !== prevIndex) { 
+        location.href = `/project/${projShortname}?source=${projectInfo.files.list[index].source}&project=${projShortname}`;
+    }
+};
+document.querySelector("#vecAnnotations").onclick = (e) => { selectRow(e.target.closest('tr')); };
+
+// listen to changes in file selection by pressing the up/down arrows
+window.addEventListener('keydown', (e) => {
+    const table = document.querySelector("#projectFiles tbody");
+    const row = table.querySelector("tr.selected");
+    const prevIndex = row.rowIndex - 1;
+    const {length} = app.projectInfo.files.list;
+    let newIndex;
+
+    switch(e.keyCode) {
+        case 38: // up
+            newIndex = (prevIndex + length - 1) % length;
+            break;
+        case 40: // down
+            newIndex = (prevIndex + 1) % length;
+            break;
+        default:
+            return;
+    }
+    if(newIndex !== prevIndex) {
+        location.href = `/project/${projShortname}?source=${projectInfo.files.list[newIndex].source}&project=${projShortname}`;
+    }
 });
 
 // select first access row
 document.querySelector("#projectFiles tbody tr").classList.add("selected");
 document.querySelector("#vecAnnotations tbody tr").classList.add("selected");
 
-document.querySelector("#projectFiles").addEventListener('click', function (e) {
-    const row = e.target.closest('tr');
-    const index = row.rowIndex - 1;
-    location.href = `/project/${projShortname}?source=${projectInfo.files.list[index].source}&project=${projShortname}`;
-});
-document.querySelector("#vecAnnotations").addEventListener('click', function (e) {
-    selectRow(e.target.closest('tr'));
-});
 
 let fileIndex=0;
 var search = location.search.substring(1);
@@ -199,7 +249,7 @@ selectRow(document.querySelectorAll("#projectFiles tbody tr")[fileIndex]);
 if(typeof result === 'undefined') {
     location.search = `source=${projectInfo.files.list[0].source}&project=${projShortname}`;
 }
-Microdraw.init();
+// Microdraw.init();
 
 /*
 // Listen to changes that trigger a metadata save

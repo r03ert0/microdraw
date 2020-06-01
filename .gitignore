@@ -21,3 +21,4 @@ test/*.png
 .vscode
 access.log
 package-lock.json
+app/controller/api/tmp

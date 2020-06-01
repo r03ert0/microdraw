@@ -84,12 +84,12 @@ describe('controller/api/index.js', () => {
         findAnnotations = sinon.fake.resolves(returnFoundAnnotation ? annoationInDb : {Regions: []})
         queryProject = sinon.fake.resolves({ 
             collaborators: {
-                list: [{
-                    username: 'alice'
-                }, {
-                    username: 'bob'
-                }]
-            } 
+                list: [
+                    { username: 'anyone' },
+                    { username: 'alice' }
+                ]
+            },
+            owner: 'bob'
         })
     
     before(() => {

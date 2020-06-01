@@ -1,7 +1,7 @@
 /*global Microdraw*/
 /*global paper*/
 
-var ToolSimplify = { simplify : (function(){
+var ToolSimplify = { simplify : (function() {
     var tool = {
 
         /**
@@ -14,7 +14,7 @@ var ToolSimplify = { simplify : (function(){
             Microdraw.simplify(Microdraw.region);
             Microdraw.backToSelect();
         }
-    }
-    
+    };
+
     return tool;
-}())}
+}())};

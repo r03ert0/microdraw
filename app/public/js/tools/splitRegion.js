@@ -62,7 +62,7 @@ var ToolSplitRegion = {splitRegion: (function() {
                     if( newReg ) {
                         newReg.path.fillColor = prevColor;
                     }
-                    Microdraw.updateRegionList();
+                    // Microdraw.updateRegionList();
                     Microdraw.selectRegion(Microdraw.region);
                     paper.view.draw();
 

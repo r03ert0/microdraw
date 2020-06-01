@@ -1,13 +1,13 @@
 * {
-    font-size:14px;
-    color:white;
+    /* font-size:14px; */
+    /* color:white; */
 }
 
 html,body {
     background-color:#222;
     height:100%;
     margin:0px;
-    font: 16px/20px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
+    /* font: 16px/20px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif; */
     -webkit-font-smoothing: antialiased;
     -moz-font-smoothing: antialiased;
 }
@@ -28,10 +28,10 @@ a {
 }
 
 #menu {
-    float:right;
+    float: right;
     /* margin-top: 10px; */
     margin-right: 10px;
-    display: inline-block;
+    /* display: inline-block; */
     font: 16px/24px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
 }
 #menu img{
@@ -42,13 +42,13 @@ a {
      margin-left:15px;
 }
 
-.icon {
+/* .icon {
     width: 0.9rem;
     height: 0.9rem;
     margin: 8px 2px;
     vertical-align: middle;
     cursor: pointer;
-}
+} */
 
 tr.selected{
     background-color:#444;
