@@ -11,12 +11,18 @@ function delay(timeout) {
     });
 }
 
-puppeteer.launch({headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
-    .then(function(browser) {
+puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+    .then(async function(browser) {
 
         console.log('puppeteer launched');
         browser.newPage()
-        .then(function(page) {
+        .then(async function(page) {
+            const shadow = (sel) => `document.querySelector("#content").shadowRoot.querySelector("${sel}")`;
+            async function shadowclick(sel) {
+                const handle = await page.evaluateHandle(shadow(sel));
+                return handle.click();    
+            }
+
             console.log('browser open');
 
             // capture console
@@ -25,91 +31,91 @@ puppeteer.launch({headless: false, args: ['--no-sandbox', '--disable-setuid-sand
             // });
 
             // set viewport
-            page.setViewport({width: 1600, height: 1200})
+            await page.setViewport({width: 1600, height: 1200});
 
             // OPEN HOMEPAGE
-            .then(() => console.log('go to home page'))
-            .then(() => page.goto('http://localhost:3000'))
-            .then(() => delay(2000))
-            .then(() => page.screenshot({path:'test/01.home.png'}))
+            console.log('go to home page');
+            await page.goto('http://localhost:3000');
+            await delay(2000);
+            await page.screenshot({path:'test/01.home.png'});
 
 
             // OPEN DATA
-            .then(() => console.log('go to cat'))
-            .then(() => page.goto('http://localhost:3000/data?source=/test_data/cat.json&slice=0'))
-            .then(() => delay(2000))
-            .then(() => page.screenshot({path:'test/02.cat.png'}))
+            console.log('go to cat');
+            await page.goto('http://localhost:3000/data?source=/test_data/cat.json&slice=0');
+            await delay(2000);
+            await page.screenshot({path:'test/02.cat.png'});
 
             // DELETE TRIANGLE
             // select tool
-            .then(() => console.log('DELETE TRIANGLE'))
-            .then(() => page.click(UI.SELECT))
+            console.log('DELETE TRIANGLE');
+            await shadowclick(UI.SELECT);
             // select triangle
-            .then(() => page.click(UI.CANVAS))
+            await shadowclick(UI.CANVAS);
+            await page.mouse.click(450, 250) ;
             // delete tool
-            .then(() => page.click(UI.DELETE))
-            .then(() => page.screenshot({path:'test/03.cat-delete.png'}))
+            await shadowclick(UI.DELETE);
+            await page.screenshot({path:'test/03.cat-delete.png'});
 
             // DRAW SQUARE
             // select the polygon tool
-            .then(() => page.click(UI.DRAWPOLYGON))
+            await shadowclick(UI.DRAWPOLYGON);
             // draw a square A
-            .then(() => page.mouse.click(400, 400) )
-            .then(() => page.mouse.click(500, 400) )
-            .then(() => page.mouse.click(500, 500) )
-            .then(() => page.mouse.click(400, 500) )
-            .then(() => page.mouse.click(400, 400) )
-            .then(() => page.screenshot({path:'test/04.cat-square-A.png'}) )
-            .then(function() { console.log('draw square A'); })
+            await page.mouse.click(400, 400) ;
+            await page.mouse.click(500, 400) ;
+            await page.mouse.click(500, 500) ;
+            await page.mouse.click(400, 500) ;
+            await page.mouse.click(400, 400) ;
+            await page.screenshot({path:'test/04.cat-square-A.png'}) ;
+            console.log('draw square A');
 
             // DRAW SQUARE B
             // draw a square B
-            .then(() => page.mouse.click(450, 450) )
-            .then(() => page.mouse.click(550, 450) )
-            .then(() => page.mouse.click(550, 550) )
-            .then(() => page.mouse.click(450, 550) )
-            .then(() => page.mouse.click(450, 450) )
-            .then(() => page.screenshot({path:'test/05.cat-square-B.png'}) )
-            .then(function() { console.log('draw square B'); })
+            await page.mouse.click(450, 450) ;
+            await page.mouse.click(550, 450) ;
+            await page.mouse.click(550, 550) ;
+            await page.mouse.click(450, 550) ;
+            await page.mouse.click(450, 450) ;
+            await page.screenshot({path:'test/05.cat-square-B.png'}) ;
+            console.log('draw square B');
 
             // UNION OF SQUARES A AND B
             // select union tool
-            .then(() => page.click(UI.ADDREGION))
+            await shadowclick(UI.ADDREGION);
 
             // click on square A (square B is already selected)
-            .then(() => page.mouse.click(405, 405) )
+            await page.mouse.click(405, 405) ;
 
             // click on square B (square A is already selected)
-            .then(() => page.mouse.click(540, 540) )
-            .then(() => page.screenshot({path:'test/06.cat-union.png'}) )
-            .then(function() { console.log('union'); })
+            await page.mouse.click(540, 540) ;
+            await page.screenshot({path:'test/06.cat-union.png'}) ;
+            console.log('union');
 
             // DELETE A+B
             // select delete tool
-            .then(() => page.click(UI.DELETE))
-            .then(() => page.screenshot({path:'test/07.cat-delete.png'}) )
-            .then(function() { console.log('delete'); })
+            await shadowclick(UI.DELETE);
+            await page.screenshot({path:'test/07.cat-delete.png'}) ;
+            console.log('delete');
 
             // DRAW AGAIN THE INITIAL TRIANGLE
             // select the polygon tool
-            .then(() => page.click(UI.DRAWPOLYGON))
+            await shadowclick(UI.DRAWPOLYGON);
             // draw a triangle
-            .then(() => page.mouse.click(400, 200) )
-            .then(() => page.mouse.click(500, 200) )
-            .then(() => page.mouse.click(450, 300) )
-            .then(() => page.mouse.click(400, 200) )
-            .then(() => page.screenshot({path:'test/08.cat-triangle.png'}) )
-            .then(function() { console.log('draw triangle'); })
+            await page.mouse.click(400, 200) ;
+            await page.mouse.click(500, 200) ;
+            await page.mouse.click(450, 300) ;
+            await page.mouse.click(400, 200) ;
+            await page.screenshot({path:'test/08.cat-triangle.png'}) ;
+            console.log('draw triangle');
 
             // SAVE TO DB
             // select the save tool
-            .then(() => page.click(UI.SAVE))
-            .then(() => page.screenshot({path:'test/09.cat-save.png'}) )
-            .then(function() { console.log('save'); })
+            await shadowclick(UI.SAVE);
+            await page.screenshot({path:'test/09.cat-save.png'}) ;
+            console.log('save');
 
             // CLOSE
-            .then(() => browser.close())
-            .then(function() { console.log('browser closed'); })
-            .catch(e => console.log('puppeteer error', e));
+            await browser.close();
+            console.log('browser closed');
         });
     });
