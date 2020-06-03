@@ -24,9 +24,9 @@ var ToolFindContours = {findContours: (function() {
         [-1, 1], [0, 1], [1, 1]
     ],
 
-    start: function (canvasElem) {
+    start: function (canvasSelector) {
       console.log("ContourWidget starting");
-      me.canvas = dom.querySelector(canvasElem);
+      me.canvas = dom.querySelector(canvasSelector);
       me.initWidget();
 
       me.canvasBackup = document.createElement('canvas');

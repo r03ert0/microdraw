@@ -1400,7 +1400,7 @@ const Microdraw = (function () {
 
             var i;
             paper.projects[me.ImageInfo[me.currentImage].projectID].activeLayer.visible = false;
-            me.dom.querySelector(paper.projects[me.ImageInfo[me.currentImage].projectID].view.element).style.display = "none";
+            paper.projects[me.ImageInfo[me.currentImage].projectID].view.element.style.display = "none";
             for( i = 0; i < me.imageOrder.length; i += 1 ) {
 
                 me.ImageInfo[me.imageOrder[i]].Regions = [];
