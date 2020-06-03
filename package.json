@@ -9,7 +9,7 @@
     "mocha": "node node_modules/mocha/bin/mocha",
     "mocha-brk": "node node_modules/mocha/bin/mocha --inspect-brk",
     "lint": "eslint",
-    "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/save.spec"
+    "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/save.spec ./test/e2e/microdraw.spec"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
