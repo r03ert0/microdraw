@@ -19,9 +19,9 @@ var ToolFindContours = {findContours: (function() {
 
     // structurant element for morphological operations
     element: [
-        [-1, -1], [0, -1], [1, -1],
-        [-1, 0], [1, 0],
-        [-1, 1], [0, 1], [1, 1]
+      [-1, -1], [0, -1], [1, -1],
+      [-1, 0], [1, 0],
+      [-1, 1], [0, 1], [1, 1]
     ],
 
     start: function (canvasSelector) {
@@ -128,50 +128,50 @@ var ToolFindContours = {findContours: (function() {
 
         // x direction
         for(j=0; j<H; j++) {
-            sum=0;
-            for(i=0; i<r; i++) {
-                sum+=img1[j*W+i];
-            }
-            for(i=0; i<=r; i++) {
-                sum+=img1[j*W+(i+r)];
-                val=sum/(r+1+i);
-                resx[j*W+i]=val;
-            }
-            for(i=r+1; i<W-r; i++) {
-                sum+=img1[j*W+(i+r)];
-                sum-=img1[j*W+(i-r-1)];
-                val=sum/(2*r+1);
-                resx[j*W+i]=val;
-            }
-            for(i=W-r; i<W; i++) {
-                sum-=img1[j*W+(i-r-1)];
-                val=sum/(r+(W-i));
-                resx[j*W+i]=val;
-            }
+          sum=0;
+          for(i=0; i<r; i++) {
+            sum+=img1[j*W+i];
+          }
+          for(i=0; i<=r; i++) {
+            sum+=img1[j*W+(i+r)];
+            val=sum/(r+1+i);
+            resx[j*W+i]=val;
+          }
+          for(i=r+1; i<W-r; i++) {
+            sum+=img1[j*W+(i+r)];
+            sum-=img1[j*W+(i-r-1)];
+            val=sum/(2*r+1);
+            resx[j*W+i]=val;
+          }
+          for(i=W-r; i<W; i++) {
+            sum-=img1[j*W+(i-r-1)];
+            val=sum/(r+(W-i));
+            resx[j*W+i]=val;
+          }
         }
 
         // y direction
         for(i=0; i<W; i++) {
-            sum=0;
-            for(j=0; j<r; j++) {
-                sum+=img1[j*W+i];
-            }
-            for(j=0; j<=r; j++) {
-                sum+=img1[(j+r)*W+i];
-                val=sum/(r+1+j);
-                resy[j*W+i]=val;
-            }
-            for(j=r+1; j<H-r; j++) {
-                sum+=resx[(j+r)*W+i];
-                sum-=resx[(j-r-1)*W+i];
-                val=sum/(2*r+1);
-                resy[j*W+i]=val;
-            }
-            for(j=H-r; j<H; j++) {
-                sum-=resx[(j-r-1)*W+i];
-                val=sum/(r+(H-j));
-                resy[j*W+i]=val;
-            }
+          sum=0;
+          for(j=0; j<r; j++) {
+            sum+=img1[j*W+i];
+          }
+          for(j=0; j<=r; j++) {
+            sum+=img1[(j+r)*W+i];
+            val=sum/(r+1+j);
+            resy[j*W+i]=val;
+          }
+          for(j=r+1; j<H-r; j++) {
+            sum+=resx[(j+r)*W+i];
+            sum-=resx[(j-r-1)*W+i];
+            val=sum/(2*r+1);
+            resy[j*W+i]=val;
+          }
+          for(j=H-r; j<H; j++) {
+            sum-=resx[(j-r-1)*W+i];
+            val=sum/(r+(H-j));
+            resy[j*W+i]=val;
+          }
         }
 
         // overwrite img
@@ -181,7 +181,7 @@ var ToolFindContours = {findContours: (function() {
       };
 
       for(let i=0; i<order; i++) {
-          boxFilter1(img, dim, radius);
+        boxFilter1(img, dim, radius);
       }
     },
 
@@ -231,7 +231,7 @@ var ToolFindContours = {findContours: (function() {
       let i, j, k;
       const tmp = new Float32Array(W*H);
 
-    for(let iter=0; iter<niter; iter++) {
+      for(let iter=0; iter<niter; iter++) {
         for(i=0; i<W; i++) {
           for(j=0; j<H; j++) {
             if(grey[j*W+i] > 0) {
@@ -310,47 +310,47 @@ var ToolFindContours = {findContours: (function() {
       const contourArray = [];
 
       do {
-          if(grey[b*W+a] > 0) {
-            if(tmp[b*W+a] === 2) {
-              while(grey[b*W+a] > 0) {
-                a++;
-              }
-            } else {
-              [x0, y0, x, y] = [a, b, a, b];
-              const con = [[x0, y0]];
-              do {
-                // eslint-disable-next-line max-depth
-                for(k=0; k<search.length; k++) {
-                  [dx, dy]=search[ind];
-                  // eslint-disable-next-line max-depth
-                  if(grey[(y+dy)*W+(x+dx)] > 0) {
-                    x+=dx;
-                    y+=dy;
-                    con.push([x, y]);
-                    ind = (search.length+ind-1)%search.length;
-                    break;
-                  } else {
-                    ind = (ind+1)%search.length;
-                  }
-                }
-              } while (x!==x0 || y!==y0);
-              for(i of con) {
-                [x, y] = i;
-                tmp[y*W + x] = 2;
-              }
-              if(con.length>=me.smallestContour) {
-                contourArray.push(me.resampleContour(con));
-              }
-              [a, b] = [a0, b0];
+        if(grey[b*W+a] > 0) {
+          if(tmp[b*W+a] === 2) {
+            while(grey[b*W+a] > 0) {
+              a++;
             }
           } else {
-            [a0, b0] = [a, b];
+            [x0, y0, x, y] = [a, b, a, b];
+            const con = [[x0, y0]];
+            do {
+              // eslint-disable-next-line max-depth
+              for(k=0; k<search.length; k++) {
+                [dx, dy]=search[ind];
+                // eslint-disable-next-line max-depth
+                if(grey[(y+dy)*W+(x+dx)] > 0) {
+                  x+=dx;
+                  y+=dy;
+                  con.push([x, y]);
+                  ind = (search.length+ind-1)%search.length;
+                  break;
+                } else {
+                  ind = (ind+1)%search.length;
+                }
+              }
+            } while (x!==x0 || y!==y0);
+            for(i of con) {
+              [x, y] = i;
+              tmp[y*W + x] = 2;
+            }
+            if(con.length>=me.smallestContour) {
+              contourArray.push(me.resampleContour(con));
+            }
+            [a, b] = [a0, b0];
           }
+        } else {
+          [a0, b0] = [a, b];
+        }
 
-          if(a++===W-1) {
-            a=0;
-            b++;
-          }
+        if(a++===W-1) {
+          a=0;
+          b++;
+        }
       } while(b<H-1);
 
       return contourArray;
@@ -454,7 +454,7 @@ var ToolFindContours = {findContours: (function() {
 
         ctx.strokeStyle = `rgb(${r},${g},${b})`;
         ctx.beginPath();
-          ctx.moveTo(...con[0]);
+        ctx.moveTo(...con[0]);
         for(const p of con) {
           ctx.lineTo(...p);
         }

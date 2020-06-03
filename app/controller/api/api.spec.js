@@ -18,7 +18,7 @@ function buildFileID({source, slice}) {
 app.use((req, res, next) => {
     if (authorized) {
         req.user = {
-            username: 'bobby'
+          username: 'bobby'
         }
     }
     return next()

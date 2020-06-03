@@ -2,107 +2,108 @@
 /*global paper*/
 
 var ToolDrawLine = {
-    drawLine: (function () {
-        var tool = {
+  drawLine: (function () {
+    var tool = {
 
-            /**
+      /**
             * @function mouseDown
             * @param {object} point The point where you click (x,y)
             * @returns {void}
             */
-            mouseDown: function mouseDown(point) {
-                if (Microdraw.region) {
-                    Microdraw.region.path.selected = false;
-                }
-                var path = new paper.Path({ segments: [point] });
-                path.strokeWidth = Microdraw.config.defaultStrokeWidth;
-                Microdraw.region = Microdraw.newRegion({ path: path });
-                Microdraw.region.path.fillColor.alpha = 0;
-                Microdraw.newRegionFlag = true;
+      mouseDown: function mouseDown(point) {
+        if (Microdraw.region) {
+          Microdraw.region.path.selected = false;
+        }
+        var path = new paper.Path({ segments: [point] });
+        path.strokeWidth = Microdraw.config.defaultStrokeWidth;
+        Microdraw.region = Microdraw.newRegion({ path: path });
+        Microdraw.region.path.fillColor.alpha = 0;
+        Microdraw.newRegionFlag = true;
 
-                Microdraw.commitMouseUndo();
-            },
+        Microdraw.commitMouseUndo();
+      },
 
-            /**
+      /**
              * @function mouseDrag
              * @param {object} point The point where you moved to (x,y)
              * @param {object} dpoint The movement of the point
              * @return {void}
             */
-            mouseDrag: function mouseDrag(point,dpoint) {
-                Microdraw.region.path.add(point);
-            },
+      mouseDrag: function mouseDrag(point, dpoint) {
+        Microdraw.region.path.add(point);
+      },
 
-            /**
+      /**
              * @function mouseUp
              * @returns {void}
              */
-            mouseUp: function mouseUp() {
+      mouseUp: function mouseUp() {
 
-                // this handler may get called for multiple times in one drawing session
-                if (!Microdraw.region) {
-                    return;
-                }
+        // this handler may get called for multiple times in one drawing session
+        if (!Microdraw.region) {
+          return;
+        }
 
-                // do not keep paths with too little segments
-                if ((Microdraw.region.path.segments || []).length < Microdraw.tolerance) {
-                    Microdraw.removeRegion(Microdraw.region);
-                    paper.view.draw();
-                    return;
-                }
+        // do not keep paths with too little segments
+        if ((Microdraw.region.path.segments || []).length < Microdraw.tolerance) {
+          Microdraw.removeRegion(Microdraw.region);
+          paper.view.draw();
 
-                if (Microdraw.newRegionFlag === true) {
-                    Microdraw.region.path.closed = false;
-                    Microdraw.region.path.fullySelected = false;
+          return;
+        }
 
-                    // to delete all unnecessary segments while preserving the form of the
-                    // region to make it modifiable; & adding handles to the segments
-                    var origSegments = Microdraw.region.path.segments.length;
+        if (Microdraw.newRegionFlag === true) {
+          Microdraw.region.path.closed = false;
+          Microdraw.region.path.fullySelected = false;
 
-                    // delete unnecessary segments while preserving the shape of the region to
-                    // make it modifiable and & adding handles to the segments
-                    if (Microdraw.debug) {
-                        origSegments = Microdraw.region.path.segments.length;
-                    }
+          // to delete all unnecessary segments while preserving the form of the
+          // region to make it modifiable; & adding handles to the segments
+          var origSegments = Microdraw.region.path.segments.length;
 
-                    // pixels per dot (dot is a device-independent psuedo-pixel with a
-                    // resolution of roughly 72 dpi)
-                    var ppd = paper.view.pixelRatio;
+          // delete unnecessary segments while preserving the shape of the region to
+          // make it modifiable and & adding handles to the segments
+          if (Microdraw.debug) {
+            origSegments = Microdraw.region.path.segments.length;
+          }
 
-                    // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
-                    var pixelSelectAccuracy = 4.0*ppd;
+          // pixels per dot (dot is a device-independent psuedo-pixel with a
+          // resolution of roughly 72 dpi)
+          var ppd = paper.view.pixelRatio;
 
-                    // ratio between project coordinates and browser pixels
-                    var coordsPerPixel = paper.view.size.width/paper.view.viewSize.width;
+          // mouse selection accuracy in pixels: about 4 dots, that is 4 ppd pixels
+          var pixelSelectAccuracy = 4.0*ppd;
 
-                    // accuracy by which curves can reasonably be simplified
-                    var simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy;
+          // ratio between project coordinates and browser pixels
+          var coordsPerPixel = paper.view.size.width/paper.view.viewSize.width;
 
-                    // the simplify function looks at the maximum squared distance from curve to original points
-                    Microdraw.region.path.simplify(simplifyAccuracy*simplifyAccuracy);
+          // accuracy by which curves can reasonably be simplified
+          var simplifyAccuracy = coordsPerPixel*pixelSelectAccuracy;
 
-                    if (Microdraw.debug) {
-                        var finalSegments = Microdraw.region.path.segments.length;
-                        console.log( finalSegments, parseInt(finalSegments/origSegments*100, 10) + "% segments conserved" );
-                    }
-                }
-                paper.view.draw();
+          // the simplify function looks at the maximum squared distance from curve to original points
+          Microdraw.region.path.simplify(simplifyAccuracy*simplifyAccuracy);
 
-                // forget last region
-                Microdraw.region = null;
-            },
+          if (Microdraw.debug) {
+            var finalSegments = Microdraw.region.path.segments.length;
+            console.log( finalSegments, parseInt(finalSegments/origSegments*100, 10) + "% segments conserved" );
+          }
+        }
+        paper.view.draw();
 
-            /**
+        // forget last region
+        Microdraw.region = null;
+      },
+
+      /**
              * @function click
              * @desc Convert polygon path to bezier curve
              * @param {string} prevTool The previous tool to which the selection goes back
              * @returns {void}
              */
-            click: function click(prevTool) {
-                Microdraw.navEnabled = false;
-            }
-        };
+      click: function click(prevTool) {
+        Microdraw.navEnabled = false;
+      }
+    };
 
-        return tool;
-    }())
+    return tool;
+  }())
 };

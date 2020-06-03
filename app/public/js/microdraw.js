@@ -16,7 +16,7 @@ const Microdraw = (function () {
         imageOrder: [],              // names of sections ordered by their openseadragon page numbers
         currentImage: null,          // name of the current image
         prevImage: null,             // name of the last image
-        currentLabelIndex: 0,          // current label to use
+        currentLabelIndex: 0,        // current label to use
         region: null,                // currently selected region (one element of Regions[])
         copyRegion: null,            // clone of the currently selected region for copy/paste
         handle: null,                // currently selected control point or handle (if any)
@@ -27,7 +27,6 @@ const Microdraw = (function () {
         params: null,                // URL parameters
         source: null,                // data source
         section: null,               // section index in a multi-section dataset
-        //    myIP,                  // user's IP
         UndoStack: [],
         RedoStack: [],
         mouseUndo: null,             // tentative undo information.
@@ -1879,7 +1878,7 @@ const Microdraw = (function () {
          * @function initMicrodraw
          * @returns {void}
          */
-        initMicrodraw: async function () {
+        initMicrodraw: async () => {
 
             if( me.debug ) {
                 console.log("> initMicrodraw promise");
