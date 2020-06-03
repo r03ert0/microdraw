@@ -1249,7 +1249,7 @@ const Microdraw = (function () {
             // hide previous section
             if( me.prevImage && paper.projects[me.ImageInfo[me.prevImage].projectID] ) {
                 paper.projects[me.ImageInfo[me.prevImage].projectID].activeLayer.visible = false;
-                me.dom.querySelector(paper.projects[me.ImageInfo[me.prevImage].projectID].view.element).style.display = "none";
+                paper.projects[me.ImageInfo[me.prevImage].projectID].view.element.style.display = "none";
             }
 
             // if this is the first time a section is accessed, create its canvas, its project,
