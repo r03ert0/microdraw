@@ -19,7 +19,7 @@ jobs:
       # hence run before Query host
       - run: 
           name: Test microdraw.js
-          command: npm run mocha -- ./test/e2e/microdraw.spec.js
+          command: npm run mocha -- ./test/e2e/microdraw.spec.js --timeout 10000
       - run:
           name: Query host
           command: 'node host.js'
