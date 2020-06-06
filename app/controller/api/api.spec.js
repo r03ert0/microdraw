@@ -9,20 +9,9 @@ const fs = require('fs')
 const express = require('express')
 const app = express()
 
-let authorized = false
-
 function buildFileID({source, slice}) {
     return `${source}&slice=${slice}`;
 }
-
-app.use((req, res, next) => {
-    if (authorized) {
-        req.user = {
-            username: 'bobby'
-        }
-    }
-    return next()
-})
 
 app.use(bodyParser.urlencoded({ extended: false }))
 
@@ -32,12 +21,22 @@ app.use(bodyParser.urlencoded({ extended: false }))
  * these tests only check if api works as intended
  */
 let authenticated = false
-const USER = 'bobby'
+
+const USER_BOB = {
+    username: 'bob'
+}
+const USER_ALICE = {
+    username: 'alice'
+}
+const USER_CINDY = {
+    username: 'cindy'
+}
+
 app.use((req, res, next) => {
     if (authenticated) {
-        req.user = {
-            username: USER
-        }
+        req.user = USER_BOB
+    } else {
+        req.user = undefined
     }
     next()
 })
@@ -84,11 +83,7 @@ describe('controller/api/index.js', () => {
         findAnnotations = sinon.fake.resolves(returnFoundAnnotation ? annoationInDb : {Regions: []})
         queryProject = sinon.fake.resolves({ 
             collaborators: {
-                list: [{
-                    username: 'alice'
-                }, {
-                    username: 'bob'
-                }]
+                list: [ USER_ALICE, USER_BOB ]
             } 
         })
     
@@ -114,7 +109,21 @@ describe('controller/api/index.js', () => {
     describe('saveFromGUI', () => {
 
         describe('/GET', () => {
-            it('should return status 200', (done) => {
+            it('if user not part of project, should return 403', (done) => {
+                authenticated = false
+                chai.request(url)
+                    .get('/')
+                    .query({
+                        project: 'testProject'
+                    })
+                    .end((err, res) => {
+                        expect(res).to.have.status(403)
+                        done()
+                    })
+            })
+
+            it('if user is part of project, should return status 200', (done) => {
+                authenticated = true
                 chai.request(url)
                     .get('/')
                     .query({
@@ -165,11 +174,9 @@ describe('controller/api/index.js', () => {
                         project
                     })
                     .then(res => {
+                        findAnnotations.callArg
                         assert(findAnnotations.calledWith({
                             fileID: `${source}&slice=${slice}`,
-                            user: {
-                                $in: ['alice', 'bob']
-                            },
                             project
                         }))
                     })
@@ -185,9 +192,6 @@ describe('controller/api/index.js', () => {
                         .then(res => {
                             assert(findAnnotations.calledWith({
                                 fileID: `undefined&slice=undefined`,
-                                user: {
-                                    $in: ['alice', 'bob']
-                                },
                                 project
                             }))
                         })
@@ -213,19 +217,16 @@ describe('controller/api/index.js', () => {
                     .send(sendItem)
 
                 const doTest = async () => {
-                    await getTest()
-                    assert(updateAnnotation.calledWith({
-                        fileID: '/path/to/json.json&slice=24',
-                        user: 'anyone',
-                        ...rest
-                    }))
+                    authenticated = false
+                    const { status } = await getTest()
+                    assert(updateAnnotation.notCalled)
+                    expect(status).to.equal(403)
 
                     authenticated = true
-
                     await getTest()
                     assert(updateAnnotation.calledWith({
                         fileID: '/path/to/json.json&slice=24',
-                        user: 'bobby',
+                        user: USER_BOB.username,
                         ...rest
                     }))
                 }
