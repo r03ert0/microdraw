@@ -2,11 +2,12 @@ version : 2
 jobs:
   build:
     docker:
-      - image: circleci/node:8-browsers
+      - image: circleci/node:10-browsers
       - image: circleci/mongo:3.4
     steps:
       - checkout
       - run: npm install
+      - run: npm i puppeteer
       - run:
           name: Run server in background
           command: 'npm start'
