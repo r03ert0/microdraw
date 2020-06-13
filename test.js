@@ -1,5 +1,11 @@
 'use strict';
 const UI = require('./test/UI');
+try {
+    require('puppeteer')
+} catch (e) {
+    console.warn(`[microdraw]: dependency error: puppeteer needs to be installed manually. - npm i puppeteer`)
+    process.exit(1)
+}
 const puppeteer = require('puppeteer');
 
 

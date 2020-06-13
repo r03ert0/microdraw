@@ -2,11 +2,12 @@ version : 2
 jobs:
   build:
     docker:
-      - image: circleci/node:8-browsers
+      - image: circleci/node:10-browsers
       - image: circleci/mongo:3.4
     steps:
       - checkout
       - run: npm install
+      - run: npm i puppeteer
       - run:
           name: Run server in background
           command: 'npm start'
@@ -18,7 +19,7 @@ jobs:
       # hence run before Query host
       - run: 
           name: Test microdraw.js
-          command: npm run mocha -- ./test/e2e/microdraw.spec.js
+          command: npm run mocha -- ./test/e2e/microdraw.spec.js --timeout 10000
       - run:
           name: Query host
           command: 'node host.js'

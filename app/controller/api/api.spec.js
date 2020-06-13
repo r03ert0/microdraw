@@ -9,35 +9,35 @@ const fs = require('fs')
 const express = require('express')
 const app = express()
 
-let authorized = false
-
 function buildFileID({source, slice}) {
     return `${source}&slice=${slice}`;
 }
-
-app.use((req, res, next) => {
-    if (authorized) {
-        req.user = {
-          username: 'bobby'
-        }
-    }
-    return next()
-})
-
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: true }))
 
 /**
  * simulate authenication status
  * testing authentication is not the aim of this test suite
  * these tests only check if api works as intended
  */
-let authenticated = false
-const USER = 'bobby'
+let authenticatedUser = null
+
+const USER_ANONYMOUSE = {
+    username: 'anyone'
+}
+
+const USER_BOB = {
+    username: 'bob'
+}
+const USER_ALICE = {
+    username: 'alice'
+}
+const USER_CINDY = {
+    username: 'cindy'
+}
+
 app.use((req, res, next) => {
-    if (authenticated) {
-        req.user = {
-            username: USER
-        }
+    if (authenticatedUser) {
+        req.user = authenticatedUser
     }
     next()
 })
@@ -69,6 +69,16 @@ describe('sinon works', () => {
             hello: 'world'
         }))
     })
+
+    it('stub can dynamically change return val', () => {
+        const stub = sinon.stub()
+        let flag = true
+        stub.callsFake(() => flag)
+        expect(stub()).to.equal(true)
+
+        flag = false
+        expect(stub()).to.equal(false)
+    })
 })
 
 describe('controller/api/index.js', () => {
@@ -76,21 +86,26 @@ describe('controller/api/index.js', () => {
         Regions: ['hello: world', 'foobar']
     }
     let _server,
+        queryPublicProject = false,
+        publicProject = { 
+            owner: USER_BOB.username,
+            collaborators: {
+                list: [ USER_ALICE, USER_BOB, USER_ANONYMOUSE ]
+            }
+        },
+        privateProject = {
+            owner: USER_ALICE.username,
+            collaborators: {
+                list: [ USER_ALICE, USER_BOB ]
+            }
+        },
         port = 10002,
         url = `http://127.0.0.1:${port}`,
     
         returnFoundAnnotation = true,
-        updateAnnotation = sinon.fake.resolves(), 
-        findAnnotations = sinon.fake.resolves(returnFoundAnnotation ? annoationInDb : {Regions: []})
-        queryProject = sinon.fake.resolves({ 
-            collaborators: {
-                list: [
-                    { username: 'anyone' },
-                    { username: 'alice' }
-                ]
-            },
-            owner: 'bob'
-        })
+        updateAnnotation = sinon.stub().resolves(), 
+        findAnnotations = sinon.stub().callsFake(() => Promise.resolve( returnFoundAnnotation ? annoationInDb : {Regions: []} )),
+        queryProject = sinon.stub().callsFake(() => Promise.resolve(queryPublicProject ? publicProject : privateProject))        
     
     before(() => {
         app.db = {
@@ -114,18 +129,76 @@ describe('controller/api/index.js', () => {
     describe('saveFromGUI', () => {
 
         describe('/GET', () => {
-            it('should return status 200', (done) => {
-                chai.request(url)
-                    .get('/')
-                    .query({
-                        project: 'testProject'
-                    })
-                    .end((err, res) => {
-                        expect(res).to.have.status(200)
-                        done()
-                    })
+
+            describe('public project', () => {
+                before(() => {
+                    queryPublicProject = true
+                })
+
+                it('if user not part of project, should return 200', (done) => {
+                    authenticatedUser = null
+                    chai.request(url)
+                        .get('/')
+                        .query({
+                            project: 'testProject'
+                        })
+                        .end((err, res) => {
+                            expect(!!err).to.be.false
+                            expect(res).to.have.status(200)
+                            done()
+                        })
+                })
+
+                it('if user is part of project, should return status 200', (done) => {
+                    authenticatedUser = USER_BOB
+                    chai.request(url)
+                        .get('/')
+                        .query({
+                            project: 'testProject'
+                        })
+                        .end((err, res) => {
+                            expect(!!err).to.be.false
+                            expect(res).to.have.status(200)
+                            done()
+                        })
+                })
             })
-    
+
+            describe('private project', () => {
+
+                before(() => {
+                    queryPublicProject = false
+                })
+
+                it('if user not part of project, should return 403', (done) => {
+                    authenticatedUser = null
+                    chai.request(url)
+                        .get('/')
+                        .query({
+                            project: 'testProject'
+                        })
+                        .end((err, res) => {
+                            expect(!!err).to.be.false
+                            expect(res).to.have.status(403)
+                            done()
+                        })
+                })
+
+                it('if user is part of project, should return status 200', (done) => {
+                    authenticatedUser = USER_BOB
+                    chai.request(url)
+                        .get('/')
+                        .query({
+                            project: 'testProject'
+                        })
+                        .end((err, res) => {
+                            expect(!!err).to.be.false
+                            expect(res).to.have.status(200)
+                            done()
+                        })
+                })
+            })
+
             it('fetching annotation from different project names work', (done) => {
                 const getTest = name => chai.request(url)
                     .get('/')
@@ -154,48 +227,46 @@ describe('controller/api/index.js', () => {
         })
 
         describe('/POST', () => {
+            describe('findAnnotation', () => {
+                it('should be called with correct arg', done => {
 
-            it('varying source and slice should call findAnnotation with the correct call sig', (done) => {
-                const project = 'projectIsAlreadyTestedAbove'
-                const getTest = ({ source, slice, project }) => chai.request(url)
-                    .get('/')
-                    .query({
-                        source,
-                        slice,
-                        project
-                    })
-                    .then(res => {
-                        assert(findAnnotations.calledWith({
-                            fileID: `${source}&slice=${slice}`,
-                            user: {
-                                $in: ['alice', 'bob']
-                            },
-                            project
-                        }))
-                    })
-                Promise.all([
-                    getTest({ source: 'test1', slice: '123', project }),
-                    getTest({ source: 'test2', slice: '1234', project }),
-                    getTest({ source: '', slice: '', project }),
-                    chai.request(url)
+                    const project = 'projectIsAlreadyTestedAbove'
+                    const getTest = ({ source, slice, project }) => chai.request(url)
                         .get('/')
                         .query({
+                            source,
+                            slice,
                             project
                         })
                         .then(res => {
+                            findAnnotations.callArg
                             assert(findAnnotations.calledWith({
-                                fileID: `undefined&slice=undefined`,
-                                user: {
-                                    $in: ['alice', 'bob']
-                                },
+                                fileID: `${source}&slice=${slice}`,
                                 project
                             }))
                         })
-                ]).then(() => done())
-                .catch(done)
+
+                    Promise.all([
+                        getTest({ source: 'test1', slice: '123', project }),
+                        getTest({ source: 'test2', slice: '1234', project }),
+                        getTest({ source: '', slice: '', project }),
+                        chai.request(url)
+                            .get('/')
+                            .query({
+                                project
+                            })
+                            .then(res => {
+                                assert(findAnnotations.calledWith({
+                                    fileID: `undefined&slice=undefined`,
+                                    project
+                                }))
+                            })
+                    ]).then(() => done())
+                    .catch(done)
+                })
             })
 
-            it('varying authenticated state should result in different username being associated', (done) => {
+            describe('varying users', () => {
                 const sendItem = {
                     action: 'save',
                     source: '/path/to/json.json',
@@ -204,38 +275,56 @@ describe('controller/api/index.js', () => {
                     annotation: 'testworld',
                     project: 'alreadyTestedPreviously'
                 }
-
                 const { action, source, slice, ...rest } = sendItem
+                let res
 
-                const getTest = () => chai.request(url)
-                    .post('/')
-                    .set('content-type', 'application/x-www-form-urlencoded')
-                    .send(sendItem)
+                beforeEach(async () => {
+                    res = await chai.request(url)
+                        .post('/')
+                        .set('content-type', 'application/x-www-form-urlencoded')
+                        .send(sendItem)
+                })
 
-                const doTest = async () => {
-                    await getTest()
-                    assert(updateAnnotation.calledWith({
-                        fileID: '/path/to/json.json&slice=24',
-                        user: 'anyone',
-                        ...rest
-                    }))
+                it('ok', () => {
+                    assert(true)
+                })
 
-                    authenticated = true
+                describe('unauthenticated user', () => {
+                    before(() => {
+                        authenticatedUser = null
+                    })
 
-                    await getTest()
-                    assert(updateAnnotation.calledWith({
-                        fileID: '/path/to/json.json&slice=24',
-                        user: 'bobby',
-                        ...rest
-                    }))
-                }
+                    it('should return 403', () => {
+                        const { status } = res
+                        expect(status).to.equal(403)
+                    })
+                })
 
-                doTest()
-                    .then(() => done())
-                    .catch(done)
+                describe('authenicated user, with correct permission', () => {
+                    before(() => {
+                        authenticatedUser = USER_BOB
+                    })
+
+                    it('should return 200', () => {
+                        const { status } = res
+                        expect(status).to.equal(200)
+                    })
+
+                    it('updateAnnotation should be called', () => {
+                        assert(updateAnnotation.called)
+                    })
+
+                    it('updateAnnotation called with correct arg', () => {
+
+                        assert(updateAnnotation.calledWith({
+                            fileID: '/path/to/json.json&slice=24',
+                            user: USER_BOB.username,
+                            ...rest
+                        }))
+                    })
+                })
             })
         })
-
     })
 
     describe('saveFromAPI', () => {
@@ -297,6 +386,18 @@ describe('controller/api/index.js', () => {
             project: 'alreadyTestedPreviously'
         })
 
+        let readFileStub
+
+        before(() => {
+            readFileStub = sinon.stub(fs, 'readFileSync')
+            readFileStub.withArgs(FILENAME1).returns(Buffer.from(JSON.stringify(correctJson)))
+            readFileStub.withArgs(FILENAME2).returns(Buffer.from(JSON.stringify(incorrectJSON)))
+        })
+
+        after(() => {
+            readFileStub.restore()
+        })
+
         const getTest = (queryParam, { illFormedJson = false } = {}) => chai.request(url)
             .post('/upload')
             .attach(
@@ -310,107 +411,166 @@ describe('controller/api/index.js', () => {
             )
             .query(queryParam)
     
-        let readFileStub
         
         describe('/POST', () => {
 
-            beforeEach(() => {
-                authenticated = true
-                returnFoundAnnotation = true
-    
-                readFileStub = sinon.stub(fs, 'readFileSync')
-                readFileStub.withArgs(FILENAME1).returns(Buffer.from(JSON.stringify(correctJson)))
-                readFileStub.withArgs(FILENAME2).returns(Buffer.from(JSON.stringify(incorrectJSON)))
-            })
-        
-            afterEach(() => {
-                readFileStub.restore()
-            })
-
-
             describe('authenciation status behave expectedly', () => {
-                it('unauthenticated user gets 401, and findannotations/update annotations NOT called', (done) => {
-                    authenticated = false
-                    
-                    const doTest = async () => {
+                describe('unauthenicated user', () => {
+                    describe('action=save', () => {
 
-                        const res = await getTest({ ...getQueryParam({ action: 'save' }) })
-
-                        assert(findAnnotations.notCalled)
-                        assert(updateAnnotation.notCalled)
-                        assert(res.status === 401)
-                        expect(res.body).to.deep.equal({
-                            msg: 'Invalid user'
+                        let res
+                        before(async () => {
+                            authenticatedUser = null
+                            res = await getTest({ ...getQueryParam({ action: 'save' }) })
                         })
-
-                        const res2 = await getTest({ ...getQueryParam({ action: 'append' }) })
-
-                        assert(findAnnotations.notCalled)
-                        assert(updateAnnotation.notCalled)
-                        assert(res2.status === 401)
-                        expect(res2.body).to.deep.equal({
-                            msg: 'Invalid user'
+    
+                        it('returns 401', () => {
+                            assert(res.status === 401)
                         })
-                    }
+    
+                        it('status text is as expected', () => {
+                            expect(res.body).to.deep.equal({
+                                msg: 'Invalid user'
+                            })
+                        })
+    
+                        it('findAnnotation is NOT called', () => {
+                            assert(findAnnotations.notCalled)
+                        })
+    
+                        it('updateAnnotation NOT called', () => {
+                            assert(updateAnnotation.notCalled)
+                        })
+                    })
+                    describe('action=append', () => {
 
-                    doTest()
-                        .then(() => done())
-                        .catch(done)
+                        let res
+                        before(async () => {
+                            authenticatedUser = null
+                            res = await getTest({ ...getQueryParam({ action: 'append' }) })
+                        })
+    
+                        it('returns 401', () => {
+                            assert(res.status === 401)
+                        })
+    
+                        it('status text is as expected', () => {
+                            expect(res.body).to.deep.equal({
+                                msg: 'Invalid user'
+                            })
+                        })
+    
+                        it('findAnnotation is NOT called', () => {
+                            assert(findAnnotations.notCalled)
+                        })
+    
+                        it('updateAnnotation NOT called', () => {
+                            assert(updateAnnotation.notCalled)
+                        })
+                    })
                 })
+                
+                // describe('authenicated user', () => {
 
-                it('authenticated user gets 200, findannotation and updateannotation called', (done) => {
-                    authenticated = true
+                //     describe('action=save', () => {
+                //         let res, param
+                //         before(async () => {
+                //             authenticatedUser = USER_BOB
+    
+                //             param = getQueryParam({ action: 'save' })
+    
+                //             const { source: paramSource, slice, action, project, ...rest } = param
+                //             res = await getTest(param)
+                //         })
+    
+                //         it('returns 200', () => {
+                //             assert(res.status === 200)
+                //         })
+    
+                //         it('return body text is as expected', () => {
+                //             expect(res.body).to.deep.equal({
+                //                 msg: 'Annotation successfully saved'
+                //             })
+                //         })
+    
+                //         /**
+                //          * action=save does not call findAnnotation
+                //          */
+                //         it('findAnnotation not called', () => {
+                //             assert(findAnnotations.notCalled)
+                //         })
+    
+                //         it('updateAnnotation is called', () => {
+                //             assert(updateAnnotation.called)
+                //         })
+    
+                //         it('updateAnnotation called with correct param', () => {
+    
+                //             const { source, slice, ...rest } = param
 
-                    const doTest = async () => {
-                        
-                        const param = getQueryParam({ action: 'save' })
-                        const { source, slice, action, project, ...rest } = param
-                        const res = await getTest(param)
+                //             console.log('--------------------')
+                //             console.log(updateAnnotation.firstCall.args)
+                //             assert(updateAnnotation.calledWith({
+                //                 fileID: buildFileID({ source, slice }),
+                //                 user: USER_BOB.username,
+                //                 project,
+                //                 annotation: JSON.stringify({
+                //                     Regions: correctJson.map(v => v.annotation)
+                //                 }),
+                //                 ...rest,
+                //             }))
+                //         })
+                //     })
 
-                        /**
-                         * action=save does not call findAnnotation
-                         */
-                        assert(findAnnotations.notCalled)
-                        assert(updateAnnotation.calledWith({
-                            fileID: buildFileID({ source, slice }),
-                            user: 'bobby',
-                            project,
-                            annotation: JSON.stringify({
-                                Regions: correctJson.map(v => v.annotation)
-                            }),
-                            ...rest,
+                //     describe('action=append', () => {
+                //         let res2
 
-                        }))
-                        assert(res.status === 200)
-                        expect(res.body).to.deep.equal({
-                            msg: 'Annotation successfully saved'
-                        })
+                //         before(async () => {
+                //             authenticatedUser = USER_BOB
+                //             res2 = await getTest({ ...getQueryParam({ action: 'append' }) })
+                //         })
 
-                        const res2 = await getTest({ ...getQueryParam({ action: 'append' }) })
+                //         it('returns 200', () => {
+                //             assert(res2.status === 200)
+                //         })
 
-                        assert(findAnnotations.calledWith({
-                            fileID: buildFileID({ source, slice}),
-                            user: 'bobby',
-                            project
-                        }))
-                        assert(updateAnnotation.calledWith({
-                            fileID: buildFileID({ source, slice}),
-                            user: 'bobby',
-                            project,
-                            annotation: JSON.stringify({
-                                Regions: correctJson.map(v => v.annotation)
-                            }),
-                            ...rest,
+                //         it('body text as expected', () => {
+                //             expect(res2.body).to.deep.equal({
+                //                 msg: 'Annotation successfully saved'
+                //             })
+                //         })
 
-                        }))
-                        assert(res2.status === 200)
-                        expect(res2.body).to.deep.equal({
-                            msg: 'Annotation successfully saved'
-                        })
-                    }
+                //         it('findAnnotation is called', () => {
+                //             assert(findAnnotations.called)
+                //         })
 
-                    doTest().then(() => done()).catch(done)
-                })
+                //         it('findAnnotation called with correct param', () => {
+                //             assert(findAnnotations.calledWith({
+                //                 fileID: buildFileID({ source, slice}),
+                //                 user: USER_BOB.username,
+                //                 project
+                //             }))
+                //         })
+
+                //         it('update annotation called', () => {
+                //             assert(updateAnnotation.called)
+                //         })
+
+                //         it('updatedannotation called with correct param', () => {
+
+                //             assert(updateAnnotation.calledWith({
+                //                 fileID: buildFileID({ source, slice}),
+                //                 user: USER_BOB.username,
+                //                 project,
+                //                 annotation: JSON.stringify({
+                //                     Regions: correctJson.map(v => v.annotation)
+                //                 }),
+                //                 ...rest,
+    
+                //             }))
+                //         })
+                //     })
+                // })
             })
         })
     })
