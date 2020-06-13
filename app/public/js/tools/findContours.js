@@ -7,6 +7,7 @@
 /*global paper*/
 
 var ToolFindContours = {findContours: (function() {
+  const {dom} = Microdraw;
   const me = {
     threshold: 200,
     smallestContour: 100,
@@ -18,14 +19,14 @@ var ToolFindContours = {findContours: (function() {
 
     // structurant element for morphological operations
     element: [
-        [-1, -1], [0, -1], [1, -1],
-        [-1, 0], [1, 0],
-        [-1, 1], [0, 1], [1, 1]
+      [-1, -1], [0, -1], [1, -1],
+      [-1, 0], [1, 0],
+      [-1, 1], [0, 1], [1, 1]
     ],
 
-    start: function (canvasElem) {
+    start: function (canvasSelector) {
       console.log("ContourWidget starting");
-      me.canvas = document.querySelector(canvasElem);
+      me.canvas = dom.querySelector(canvasSelector);
       me.initWidget();
 
       me.canvasBackup = document.createElement('canvas');
@@ -39,7 +40,7 @@ var ToolFindContours = {findContours: (function() {
       console.log("ContourWidget closing");
       const ctx = me.canvas.getContext('2d');
       ctx.drawImage(me.canvasBackup, 0, 0);
-      document.querySelector("#microdrawView").removeChild(me.widget);
+      dom.querySelector("#microdrawView").removeChild(me.widget);
     },
 
     // eslint-disable-next-line max-statements
@@ -49,18 +50,19 @@ var ToolFindContours = {findContours: (function() {
         div#cwContent {
           display: inline-block;
           position: absolute;
-          top: 10px;
-          left: 10px;
+          top: 50%;
+          left: 50%;
+          transform: translate( -50%, -50% );
           border: thin solid black;
-          background: white;
           z-index:10;
         }
         #cwContent * {
-          color: black;
+          background:#555;
+          color: white;
         }
       </style>
       <div id="cwContent">
-        <div id="cwHeader" style="background:#aaa">Find Contours</div>
+        <div id="cwHeader" style="background:#333">Find Contours</div>
         <div style="padding:10px">
           <span>Threshold</span>
           <input id="cwThreshold" type="range" min=0 max=255 />
@@ -74,35 +76,35 @@ var ToolFindContours = {findContours: (function() {
       `;
       me.widget = document.createElement("span");
       me.widget.innerHTML = content;
-      document.querySelector("#microdrawView").appendChild(me.widget);
+      dom.querySelector("#microdrawView").appendChild(me.widget);
 
-      document.getElementById('cwThreshold').addEventListener('input', (e) => {
+      dom.getElementById('cwThreshold').addEventListener('input', (e) => {
         e.preventDefault();
         e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.thresholdImage();
       });
-      document.getElementById('cwThreshold').addEventListener('change', (e) => {
+      dom.getElementById('cwThreshold').addEventListener('change', (e) => {
         e.preventDefault();
         e.stopPropagation();
         me.threshold = parseFloat(e.target.value);
         me.findContours();
       });
-      document.getElementById('cwClose').addEventListener('click', () => {
+      dom.getElementById('cwClose').onclick = () => {
         me.close();
         me.addRegions();
-      });
-      document.getElementById('cwCancel').addEventListener('click', () => {
+      };
+      dom.getElementById('cwCancel').onclick = () => {
         me.close();
-      });
-      document.getElementById('cwHeader').addEventListener('mousedown', (e) => {
+      };
+      dom.getElementById('cwHeader').addEventListener('mousedown', (e) => {
         me.down = true;
         me.prevX = e.screenX;
         me.prevY = e.screenY;
       });
-      document.querySelector('body').addEventListener('mousemove', (e) => {
+      dom.querySelector('body').addEventListener('mousemove', (e) => {
         if(me.down === true) {
-          const div = document.querySelector('#cwContent');
+          const div = dom.querySelector('#cwContent');
           const [x, y] = [e.screenX, e.screenY];
           const [dx, dy] = [x - me.prevX, y - me.prevY];
           const {offsetLeft, offsetTop} = div;
@@ -111,7 +113,7 @@ var ToolFindContours = {findContours: (function() {
           div.style.top = `${parseFloat(offsetTop)+dy}px`;
         }
       });
-      document.querySelector('body').addEventListener('mouseup', () => {
+      dom.querySelector('body').addEventListener('mouseup', () => {
         me.down = false;
       });
     },
@@ -126,50 +128,50 @@ var ToolFindContours = {findContours: (function() {
 
         // x direction
         for(j=0; j<H; j++) {
-            sum=0;
-            for(i=0; i<r; i++) {
-                sum+=img1[j*W+i];
-            }
-            for(i=0; i<=r; i++) {
-                sum+=img1[j*W+(i+r)];
-                val=sum/(r+1+i);
-                resx[j*W+i]=val;
-            }
-            for(i=r+1; i<W-r; i++) {
-                sum+=img1[j*W+(i+r)];
-                sum-=img1[j*W+(i-r-1)];
-                val=sum/(2*r+1);
-                resx[j*W+i]=val;
-            }
-            for(i=W-r; i<W; i++) {
-                sum-=img1[j*W+(i-r-1)];
-                val=sum/(r+(W-i));
-                resx[j*W+i]=val;
-            }
+          sum=0;
+          for(i=0; i<r; i++) {
+            sum+=img1[j*W+i];
+          }
+          for(i=0; i<=r; i++) {
+            sum+=img1[j*W+(i+r)];
+            val=sum/(r+1+i);
+            resx[j*W+i]=val;
+          }
+          for(i=r+1; i<W-r; i++) {
+            sum+=img1[j*W+(i+r)];
+            sum-=img1[j*W+(i-r-1)];
+            val=sum/(2*r+1);
+            resx[j*W+i]=val;
+          }
+          for(i=W-r; i<W; i++) {
+            sum-=img1[j*W+(i-r-1)];
+            val=sum/(r+(W-i));
+            resx[j*W+i]=val;
+          }
         }
 
         // y direction
         for(i=0; i<W; i++) {
-            sum=0;
-            for(j=0; j<r; j++) {
-                sum+=img1[j*W+i];
-            }
-            for(j=0; j<=r; j++) {
-                sum+=img1[(j+r)*W+i];
-                val=sum/(r+1+j);
-                resy[j*W+i]=val;
-            }
-            for(j=r+1; j<H-r; j++) {
-                sum+=resx[(j+r)*W+i];
-                sum-=resx[(j-r-1)*W+i];
-                val=sum/(2*r+1);
-                resy[j*W+i]=val;
-            }
-            for(j=H-r; j<H; j++) {
-                sum-=resx[(j-r-1)*W+i];
-                val=sum/(r+(H-j));
-                resy[j*W+i]=val;
-            }
+          sum=0;
+          for(j=0; j<r; j++) {
+            sum+=img1[j*W+i];
+          }
+          for(j=0; j<=r; j++) {
+            sum+=img1[(j+r)*W+i];
+            val=sum/(r+1+j);
+            resy[j*W+i]=val;
+          }
+          for(j=r+1; j<H-r; j++) {
+            sum+=resx[(j+r)*W+i];
+            sum-=resx[(j-r-1)*W+i];
+            val=sum/(2*r+1);
+            resy[j*W+i]=val;
+          }
+          for(j=H-r; j<H; j++) {
+            sum-=resx[(j-r-1)*W+i];
+            val=sum/(r+(H-j));
+            resy[j*W+i]=val;
+          }
         }
 
         // overwrite img
@@ -179,7 +181,7 @@ var ToolFindContours = {findContours: (function() {
       };
 
       for(let i=0; i<order; i++) {
-          boxFilter1(img, dim, radius);
+        boxFilter1(img, dim, radius);
       }
     },
 
@@ -229,7 +231,7 @@ var ToolFindContours = {findContours: (function() {
       let i, j, k;
       const tmp = new Float32Array(W*H);
 
-    for(let iter=0; iter<niter; iter++) {
+      for(let iter=0; iter<niter; iter++) {
         for(i=0; i<W; i++) {
           for(j=0; j<H; j++) {
             if(grey[j*W+i] > 0) {
@@ -308,47 +310,47 @@ var ToolFindContours = {findContours: (function() {
       const contourArray = [];
 
       do {
-          if(grey[b*W+a] > 0) {
-            if(tmp[b*W+a] === 2) {
-              while(grey[b*W+a] > 0) {
-                a++;
-              }
-            } else {
-              [x0, y0, x, y] = [a, b, a, b];
-              const con = [[x0, y0]];
-              do {
-                // eslint-disable-next-line max-depth
-                for(k=0; k<search.length; k++) {
-                  [dx, dy]=search[ind];
-                  // eslint-disable-next-line max-depth
-                  if(grey[(y+dy)*W+(x+dx)] > 0) {
-                    x+=dx;
-                    y+=dy;
-                    con.push([x, y]);
-                    ind = (search.length+ind-1)%search.length;
-                    break;
-                  } else {
-                    ind = (ind+1)%search.length;
-                  }
-                }
-              } while (x!==x0 || y!==y0);
-              for(i of con) {
-                [x, y] = i;
-                tmp[y*W + x] = 2;
-              }
-              if(con.length>=me.smallestContour) {
-                contourArray.push(me.resampleContour(con));
-              }
-              [a, b] = [a0, b0];
+        if(grey[b*W+a] > 0) {
+          if(tmp[b*W+a] === 2) {
+            while(grey[b*W+a] > 0) {
+              a++;
             }
           } else {
-            [a0, b0] = [a, b];
+            [x0, y0, x, y] = [a, b, a, b];
+            const con = [[x0, y0]];
+            do {
+              // eslint-disable-next-line max-depth
+              for(k=0; k<search.length; k++) {
+                [dx, dy]=search[ind];
+                // eslint-disable-next-line max-depth
+                if(grey[(y+dy)*W+(x+dx)] > 0) {
+                  x+=dx;
+                  y+=dy;
+                  con.push([x, y]);
+                  ind = (search.length+ind-1)%search.length;
+                  break;
+                } else {
+                  ind = (ind+1)%search.length;
+                }
+              }
+            } while (x!==x0 || y!==y0);
+            for(i of con) {
+              [x, y] = i;
+              tmp[y*W + x] = 2;
+            }
+            if(con.length>=me.smallestContour) {
+              contourArray.push(me.resampleContour(con));
+            }
+            [a, b] = [a0, b0];
           }
+        } else {
+          [a0, b0] = [a, b];
+        }
 
-          if(a++===W-1) {
-            a=0;
-            b++;
-          }
+        if(a++===W-1) {
+          a=0;
+          b++;
+        }
       } while(b<H-1);
 
       return contourArray;
@@ -452,7 +454,7 @@ var ToolFindContours = {findContours: (function() {
 
         ctx.strokeStyle = `rgb(${r},${g},${b})`;
         ctx.beginPath();
-          ctx.moveTo(...con[0]);
+        ctx.moveTo(...con[0]);
         for(const p of con) {
           ctx.lineTo(...p);
         }
@@ -461,7 +463,7 @@ var ToolFindContours = {findContours: (function() {
       }
 
       // display information message
-      document.querySelector("#cwMessage").innerHTML = `${me.contourArray.length} contours detected`;
+      dom.querySelector("#cwMessage").innerHTML = `${me.contourArray.length} contours detected`;
     },
 
     addRegions: function () {
@@ -484,6 +486,7 @@ var ToolFindContours = {findContours: (function() {
      */
     click : function click(prevTool) {
       me.start('#openseadragon1 canvas');
+      Microdraw.selectedTool = prevTool;
     }
   };
 

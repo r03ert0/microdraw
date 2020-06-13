@@ -1,0 +1,139 @@
+<div id="tools-side" style="display:block;height:100%">
+  <div id="tools-minimized">
+    <div>
+        <img id="bars-icon" alt="menu" src="/img/bars.svg" />
+    </div>
+  </div>
+
+  <div id="tools-maximized" style="display:flex;flex-direction:column;height:100%">
+
+      <!-- tools hide/show, display left/right -->
+      <div id="headerBlock" style="flex:0 1 28px;background:#333">
+          <div style="display:flex">
+              <div style="flex:0 0 28px"><div id="display-minimize" title="Minimize toolbar" class="mui push noBorder"><img class="icon" alt="close" src="/img/times-circle.svg" /></div></div>
+              <div style="flex:1 1 auto"></div>
+              <div style="flex:0 0 28px"><div id="display-left" title="Display to the left" class="mui push noBorder"><img class="icon" alt="left" src="/img/caret-square-o-left.svg" /></div></div>
+              <div style="flex:0 0 28px"><div id="display-right" title="Display to the right" class="mui push noBorder"><img class="icon" alt="right" src="/img/caret-square-o-right.svg" /></div></div>
+          </div>
+      </div>
+
+      <!-- slider -->
+      <div id="sliderBlock" style="flex:0 0 28px">
+          <div style="display:flex">
+              <div style="flex:0 0 28px">
+                  <div id="previous" class="mui push">-</div>
+              </div>
+              <div style="flex:1 0 28px;display:flex">
+                  <div style="flex:1;position:relative">
+                      <div id="slice" class="mui-slider" data-onstop=true data-max="100" data-val="0" style="position:absolute;height:100%;margin-left:10px;width:calc(100% - 20px)">
+                          <div class="mui-track" style="position:absolute;left:0;top:50%;width:100%;border-top:1px solid #fff;padding:0;display:inline-block"></div>
+                          <div class="mui-thumb" style="position:absolute;left:0;top:50%;transform:translate(-10px,-10px);border-radius:10px;padding:0;width:20px;height:20px;background:#fff;display:inline-block"></div>
+                      </div>
+                  </div>
+              </div>
+              <div style="flex:0 0 28px">
+                  <div id="next" class="mui push">+</div>
+              </div>
+          </div>
+      </div>
+
+      <!-- buttons -->
+      <div id="buttonsBlock" style="flex:0 0 auto">
+          <div style="display:flex;flex-wrap:wrap">
+
+              <div style="flex:1 0 250px;width:50px">
+                  <div style="display:flex">
+                      <div style="flex:1"><div id="fullscreen" title="Full screen" class="mui toggle"><img class="icon" alt="fullscreen" src="/img/fullscreen.svg" /></div></div>
+                      <div id="text" style="flex:2;display:flex" class="mui-chose">
+                          <div style="flex:1"><div id="bubble" title="Chat"   class="mui sub mui-pressed"><img class="icon" alt="chat"   src="/img/chat.svg" /></div></div>
+                          <div style="flex:1"><div id="script" title="Script" class="mui sub"><img class="icon" alt="script" src="/img/scroll.svg" /></div></div>
+                      </div>
+                      <div style="flex:1"><div id="home"     title="Home"     class="mui push"><img class="icon" alt="home"     src="/img/home.svg" /></div></div>
+                      <div style="flex:1"><div id="zoomIn"   title="Zoom In"  class="mui push"><img class="icon" alt="zoomIn"   src="/img/zoomIn.svg" /></div></div>
+                      <div style="flex:1"><div id="zoomOut"  title="Zoom Out" class="mui push"><img class="icon" alt="zoomOut"  src="/img/zoomOut.svg" /></div></div>
+                  </div>
+                  <div id="paintTool" style="display:flex">
+                    <div id="clickTool" style="flex:2;display:flex;flex-wrap:wrap" class="mui-chose">
+                      <div style="flex:1"><div id="navigate" title="Navigate" class="mui sub mui-pressed"><img class="icon" alt="navigate" src="/img/navigate.svg" /></div></div>
+                      <div style="flex:1"><div id="select"      title="Select"      class="mui sub"><img class="icon" alt="select"        src="/img/select.svg" /></div></div>
+                      <div style="flex:1"><div id="draw"        title="Draw"        class="mui sub"><img class="icon" alt="draw"        src="/img/draw.svg" /></div></div>
+                      <div style="flex:1"><div id="drawPolygon" title="DrawPolygon" class="mui sub"><img class="icon" alt="drawPolygon" src="/img/drawPolygon.svg" /></div></div>
+                      <div style="flex:1"><div id="drawLine"    title="DrawLine"    class="mui sub"><img class="icon" alt="drawLine"    src="/img/drawLine.svg" /></div></div>
+                      <div style="flex:1"><div id="addPoint"    title="AddPoint"    class="mui sub"><img class="icon" alt="addPoint"    src="/img/addPoint.svg" /></div></div>
+                      <div style="flex:1"><div id="deletePoint" title="DeletePoint" class="mui sub"><img class="icon" alt="deletePoint" src="/img/deletePoint.svg" /></div></div>
+                      <div style="flex:1"><div id="addRegion"      title="AddRegion"      class="mui sub"><img class="icon" alt="addRegion"      src="/img/addRegion.svg" /></div></div>
+                      <div style="flex:1"><div id="subtractRegion" title="SubtractRegion" class="mui sub"><img class="icon" alt="subtractRegion" src="/img/subtractRegion.svg" /></div></div>
+                      <div style="flex:1"><div id="splitRegion"    title="SplitRegion"    class="mui sub"><img class="icon" alt="splitRegion"    src="/img/splitRegion.svg" /></div></div>
+                      <div style="flex:1"><div id="rotate"         title="Rotate"         class="mui sub"><img class="icon" alt="rotate"         src="/img/rotate.svg" /></div></div>
+                      <div style="flex:1"><div id="flipRegion" title="FlipRegion" class="mui sub"><img class="icon" alt="flipRegion" src="/img/flipRegion.svg" /></div></div>
+                    </div>
+                  </div>
+                  <div style="display:flex">
+                      <div style="flex:1"><div id="color"      title="Color"      class="mui push" style="height:24px;background:#f00"></div></div>
+                      <div style="flex:1"><div id="simplify"       title="Simplify"       class="mui push"><img class="icon" alt="simplify"       src="/img/simplify.svg" /></div></div>
+                      <div style="flex:1"><div id="toPolygon"  title="ToPolygon"  class="mui push"><img class="icon" alt="toPolygon"  src="/img/toPolygon.svg" /></div></div>
+                      <div style="flex:1"><div id="toBezier"   title="ToBezier"   class="mui push"><img class="icon" alt="toBezier"   src="/img/toBezier.svg" /></div></div>
+                      <div style="flex:1"><div id="copy"       title="Copy"       class="mui push"><img class="icon" alt="copy"       src="/img/copy.svg" /></div></div>
+                      <div style="flex:1"><div id="paste"      title="Paste"      class="mui push"><img class="icon" alt="paste"      src="/img/paste.svg" /></div></div>
+                  </div>
+                  <div style="display:flex">
+                      <div style="flex:1"><div id="save"         title="Save"         class="mui push"><img class="icon" alt="save"         src="/img/save.svg" /></div></div>
+                      <div style="flex:1"><div id="screenshot"   title="Screenshot"   class="mui push"><img class="icon" alt="screenshot"   src="/img/screenshot.svg" /></div></div>
+                      <div style="flex:1"><div id="delete"       title="Delete"       class="mui push"><img class="icon" alt="delete"       src="/img/delete.svg" /></div></div>
+                      <div style="flex:1"><div id="findContours" title="FindContours" class="mui push"><img class="icon" alt="findContours" src="/img/findContours.svg" /></div></div>
+                      <div style="flex:1"><div id="undo"         title="Undo"         class="mui push"><img class="icon" alt="undo"         src="/img/undo.svg" /></div></div>
+                      <div style="flex:1"><div id="redo"         title="Redo"         class="mui push"><img class="icon" alt="redo"         src="/img/redo.svg" /></div></div>
+                  </div>
+              </div>
+
+          </div>
+      </div>
+
+      <!-- notifications -->
+      <div id="notificationsBlock" style="flex:0 1 auto;position:relative;display:flex">
+          <div style="flex:1 1 28px"><div id="notifications" class="label">Chat (disconnected)</div></div>
+      </div>
+
+      <!-- text input -->
+      <div id="textInputBlock" style="flex:1 1 auto;position:relative;display:flex">
+          <div id="textInputBlockContent" style="flex:1;display:flex;flex-direction:column">
+              <div style="flex:1 180px;display:flex">
+                  <div id="logChat">
+                      <div style="flex:1 1 30px; overflow:scroll">
+                          <div class="text" style="overflow:auto;height:100%"></div>
+                      </div>
+                      <div style="flex:0"><input id="msg" type="text" style="width:100%" /></div>
+                  </div>
+                  <div id="logScript" class="text hidden" style="flex:1;height:auto"></div>
+              </div>
+          </div>
+      </div>
+
+  </div>
+
+</div>
+
+<!-- Labels -->
+<div id="labelset">
+  <div style="z-index:23;text-align:right">
+      <img id="labels-close" class="button" alt="close" src="/img/times-circle.svg"/>
+  </div>
+
+  <ul>
+      <li>
+          <b>Label Set</b><br/>
+          <span id="labels-name"></span>
+      </li>
+      <li>
+          <b>Labels</b><br/>
+          <div id="label-list">
+          </div>
+          <div id="label-template">
+              <div class="label-color"></div>
+              <span class="label-name">Label Name</span>
+          </div>
+      </li>
+  </ul>
+</div>
+<!-- End Labels -->
+

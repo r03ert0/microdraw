@@ -28,6 +28,15 @@
               "iconPath": "/img/draw.svg"
             },
             {
+              "name": "Color",
+              "id": "color",
+              "desc": "",
+              "exportedVar": [
+                "ToolColor"
+              ],
+              "scriptPath": "/js/tools/color.js"
+            },
+            {
               "name": "DrawPolygon",
               "id": "drawPolygon",
               "desc": "",

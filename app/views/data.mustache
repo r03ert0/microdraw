@@ -3,7 +3,6 @@
 
 <head>
     {{> partials/header }}
-    <link rel="stylesheet" href="css/microdraw.css" type="text/css" />
     <link rel="stylesheet" href="css/data-style.css" type="text/css" />
     <link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
 </head>
@@ -24,10 +23,35 @@
     </div>
 </div>
 
-{{> partials/microdraw}}
+<div id="content" style="width:100%;height:calc( 100% - 48px );background:white;position:relative"></div>
 
 <script>
-    Microdraw.init();
+function loadScript (path, testScriptPresent) {
+  return new Promise((resolve, reject) => {
+      if(testScriptPresent && testScriptPresent()) {
+          resolve();
+      }
+      const s = document.createElement("script");
+      s.src = path;
+      s.onload=resolve;
+      s.onerror=reject;
+      document.body.appendChild(s);
+  });
+}
+
+async function attach () {
+  const res = await fetch("/microdraw");
+  const txt = await res.text();
+  const parser = new DOMParser();
+  const elem = parser.parseFromString(txt, 'text/html').documentElement;
+  const shadow = document.querySelector("#content").attachShadow({mode: 'open'});
+  shadow.appendChild(elem);
+  loadScript("/js/microdraw.js")
+  .then(() => {
+      Microdraw.init(shadow);
+  });
+}
+attach();
 </script>
 
 </body>

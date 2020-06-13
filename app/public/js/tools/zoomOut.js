@@ -11,6 +11,7 @@ var ToolZoomOut = { zoomOut : (function(){
          * @returns {void}
          */
         click : function click(prevTool) {
+            Microdraw.viewer.viewport.zoomBy(1/1.5);
             Microdraw.backToPreviousTool(prevTool);
         }
     }

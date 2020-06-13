@@ -10,13 +10,19 @@ const delay = ms => new Promise(rs => {
 
 describe('microdraw.js', () => {
   beforeEach(async () => {
-    browser = await pptr.launch({headless: false, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
+    browser = await pptr.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] })
   })
   afterEach(async () => {
     await browser && browser.close()
   })
   describe('behaviour of paperjs regions on image transition', () => {
     let page
+    const shadow = (sel) => `document.querySelector("#content").shadowRoot.querySelector("${sel}")`
+    async function shadowclick(sel) {
+      const handle = await page.evaluateHandle(shadow(sel))
+      return handle.click()
+    }
+
     beforeEach(async () => {
       page = await browser.newPage()
       await page.goto('http://localhost:3000/data?source=/test_data/cat.json&slice=0', { waitUntil: 'networkidle2' })
@@ -26,15 +32,17 @@ describe('microdraw.js', () => {
     afterEach(async () => {
       await page.close()
     })
-    it('should deselect region on page transition', async () => {
+    it('should have the expected number of regions', async () => {
 
       // n.b. evaluate can only return serializable objects
-      const ImageInfo1 = await page.evaluate(`Microdraw['ImageInfo']`)
-      
+      const ImageInfo1 = JSON.parse(await page.evaluate(() => JSON.stringify(Microdraw.ImageInfo)))
+ 
       expect(ImageInfo1['1'].Regions.length).to.be.equal(0)
-      expect(ImageInfo1['0'].Regions.length).to.be.equal(0)
+      expect(ImageInfo1['0'].Regions.length).to.be.equal(1)
+    })
 
-      await page.click(DRAWPOLYGON)
+    it('should draw a new region', async () => {
+      await shadowclick(DRAWPOLYGON)
 
       await page.mouse.click(400, 400)
       await page.mouse.click(500, 400)
@@ -60,13 +68,12 @@ describe('microdraw.js', () => {
       })
 
       expect(ImageInfo2['1'].Regions.length).to.be.equal(0)
-      expect(ImageInfo2['0'].Regions.length).to.be.equal(1)
-      const regionJson = JSON.parse(ImageInfo2['0'].Regions[0])
+      expect(ImageInfo2['0'].Regions.length).to.be.equal(2)
+
+      const regionJson = JSON.parse(ImageInfo2['0'].Regions[1])
       expect(regionJson[1]['selected']).to.be.equal(true)
 
-      // go to next page
-
-      await page.click(NEXT)
+      await shadowclick(NEXT)
       await delay(500)
 
       const newUrl = page.url()
@@ -89,11 +96,13 @@ describe('microdraw.js', () => {
         })()
       })
 
+      console.log("1:", ImageInfo3['1'].Regions.length)
+      console.log("0:", ImageInfo3['0'].Regions.length)
       expect(ImageInfo3['1'].Regions.length).to.be.equal(0)
-      expect(ImageInfo3['0'].Regions.length).to.be.equal(1)
+      expect(ImageInfo3['0'].Regions.length).to.be.equal(2)
+
       const regionJsonAfter = JSON.parse(ImageInfo3['0'].Regions[0])
       expect(!!regionJsonAfter[1]['selected']).to.be.equal(false)
-
     })
   })
 })

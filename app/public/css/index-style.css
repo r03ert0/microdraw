@@ -1,5 +1,5 @@
 html, #menu, #footer {
-    background-color: #111;
+    background-color: #222;
 }
 #footer {
     display: block;
@@ -27,7 +27,6 @@ html, #menu, #footer {
     margin-top:0;
     width: 100%;
     display: inline-block;
-    font: 16px/24px "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
     transition: top .5s, opacity .5s;
     -moz-transition: top .5s, opacity .5s;
     -webkit-transition: top .5s, opacity .5s;

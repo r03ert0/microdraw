@@ -35,7 +35,7 @@ var ToolSubtractRegion = { subtractRegion : (function(){
                     Microdraw.removeRegion(prevRegion);
                     Microdraw.region.path.remove();
                     Microdraw.region.path = newPath;
-                    Microdraw.updateRegionList();
+                    // Microdraw.updateRegionList();
                     Microdraw.selectRegion(Microdraw.region);
                     paper.view.draw();
                     Microdraw.commitMouseUndo();

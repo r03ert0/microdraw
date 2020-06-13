@@ -26,22 +26,24 @@ router.get('/', async function (req, res) {
     const project = (req.query.project) || '';
     console.log(`current project: ${project}`);
 
-    // project owner and project users
-    const result = await req.app.db.queryProject({shortname: project});
-    const owner = result
-                  && result.owner;
-    const users = result
-                  && result.collaborators
-                  && result.collaborators.list
-                  && result.collaborators.list.map((u)=>u.username);
-    console.log(`project owner: ${owner}, users: ${users}`);
+    if(project) {
+        // project owner and project users
+        const result = await req.app.db.queryProject({shortname: project});
+        const owner = result
+                    && result.owner;
+        const users = result
+                    && result.collaborators
+                    && result.collaborators.list
+                    && result.collaborators.list.map((u)=>u.username) || [];
+        console.log(`project owner: ${owner}, users: ${users}`);
 
-    // check if user is among the allowed project's users
-    userIndex = [...users, owner].indexOf(user);
-    if(userIndex<0) {
-        res.status(403).send(`User ${user} not part of project ${project}`);
+        // check if user is among the allowed project's users
+        userIndex = [...users, owner].indexOf(user);
+        if(userIndex<0) {
+            res.status(403).send(`User ${user} not part of project ${project}`);
 
-        return;
+            return;
+        }
     }
 
     const query = {
@@ -51,7 +53,12 @@ router.get('/', async function (req, res) {
     };
     console.log("api get query", query);
 
-    const annotations = await req.app.db.findAnnotations(query);
+    let annotations;
+    try {
+      annotations = await req.app.db.findAnnotations(query);
+    } catch(err) {
+      throw new Error(err);
+    }
 
     res.status(200).send(annotations);
 });
@@ -72,21 +79,23 @@ const saveFromGUI = async function (req, res) {
     console.log(`current project: ${project}`);
 
     // project owner and project users
-    const result = await req.app.db.queryProject({shortname: project});
-    const owner = result
-                    && result.owner;
-    const users = result
-                    && result.collaborators
-                    && result.collaborators.list
-                    && result.collaborators.list.map((u)=>u.username);
-    console.log(`project owner: ${owner}, users: ${users}`);
+    if(project) {
+      const result = await req.app.db.queryProject({shortname: project});
+      const owner = result
+        && result.owner;
+      const users = result
+        && result.collaborators
+        && result.collaborators.list
+        && result.collaborators.list.map((u)=>u.username);
+      console.log(`project owner: ${owner}, users: ${users}`);
 
-    // check if user is among the allowed project's users
-    userIndex = [...users, owner].indexOf(user);
-    if(userIndex<0) {
+      // check if user is among the allowed project's users
+      userIndex = [...users, owner].indexOf(user);
+      if(userIndex<0) {
         res.status(403).send(`User ${user} not part of project ${project}`);
 
         return;
+      }
     }
 
     req.app.db.updateAnnotation({
@@ -96,8 +105,8 @@ const saveFromGUI = async function (req, res) {
         Hash,
         annotation
     })
-        .then(() => res.status(200).send())
-        .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
+    .then(() => res.status(200).send())
+    .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
 };
 
 /**

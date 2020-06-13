@@ -1,3 +1,15 @@
+html, body {
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    background: #222;
+    color: white;
+    font-family: "Lucida Grande", "Lucida Sans Unicode", Helvetica, Arial, Verdana, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+}
 #info {
     position:absolute;
     width:200px;
@@ -8,12 +20,13 @@
     z-index:10;
 }
 #myNavigator {
-    position:absolute;
+    /* position:absolute; */
     width:200px;
     height:150px;
-    top:0px;
-    left:0px;
+    /* top:0px; */
+    /* right:0px; */
     z-index:10;
+    display: none;
 }
 #menuButton {
     position:absolute;
@@ -38,12 +51,19 @@
     display:table;
     box-sizing: border-box;
     position:absolute;
-    width: 200px;
-    height: 100%;
-    top:0;
-    left:0;
-    background-color:rgba(200,200,200,0.5);
+    width: 250px;
+    top: 5px;
+    /* height: 100%; */
+    background-color:rgba(0,0,0,0.7);
     z-index:10;
+    box-shadow: 2px 2px 5px grey;
+}
+#bars-icon {
+    width:28px;
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform: translate( -50%, -50%);
 }
 #saveDialog {
     display: none;
@@ -51,7 +71,7 @@
     top:20px;
     left:50%;
     background-color:white;
-    color:black;
+    color: black;
     text-align:center;
     border:thin solid lightgrey;
     z-index:20;
@@ -179,7 +199,7 @@
 }
 .region-name
 {
-    color:black;
+    color:b;
 }
 .region-tag.deselected {
     background-color:transparent;
@@ -194,7 +214,7 @@
 .cell {
     display:table-cell;
     width:100%;
-    color:black;
+    color:b;
 }
 .overlay {
     position:absolute;
@@ -212,3 +232,253 @@
     filter: drop-shadow( 2px 2px 2px #777 );
     z-index:1;
 }
+
+/*
+    headerBlock: tools minimised, maximised, to the left, right
+*/
+/* #headerBlock {
+    display: none;
+} */
+#tools-minimized {
+    display: none;
+}
+
+/*--------------------------------------*/
+/*       User interface widgets         */
+* {
+    box-sizing: border-box;
+}
+
+.mui {
+    border:thin solid #777;
+    border-radius:3px;
+    margin:1px;
+    text-align:center;
+    height: 24px;
+    position: relative;
+    color: white;
+    user-select: none;
+}
+.mui:hover {
+    opacity:0.5;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    user-select:none;
+}
+
+.mui-chose {
+    border:thin solid #777;
+    border-radius:3px;
+    margin:1px;
+    text-align:center;
+    /* height: 24px; */
+    position: relative;
+}
+
+.mui.sub {
+    border:none;
+    margin:0;
+    height: 22px;
+    width: 41px;
+}
+.mui.sub:hover {
+    opacity:0.5;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    user-select:none;
+}
+
+.text {
+    border:thin solid #777;
+    background: #000;
+    opacity: 0.5;
+    border-radius:3px;
+    margin:1px;
+    /* user-select: text; */
+}
+.text * {
+    /* font-size: 12px !important; */
+    /* line-height: 15px !important; */
+}
+.text:hover {
+    opacity:1;
+}
+
+.label {
+    color: white;
+    user-select: none;
+}
+.mui-pressed {
+    background-color: #777 !important;
+}
+.icon {
+    width:16px;
+    vertical-align:middle;
+    user-select: none;
+}
+
+.hidden {
+    display:none;
+}
+
+/* svg buttons */
+.pushButton {
+    border:1px solid #ddd;
+    border-radius:6px;
+    color:#ddd;
+    text-align:center;
+    -webkit-appearance:none;
+    cursor: pointer;
+}
+img.button {
+    width:0.9rem;
+    height:0.9rem;
+    margin:8px 2px;
+    vertical-align:middle;
+    cursor:pointer;
+}
+img.button:hover {
+    opacity:0.5;
+}
+img.icon {
+    width:1rem;
+    height:1rem;
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    cursor:pointer;
+}
+
+.noBorder {
+    border: none;
+}
+
+.mui-select {
+    border:none;
+    background:none; /* no color, no decoration */
+    color:white;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+}
+/*--------------------------------------*/
+
+/*-----------------*/
+/* toolbar display */
+#tools-minimized div {
+    display:inline-block;
+    width:32px;
+    height:32px;
+    border: thin solid #777;
+    border-radius:50%;
+    background-color:#333;
+    position:absolute;
+    margin: 10px;
+    cursor: pointer;
+    top: 0;
+    right: 0;
+}
+body[data-toolbarDisplay=left] #menuBar,
+body[data-toolbarDisplay=left] #tools-minimized div {
+    left: 5px;
+}
+body[data-toolbarDisplay=right] #menuBar,
+body[data-toolbarDisplay=right] #tools-minimized div {
+    right: 0;
+}
+/*------------------*/
+
+/*-------------------*/
+/* Label set display */
+#labelset {
+  display:none;
+  overflow:scroll;
+  position:fixed;
+  top:0px;
+  left:0px;
+  width:100%;
+  height:100%;
+  text-align:left;
+  background-color:#333;
+  z-index:21;
+}
+.label-color {
+  vertical-align:middle;
+  margin:6px;
+  display:inline-block;
+  width:40px;
+  height:30px;
+  background-color:rgb(0,0,0);
+  cursor: pointer;
+}
+.label-color:hover {
+  border: thin solid white;
+}
+#label-template {
+    display:none;
+}
+#label-list {
+  display:flex;
+  flex-wrap:wrap;
+  text-align:left;
+}
+
+#labelset ul {
+  padding-left:1rem;
+  list-style-type:none;
+}
+
+
+#labelset li {
+  margin-bottom: 1rem;
+}
+/*-----------------*/
+
+#paperjs-container {
+    width:100%;
+    height:100%;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:2;
+    pointer-events: none;
+}
+
+#paperjs-container canvas {
+    /* pointer-events:  */
+}
+
+/*-----------*/
+/* Consolita */
+.token.message {
+    color: red;
+}
+.codeflask__flatten {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    caret-color:white;
+    font-size: 12px;
+    line-height: 15px;
+    padding: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: auto;
+    margin: 0 !important;
+    outline: none;
+    text-align: left;
+}
+.codeflask {
+    background:rgba(0,0,0,1);
+    position: relative;
+}
+#logChat:not(.hidden) {
+    flex:1;
+    height:auto;
+    display:flex;
+    flex-direction:column;
+}
+/*-----------*/

@@ -12,8 +12,6 @@ const app = express()
 function buildFileID({source, slice}) {
     return `${source}&slice=${slice}`;
 }
-
-// app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.urlencoded({ extended: true }))
 
 /**
@@ -107,8 +105,7 @@ describe('controller/api/index.js', () => {
         returnFoundAnnotation = true,
         updateAnnotation = sinon.stub().resolves(), 
         findAnnotations = sinon.stub().callsFake(() => Promise.resolve( returnFoundAnnotation ? annoationInDb : {Regions: []} )),
-        queryProject = sinon.stub().callsFake(() => Promise.resolve(queryPublicProject ? publicProject : privateProject))
-        
+        queryProject = sinon.stub().callsFake(() => Promise.resolve(queryPublicProject ? publicProject : privateProject))        
     
     before(() => {
         app.db = {

@@ -28,9 +28,9 @@ module.exports = function(overwriteMongoPath, callback) {
             return reject(new Error('db connection not healthy'));
         }
         db.get('user').update({
-            username : user.username
+            username: user.username
         }, {
-            $set : user
+            $set: user
         })
         .then(() => resolve(user))
         .catch(reject);
@@ -189,13 +189,12 @@ module.exports = function(overwriteMongoPath, callback) {
         if (!checkHealth()) {
             return reject(new Error('db connection not healthy'));
         }
-        console.log('updateProject:', project);
+        delete project._id;
         db.get('projects').update(
-            { shortname : project.shortname },
-            project
+            { shortname: project.shortname },
+            { $set: project }
         )
             .then((o) => {
-                console.log('updateProject', o);
                 resolve(o);
             })
             .catch(reject);
@@ -245,37 +244,37 @@ module.exports = function(overwriteMongoPath, callback) {
             return reject(new Error('db connection not healthy'));
         }
         db.get('projects').find(pagination)
-            .then((projects) => {
-                if(projects) {
-                    resolve(projects);
-                } else {
-                    reject({message: 'error find all projects', result: projects});
-                }
-            })
-            .catch((e) => reject(e));
+          .then((projects) => {
+            if(projects) {
+              resolve(projects);
+            } else {
+              reject({message: 'error find all projects', result: projects});
+            }
+          })
+          .catch((e) => reject(e));
     });
 
     /* query user projects */
     const queryUserProjects = (requestedUser) => new Promise((resolve, reject) => {
-        if (!checkHealth()) {
-            return reject(new Error('db connection not healthy'));
-        }
-        db.get('projects').find({
-            $or: [
-                {owner: requestedUser},
-                {"collaborators.list": {$elemMatch:{userID: requestedUser}}}
-            ],
-            backup: {$exists: false}
+      if (!checkHealth()) {
+          return reject(new Error('db connection not healthy'));
+      }
+      db.get('projects').find({
+        $or: [
+          {owner: requestedUser},
+          {"collaborators.list": {$elemMatch:{userID: requestedUser}}}
+        ],
+        backup: {$exists: false}
+      })
+        // @todo the results should be access filtered
+        .then((projects) => {
+          if(projects) {
+              resolve(projects);
+          } else {
+            reject({message: 'error find all projects', result: projects});
+          }
         })
-            // @todo the results should be access filtered
-            .then((projects) => {
-                if(projects) {
-                    resolve(projects);
-                } else {
-                    reject({message: 'error find all projects', result: projects});
-                }
-            })
-            .catch(reject);
+        .catch(reject);
     });
 
     /* search users */
@@ -303,21 +302,20 @@ module.exports = function(overwriteMongoPath, callback) {
             .catch(reject);
     });
 
-    db
-        .then(() => {
-            connected = true;
+    db.then(() => {
+      connected = true;
 
-            console.log('connected successfully');
+      console.log('connected successfully');
 
-            if(typeof callback !== 'undefined') {
-                return callback();
-            }
-        })
-        .catch((e) => {
-            // retry (?)
-            connected = false;
-            console.log('connection error', e);
-        });
+      if(typeof callback !== 'undefined') {
+          return callback();
+      }
+    })
+    .catch((e) => {
+      // retry (?)
+      connected = false;
+      console.log('connection error', e);
+    });
 
     return {
         addUser,

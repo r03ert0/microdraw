@@ -8,19 +8,19 @@ module.exports = (app) => {
 
     // view engine setup
     app.engine('mustache', mustacheExpress());
-    app.set('views', path.join(__dirname,'../views'));
+    app.set('views', path.join(__dirname, '../views'));
     app.set('view engine', 'mustache');
 
     // set pass app config to req
-    const configSetup = (req,res,next)=>{
+    const configSetup = (req, res, next) => {
         req.appConfig = {
             loginMethods : app.get('loginMethods') || [],
             db : app.db
-        }
-        next()
-    }
+        };
+        next();
+    };
 
-    app.use(configSetup)
+    app.use(configSetup);
 
     app.get('/', function (req, res) { // /auth/github
 
@@ -35,7 +35,7 @@ module.exports = (app) => {
 
     app.use('/data', (req, res, next) => {
       next();
-    } , require('../controller/data/'));
+    }, require('../controller/data/'));
 
     app.use('/user', require('../controller/user/'));
 
@@ -43,10 +43,14 @@ module.exports = (app) => {
 
     app.use('/search', require('../controller/search/'));
 
-    app.get('/token', getTokenEndPoint)
+    app.get('/token', getTokenEndPoint);
+
+    app.get('/microdraw', (req, res, next) => {
+      res.render('partials/microdraw');
+    });
 
     app.use('/api', authTokenMiddleware, require('../controller/api/'));
 
     /* patches for bypassing CORS header restrictions */
     require('./routesExtensions')(app);
-}
+};
