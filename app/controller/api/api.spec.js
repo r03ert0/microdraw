@@ -199,30 +199,41 @@ describe('controller/api/index.js', () => {
                 })
             })
 
-            it('fetching annotation from different project names work', (done) => {
-                const getTest = name => chai.request(url)
+            describe('fetching annotation from different project querys project as expected', () => {
+                const getTest = project => chai.request(url)
                     .get('/')
-                    .query({
-                        project: name
-                    })
+                    .query(
+                        project ? ({ project }) : ({})
+                    )
                     .then((res) => {
-                        assert(queryProject.called)
-                        assert(queryProject.calledWith({ shortname: name }))
-                    })
-                
-                Promise.all( [
-                    getTest(''),
-                    getTest('test1'),
-                    getTest('test2'),
-                    chai.request(url)
-                        .get('/')
-                        .then((res) => {
+
+                        /**
+                         * queryProject will only be called if user is querying annotation from a specific project
+                         * then, their authorisation will be assessed
+                         */
+                        if (project) {
                             assert(queryProject.called)
-                            assert(queryProject.calledWith({ shortname: '' }))
-                        })
-                    ] ).then(() => {
-                        done()
-                    }).catch(done)
+
+                            /**
+                             * if project not provided, as if project is an empty string
+                             */
+                            assert(queryProject.calledWith({ shortname: project }))
+                        } else {
+                            /**
+                             * if user is querying public (default) work space, query project would not be called
+                             */
+                            assert(queryProject.notCalled)
+                        }
+                    })
+
+                for (const p of ['', 'test1', 'test2', null]){
+                    it(`fetching project: "${p}"`, done => {
+
+                        getTest(p)
+                            .then(() => done())
+                            .catch(done)
+                    })
+                }
             })
         })
 
