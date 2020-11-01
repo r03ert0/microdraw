@@ -6,13 +6,13 @@
     "start": "node ./bin/www",
     "debug": "node --inspect-brk ./bin/www",
     "test": "node test.js",
-    "mocha": "node node_modules/mocha/bin/mocha",
+    "mocha": "node node_modules/mocha/bin/mocha --exit",
     "mocha-brk": "node node_modules/mocha/bin/mocha --inspect-brk",
     "lint": "eslint",
     "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/save.spec ./test/e2e/microdraw.spec"
   },
   "dependencies": {
-    "bcrypt": "^3.0.6",
+    "bcrypt": "^3.0.8",
     "body-parser": "^1.18.3",
     "connect-mongo": "^3.2.0",
     "dateformat": "^3.0.2",
