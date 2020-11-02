@@ -1,7 +1,7 @@
 /*global Microdraw*/
 /*global paper*/
 
-var ToolFlipRegion = {flip: (function() {
+var ToolFlipRegion = {flipRegion: (function() {
   var tool = {
 
     /**
@@ -9,7 +9,7 @@ var ToolFlipRegion = {flip: (function() {
      * @desc Flip region along y-axis around its center point
      * @returns {void}
      */
-    flipRegion: function flipRegion() {
+    flip: function flip() {
       if( Microdraw.region !== null ) {
         if( Microdraw.debug ) { console.log("> flipping region"); }
 
@@ -30,7 +30,7 @@ var ToolFlipRegion = {flip: (function() {
     * @returns {void}
     */
     click: function click(prevTool) {
-      tool.flipRegion();
+      tool.flip();
       Microdraw.backToPreviousTool(prevTool);
     }
   };
