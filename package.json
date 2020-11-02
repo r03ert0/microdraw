@@ -6,13 +6,13 @@
     "start": "node ./bin/www",
     "debug": "node --inspect-brk ./bin/www",
     "test": "node test.js",
-    "mocha": "node node_modules/mocha/bin/mocha",
+    "mocha": "node node_modules/mocha/bin/mocha --exit",
     "mocha-brk": "node node_modules/mocha/bin/mocha --inspect-brk",
     "lint": "eslint",
-    "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/save.spec ./test/e2e/microdraw.spec"
+    "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/*.spec.js"
   },
   "dependencies": {
-    "bcrypt": "^3.0.6",
+    "bcrypt": "^3.0.8",
     "body-parser": "^1.18.3",
     "connect-mongo": "^3.2.0",
     "dateformat": "^3.0.2",
@@ -25,6 +25,7 @@
     "passport": "^0.4.0",
     "passport-github": "latest",
     "passport-local": "^1.0.0",
+    "puppeteer": "^5.4.1",
     "request": "^2.88.0",
     "serve-favicon": "latest"
   },
@@ -37,6 +38,8 @@
     "mock-fs": "^4.5.0",
     "morgan": "^1.9.1",
     "nock": "^10.0.6",
+    "pixelmatch": "^5.2.1",
+    "pngjs": "^6.0.0",
     "sinon": "^7.3.1"
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",

@@ -22,6 +22,7 @@ const Microdraw = (function () {
         handle: null,                // currently selected control point or handle (if any)
         selectedTool: null,          // currently selected tool
         viewer: null,                // open seadragon viewer
+        isAnimating: false,          // flag indicating whether there an animation going on (zoom, pan)
         navEnabled: true,            // flag indicating whether the navigator is enabled (if it's not, the annotation tools are)
         magicV: 1000,                // resolution of the annotation canvas - is changed automatically to reflect the size of the tileSource
         params: null,                // URL parameters
@@ -528,6 +529,20 @@ const Microdraw = (function () {
             if( !me.navEnabled ) {
                 event.stopHandlers = true;
                 me.mouseDown(event.originalEvent.layerX, event.originalEvent.layerY);
+            }
+        },
+
+        /**
+         * @function releaseHandler
+         * @param {object} event Event
+         * @returns {void}
+         */
+        releaseHandler: function (event) {
+            if( me.debug ) { console.log("> releaseHandler"); }
+
+            if( !me.navEnabled ) {
+                event.stopHandlers = true;
+                me.mouseUp();
             }
         },
 
@@ -2063,14 +2078,21 @@ const Microdraw = (function () {
             me.viewer.addHandler('animation', function () {
                 me.transform();
             });
+            me.viewer.addHandler("animation-start", function () {
+                me.isAnimating = true;
+            });
+            me.viewer.addHandler("animation-finish", function () {
+                me.isAnimating = false;
+            });
             me.viewer.addHandler("page", function (data) {
                 console.log(data.page, me.params.tileSources[data.page]);
             });
             me.viewer.addViewerInputHook({hooks: [
                 {tracker: 'viewer', handler: 'clickHandler', hookHandler: me.clickHandler},
                 {tracker: 'viewer', handler: 'pressHandler', hookHandler: me.pressHandler},
+                {tracker: 'viewer', handler: 'releaseHandler', hookHandler: me.releaseHandler},
                 {tracker: 'viewer', handler: 'dragHandler', hookHandler: me.dragHandler},
-                {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler},
+                // {tracker: 'viewer', handler: 'dragEndHandler', hookHandler: me.dragEndHandler},
                 {tracker: 'viewer', handler: 'scrollHandler', hookHandler: me.scrollHandler}
             ]});
 
