@@ -17,7 +17,7 @@ module.exports = {
   'SUBTRACTREGION':'#subtractRegion',
   'SPLITREGION':'#splitRegion',
   'ROTATE':'#rotate',
-  'FLIP':'#flipRegion',
+  'FLIPREGION':'#flipRegion',
   'SIMPLIFY':'#simplify',
   'TOPOLYGON':'#toPolygon',
   'TOBEZIER':'#toBezier',
@@ -26,5 +26,11 @@ module.exports = {
   'SAVE':'#save',
   'SCREENSHOT':'#screenshot',
   'DELETE':'#delete',
-  'CANVAS': '#openseadragon1'
-}
+  'CANVAS': '#openseadragon1',
+  'UNDO':'#undo',
+  'REDO': '#redo',
+  'BACK': '#back',
+  'BACKWARD': '#backward',
+  'FOREWARD': '#foreward',
+  'FRONT': '#front'
+};

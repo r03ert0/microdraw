@@ -23,7 +23,7 @@
       { "name": "SubtractRegion", "id": "subtractRegion", "desc": "", "exportedVar": ["ToolSubtractRegion"], "scriptPath": "/js/tools/subtractRegion.js", "iconPath": "/img/subtractRegion.svg" },
       { "name": "SplitRegion", "id": "splitRegion", "desc": "", "exportedVar": ["ToolSplitRegion"], "scriptPath": "/js/tools/splitRegion.js", "iconPath": "/img/splitRegion.svg" },
       { "name": "Rotate", "id": "rotate", "desc": "", "exportedVar": ["ToolRotate"], "scriptPath": "/js/tools/rotate.js", "iconPath": "/img/rotate.svg" },
-      { "name": "FlipRegion", "id": "flipregion", "desc": "", "exportedVar": ["ToolFlipRegion"], "scriptPath": "/js/tools/flipRegion.js", "iconPath": "/img/flipRegion.svg" },
+      { "name": "FlipRegion", "id": "flipRegion", "desc": "", "exportedVar": ["ToolFlipRegion"], "scriptPath": "/js/tools/flipRegion.js", "iconPath": "/img/flipRegion.svg" },
       { "name": "ToPolygon", "id": "toPolygon", "desc": "", "exportedVar": ["ToolToPolygon"], "scriptPath": "/js/tools/toPolygon.js", "iconPath": "/img/toPolygon.svg" },
       { "name": "ToBezier", "id": "toBezier", "desc": "", "exportedVar": ["ToolToBezier"], "scriptPath": "/js/tools/toBezier.js", "iconPath": "/img/toBezier.svg" },
       { "name": "Copy (\u2318C)", "id": "copy", "desc": "", "exportedVar": ["ToolCopy"], "scriptPath": "/js/tools/copy.js", "iconPath": "/img/copy.svg" },
