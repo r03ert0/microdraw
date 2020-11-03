@@ -62,18 +62,18 @@ const Microdraw = (function () {
 
         /**
          * @function regionUID
-         * @returns {number} counter Number of regions in the current section.
+         * @returns {string} Get a unique random alphanumeric identifier for the region
          */
         regionUID: function () {
           if( me.debug ) {
             console.log("> regionUID");
           }
 
-          me.counter = me.ImageInfo[me.currentImage].Regions.reduce(
-            (a, b) => Math.max(a, parseInt(b.uid, 10) + 1), me.counter
-          );
-
-          return me.counter;
+          return Math.random().toString(16).slice(2);
+        //   me.counter = me.ImageInfo[me.currentImage].Regions.reduce(
+        //     (a, b) => Math.max(a, Math.floor(b.uid) + 1), me.counter
+        //   );
+        //   return me.counter;
         },
 
         /**
@@ -89,6 +89,29 @@ const Microdraw = (function () {
           }, 0);
 
           return result;
+        },
+
+        sectionHash: function (section) {
+            var value = {
+                Regions: [],
+                RegionsToRemove: []
+            };
+        
+            for(const reg of section.Regions) {
+              value.Regions.push({
+                path: JSON.parse(reg.path.exportJSON()),
+                name: reg.name,
+                uid: reg.uid
+              });
+            }
+        
+            for( const uid of section.RegionsToRemove ) {
+              value.RegionsToRemove.push(uid);
+            }
+
+            const hash = me.hash(JSON.stringify(section)).toString(16);
+        
+            return hash;
         },
 
         /**
@@ -152,20 +175,21 @@ const Microdraw = (function () {
             // if( me.debug > 2 ) console.log( me.ImageInfo );
 
             for( let i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-              if( parseInt(me.ImageInfo[me.currentImage].Regions[i].uid, 10) === parseInt(uid, 10) ) {
+              // if( parseInt(me.ImageInfo[me.currentImage].Regions[i].uid, 10) === parseInt(uid, 10) ) {
+              if( me.ImageInfo[me.currentImage].Regions[i].uid === uid ) {
                 me.debugPrint( "region " + me.ImageInfo[me.currentImage].Regions[i].uid + ": ", 2);
                 me.debugPrint( me.ImageInfo[me.currentImage].Regions[i], 2 );
 
                 return me.ImageInfo[me.currentImage].Regions[i];
               }
             }
-            console.log("Region with unique ID " + uid + " not found");
+            console.log(`Region with unique ID ${uid} not found`);
         },
 
         /**
          * @function regionTag
          * @param {string} name Name of the region.
-         * @param {number} uid Unique ID of the region.
+         * @param {string} uid Unique ID of the region.
          * @returns {string} str The color of the region.
          */
         regionTag: function (name, uid) {
@@ -243,17 +267,21 @@ const Microdraw = (function () {
                 r.classList.remove("selected");
             });
 
-            // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit
-
             if (reg) {
+              // Need to use unicode character for ID since CSS3 doesn't support ID selectors that start with a digit:
+              // If reg.uid starts with a number, the first number has to be converted to unicode
+              // for example, 10a to #\\31 0a
+              // var tag = me.dom.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
+              let uid = reg.uid.toString();
+              if(isNaN(parseInt(uid[0])) === false) {
+                uid = "\\3" + (uid.length > 1 ? uid[0] + ' ' + uid.slice(1) : uid)
+              }
+              var tag = me.dom.querySelector(`#regionList > .region-tag#${uid}`);
 
-                /* if reg.uid is 2 digit or more, need to separate the digits... ie, if reg.uid == 10, the selector  needs to be #\\31 0 or tag will return null*/
-                var tag = me.dom.querySelector("#regionList > .region-tag#\\3" + (reg.uid.toString().length > 1 ? reg.uid.toString()[0] + ' ' + reg.uid.toString().slice(1) : reg.uid.toString()) );
-
-                if(tag) {
-                  tag.classList.remove("deselected");
-                  tag.classList.add("selected");
-                }
+              if(tag) {
+                tag.classList.remove("deselected");
+                tag.classList.add("selected");
+              }
             }
 
             if(me.debug) { console.log("< selectRegion"); }
@@ -369,7 +397,7 @@ const Microdraw = (function () {
         /**
          * @function newRegion
          * @desc  Create a new region.
-         * @param {object} arg An object containing the name of the region (arg.name) and the path of the data (arg.path)
+         * @param {object} arg An object containing the name, uid and path of the region
          * @param {number} imageNumber The number of the image section where the region will be created
          * @returns {object} A new region
          */
@@ -379,7 +407,12 @@ const Microdraw = (function () {
             }
             var reg = {};
 
-            reg.uid = me.regionUID();
+            if(arg.uid) {
+                reg.uid = arg.uid;
+            } else {
+                reg.uid = me.regionUID();
+            }
+
             if( arg.name ) {
                 reg.name = arg.name;
             } else {
@@ -431,9 +464,9 @@ const Microdraw = (function () {
         },
 
         /**
-         * @function removeRegion
-         * @desc Remove region from current image
-         * @param {object} reg The region is going to be removed by this function
+         * Remove region from current image. The image not directly removed, but marked for removal,
+         * so that it can be removed from the database.
+         * @param {object} reg The region to be removed
          * @param {number} imageNumber The number of the image where the region will be removed
          * @returns {void}
          */
@@ -444,15 +477,13 @@ const Microdraw = (function () {
                 imageNumber = me.currentImage;
             }
 
+            // mark for removal
+            me.ImageInfo[imageNumber].RegionsToRemove.push(reg.uid);
             // remove from Regions array
             me.ImageInfo[imageNumber].Regions.splice(me.ImageInfo[imageNumber].Regions.indexOf(reg), 1);
             // remove from paths
             reg.path.remove();
-//             if( imageNumber === me.currentImage ) {
-//                 // remove from regionList
-//                 var tag = me.dom.querySelector("#regionList > .region-tag#" + reg.uid);
-//                 tag.remove();
-//             }
+
         },
 
         /**
@@ -856,6 +887,7 @@ const Microdraw = (function () {
                 var el = {
                     json: JSON.parse(info[i].path.exportJSON()),
                     name: info[i].name,
+                    uid: info[i].uid,
                     selected: info[i].path.selected,
                     fullySelected: info[i].path.fullySelected
                 };
@@ -928,7 +960,11 @@ const Microdraw = (function () {
                 path.importJSON(el.json);
                 path.insert = insert;
 
-                reg = me.newRegion({name:el.name, path:path}, undo.imageNumber);
+                reg = me.newRegion({
+                    name: el.name,
+                    uid: el.uid,
+                    path: path
+                }, undo.imageNumber);
                 // here order matters. if fully selected is set after selected, partially selected paths will be incorrect
                   reg.path.fullySelected = el.fullySelected;
                  reg.path.selected = el.selected;
@@ -1029,7 +1065,11 @@ const Microdraw = (function () {
                 reg.path.fullySelected = true;
                 var color = me.regionColor(reg.name);
                 reg.path.fillColor = 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.5)';
-                me.newRegion({name:me.copyRegion.name, path:reg.path});
+                me.newRegion({
+                    name: me.copyRegion.name,
+                    uid: me.regionUID(),
+                    path: reg.path
+                });
             }
             paper.view.draw();
         },
@@ -1121,6 +1161,7 @@ const Microdraw = (function () {
                 el = {};
                 el.path = me.ImageInfo[me.currentImage].Regions[i].path.exportJSON();
                 el.name = me.ImageInfo[me.currentImage].Regions[i].name;
+                el.uid = me.ImageInfo[me.currentImage].Regions[i].uid;
                 obj.Regions.push(el);
             }
             localStorage.Microdraw = JSON.stringify(obj);
@@ -1145,10 +1186,15 @@ const Microdraw = (function () {
                     reg = {};
                     var json;
                     reg.name = obj.Regions[i].name;
+                    reg.uid = obj.Regions[i].uid;
                     json = obj.Regions[i].path;
                     reg.path = new paper.Path();
                     reg.path.importJSON(json);
-                    me.newRegion({name:reg.name, path:reg.path});
+                    me.newRegion({
+                        name: reg.name,
+                        uid: reg.uid,
+                        path: reg.path
+                    });
                 }
                 paper.view.draw();
             }
@@ -1287,6 +1333,7 @@ const Microdraw = (function () {
                             for( let i = 0; i < data.length; i += 1 ) {
                                 const reg = {};
                                 reg.name = data[i].annotation.name;
+                                reg.uid = data[i].annotation.uid;
                                 const json = data[i].annotation.path;
 
                                 const [type] = json;
@@ -1311,7 +1358,11 @@ const Microdraw = (function () {
                                     reg.path.insert = insert;
                                 }
 
-                                me.newRegion({name:reg.name, path:reg.path});
+                                me.newRegion({
+                                    name: reg.name,
+                                    uid: reg.uid,
+                                    path:reg.path
+                                });
                             }
                             paper.view.draw();
 
@@ -1319,7 +1370,7 @@ const Microdraw = (function () {
                             me.selectRegion(null);
                             
                             // if image has no hash, save one
-                            me.ImageInfo[me.currentImage].Hash = (data.Hash ? data.Hash : me.hash(JSON.stringify(me.ImageInfo[me.currentImage].Regions)).toString(16));
+                            me.ImageInfo[me.currentImage].Hash = data.Hash ? data.Hash : me.sectionHash(me.ImageInfo[me.currentImage]);
 
                             paper.view.draw();
 
@@ -1981,7 +2032,8 @@ const Microdraw = (function () {
               me.imageOrder.push(name);
               me.ImageInfo[name] = {
                 source: obj.tileSources[i],
-                Regions: []
+                Regions: [],
+                RegionsToRemove: []
               };
               // if getTileUrl is specified, we might need to eval it to get the function
               if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
