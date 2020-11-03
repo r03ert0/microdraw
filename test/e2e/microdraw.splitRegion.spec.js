@@ -36,9 +36,7 @@ describe('Editing tools: split regions', async () => {
   }).timeout(0);
 
   it('draws a square', async () => {
-    // select the polygon tool
     await shadowclick(UI.DRAWPOLYGON);
-    // draw a square E
     await page.mouse.click(400, 400) ;
     await page.mouse.click(500, 400) ;
     await page.mouse.click(500, 500) ;
@@ -52,7 +50,6 @@ describe('Editing tools: split regions', async () => {
   }).timeout(0);
 
   it('draws another square', async () => {
-    // draw a square F
     await page.mouse.click(450, 450) ;
     await page.mouse.click(550, 450) ;
     await page.mouse.click(550, 550) ;
