@@ -2,8 +2,8 @@ version : 2
 jobs:
   build:
     docker:
-      - image: circleci/node:10-browsers
-      - image: circleci/mongo:3.4
+      - image: circleci/node:14-browsers
+      - image: circleci/mongo:4.0
     steps:
       - checkout
       - run: npm install
