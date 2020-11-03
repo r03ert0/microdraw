@@ -82,6 +82,23 @@ describe('Editing tools: draw polygons and curves', async () => {
     assert(diff<U.pct5, `${diff} pixels were different`);
   }).timeout(0);
 
+  it('clean up', async () => {
+    await shadowclick(UI.SELECT, page1);
+    await page1.mouse.click(350,150);
+    await shadowclick(UI.DELETE, page1);
+
+    await shadowclick(UI.SELECT, page1);
+    await page1.mouse.click(450,150);
+    await shadowclick(UI.DELETE, page1);
+
+    await shadowclick(UI.SAVE, page1)
+
+    const filename = "multiple.06.page1-cleanup.png";
+    await page1.screenshot({path: U.newPath + filename}) ;
+    const diff = U.compareImages(U.newPath + filename, U.refPath + filename);
+    assert(diff<U.pct5, `${diff} pixels were different`);
+  }).timeout(0);
+
   it('closes normally', async () => {
     await browser.close();
   });
