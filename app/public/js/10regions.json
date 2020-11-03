@@ -1,6 +1,6 @@
 {
   "name": "10 regions",
-  "source": "http://microdraw.pasteur.fr/labels/10regions.json",
+  "source": "https://microdraw.pasteur.fr/labels/10regions.json",
   "labels": [
     { "name": "Region 1", "value": 1, "color": [205,62,78], "url": "" },
     { "name": "Region 2", "value": 2, "color": [255,165,0], "url": "" },
