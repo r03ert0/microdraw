@@ -94,6 +94,34 @@ describe('Editing tools: undo and redo', async () => {
     assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
+  it('can undo an annotation from a different layer', async () => {
+    // reload
+    await page.reload();
+    await U.waitUntilHTMLRendered(page);
+
+    // draw a triangle
+    await shadowclick(UI.DRAWPOLYGON);
+    await page.mouse.click(300, 100);
+    await page.mouse.click(400, 100);
+    await page.mouse.click(350, 200);
+    await page.mouse.click(300, 100);
+
+    // delete it
+    await shadowclick(UI.DELETE);
+
+    // go to the next image
+    await shadowclick(UI.NEXT);
+    await U.waitUntilHTMLRendered(page);
+
+    // undo
+    await shadowclick(UI.UNDO);
+
+    const filename = "undo.05.undo-different-page.png";
+    await page.screenshot({path: U.newPath + filename}) ;
+    const diff = U.compareImages(U.newPath + filename, U.refPath + filename);
+    assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
+  }).timeout(0);
+
 
   it('closes normally', async () => {
     await browser.close();

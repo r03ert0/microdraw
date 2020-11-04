@@ -959,6 +959,10 @@ const Microdraw = (function () {
                 const path = me._pathFromJSON(el.json);
 
                 // remove, because paths are automatically added to the current activeLayer by default
+                path.remove();
+
+                // add to the correct project activeLayer, which may not be the current one
+                project.activeLayer.addChild(path);
 
                 reg = me.newRegion({
                     name: el.name,
