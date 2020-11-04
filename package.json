@@ -42,7 +42,7 @@
     "pngjs": "^6.0.0",
     "sinon": "^7.3.1"
   },
-  "author": "Roberto Toro <rto@braincatalogue.org> (http://neuroanatomy.github.io)",
+  "author": "Roberto Toro <rto@braincatalogue.org> (https://neuroanatomy.github.io)",
   "license": "GPL-3.0",
   "description": ""
 }

@@ -537,11 +537,24 @@ const configureResizeButton = function () {
  * @func resizeStart
  */
 const resizeStart = function (e) {
-    document.querySelector("#resizeButton").setAttribute('data', JSON.stringify({
-        flag: 0,
-        x0: e.pageX,
-        y0: e.pageY
-    }));
+    let x0, y0;
+    switch(e.type) {
+        case 'mousemove':
+            x0 = e.pageX;
+            y0 = e.pageY;
+            break;
+        case 'touchmove':
+            x0 = e.changedTouches[0].pageX;
+            y0 = e.changedTouches[0].pageY;
+            break;
+        default:
+            x0 = 0;
+            y0 = 0;
+    }
+    document.querySelector("#resizeButton").setAttribute(
+        'data',
+        JSON.stringify({ flag: 0, x0, y0 })
+    );
 }
 
 /**
@@ -555,8 +568,10 @@ function resizeMove(e) {
             y = e.pageY;
             break;
         case 'touchmove':
-            x = e.originalEvent.changedTouches[0].pageX;
-            y = e.originalEvent.changedTouches[0].pageY;
+            x = e.changedTouches[0].pageX;
+            y = e.changedTouches[0].pageY;
+            // x = e.originalEvent.changedTouches[0].pageX;
+            // y = e.originalEvent.changedTouches[0].pageY;
             break;
         default:
             x = 0;
