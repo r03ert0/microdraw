@@ -120,7 +120,7 @@ describe('Editing tools: draw polygons and curves', async () => {
 
     const o = [U.width*2/3, U.height/2];
     const r = U.width/4;
-    const a = 135;
+    const a = 100;
     const x = o[0] + r*Math.cos(a*Math.PI/180);
     const y = o[1] + r*Math.sin(a*Math.PI/180);
     await page.mouse.click(x, y);
@@ -136,7 +136,7 @@ describe('Editing tools: draw polygons and curves', async () => {
 
     const o = [U.width*2/3, U.height/2];
     const r = U.width/4;
-    const a = 135;
+    const a = 100;
     const x = o[0] + r*Math.cos(a*Math.PI/180);
     const y = o[1] + r*Math.sin(a*Math.PI/180);
     await page.mouse.click(x, y);
