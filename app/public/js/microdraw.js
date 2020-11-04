@@ -395,17 +395,16 @@ const Microdraw = (function () {
         },
 
         /**
-         * @function newRegion
-         * @desc  Create a new region.
+         * Create a new region, adding it to the ImageInfo structure and the current paper project
          * @param {object} arg An object containing the name, uid and path of the region
          * @param {number} imageNumber The number of the image section where the region will be created
-         * @returns {object} A new region
+         * @returns {object} Reference to the new region that was added
          */
         newRegion: function (arg, imageNumber) {
             if( me.debug ) {
                 console.log("> newRegion");
             }
-            var reg = {};
+            const reg = {};
 
             if(arg.uid) {
                 reg.uid = arg.uid;
@@ -416,11 +415,10 @@ const Microdraw = (function () {
             if( arg.name ) {
                 reg.name = arg.name;
             } else {
-                // reg.name = `Untitled ${reg.uid}`;
                 reg.name = me.ontology.labels[me.currentLabelIndex].name;
             }
 
-            var color = me.regionColor(reg.name);
+            const color = me.regionColor(reg.name);
 
             if( arg.path ) {
                 reg.path = arg.path;
@@ -458,7 +456,7 @@ const Microdraw = (function () {
             me.ImageInfo[imageNumber].Regions.push(reg);
 
             // Select region name in list
-            me.selectRegion(reg);
+            // me.selectRegion(reg);
 
             return reg;
         },
@@ -936,27 +934,22 @@ const Microdraw = (function () {
             if( undo.imageNumber !== me.currentImage ) {
                 me.setImage(undo.imageNumber);
             }
-            var info = me.ImageInfo[undo.imageNumber].Regions;
-            var i;
+            const info = me.ImageInfo[undo.imageNumber].Regions;
             while( info.length > 0 ) {
                 me.removeRegion(info[0], undo.imageNumber);
             }
             me.region = null;
-            var reg;
-            for( i = 0; i < undo.regions.length; i += 1 ) {
-                var el = undo.regions[i];
-                var project = paper.projects[me.ImageInfo[undo.imageNumber].projectID];
+            let reg;
+            for( let i = 0; i < undo.regions.length; i += 1 ) {
+                const el = undo.regions[i];
+                const project = paper.projects[me.ImageInfo[undo.imageNumber].projectID];
 
-                /* Create the path and add it to a specific project.
-                */
-
-                var path = new paper.Path();
+                /* Create the path and add it to a specific project.*/
+                const path = new paper.Path();
                 project.addChild(path);
 
-                /*
-                 * @todo This is a workaround for an issue on paper.js. It needs to be removed when the issue will be solved
-                 */
-                var {insert} = path.insert;
+                /** @todo This is a workaround for an issue on paper.js. It needs to be removed when the issue will be solved */
+                const {insert} = path.insert;
                 path.importJSON(el.json);
                 path.insert = insert;
 
@@ -966,8 +959,8 @@ const Microdraw = (function () {
                     path: path
                 }, undo.imageNumber);
                 // here order matters. if fully selected is set after selected, partially selected paths will be incorrect
-                  reg.path.fullySelected = el.fullySelected;
-                 reg.path.selected = el.selected;
+                reg.path.fullySelected = el.fullySelected;
+                reg.path.selected = el.selected;
                 if( el.selected ) {
                     if( me.region === null ) {
                         me.region = reg;
@@ -1058,7 +1051,7 @@ const Microdraw = (function () {
                 /**
                  * @todo Workaround for paperjs. remove when the issue will be solver
                  */
-                var {insert} = reg.path.insert;
+                const {insert} = reg.path.insert;
                 reg.path.importJSON(me.copyRegion.path);
                 reg.path.insert = insert;
 
@@ -1178,28 +1171,22 @@ const Microdraw = (function () {
         load: function () {
             if( me.debug ) { console.log("> load"); }
 
-            var i, obj, reg;
             if( localStorage.Microdraw ) {
                 console.log("Loading data from localStorage");
-                obj = JSON.parse(localStorage.Microdraw);
-                for( i = 0; i < obj.Regions.length; i += 1 ) {
-                    reg = {};
-                    var json;
-                    reg.name = obj.Regions[i].name;
-                    reg.uid = obj.Regions[i].uid;
-                    json = obj.Regions[i].path;
-                    reg.path = new paper.Path();
+                const obj = JSON.parse(localStorage.Microdraw);
+                for( let i = 0; i < obj.Regions.length; i += 1 ) {
+                    const json = obj.Regions[i].path;
+                    const reg = {
+                      name: obj.Regions[i].name,
+                      uid: obj.Regions[i].uid,
+                      path: new paper.Path()
+                    };
                     reg.path.importJSON(json);
-                    me.newRegion({
-                        name: reg.name,
-                        uid: reg.uid,
-                        path: reg.path
-                    });
+                    me.newRegion(reg);
                 }
                 paper.view.draw();
             }
         },
-
 
         /***5
             Initialisation
@@ -1282,114 +1269,74 @@ const Microdraw = (function () {
         },
 
         /**
-         * @function initAnnotationOverlay
+         * Add annotations from the database to the ImageInfo structure and paper project
+         * @param {array} data DB object containing annotations for the current image
          * @returns {void}
          */
-        initAnnotationOverlay: function () {
-            if( me.debug ) { console.log("> initAnnotationOverlay"); }
+        _initImageRegionsAndPaper: function(data) {
+            for( let i = 0; i < data.length; i += 1 ) {
+                const reg = {
+                    name: data[i].annotation.name,
+                    uid: data[i].annotation.uid 
+                };
+                const json = data[i].annotation.path;
 
-            // do not start loading a new annotation if a previous one is still being loaded
-            if(me.annotationLoadingFlag === true) {
-                return;
-            }
+                const [type] = json;
+                if (type === 'Path') {
+                    reg.path = new paper.Path();
 
-            //console.log("new overlay size" + me.viewer.world.getItemAt(0).getContentSize());
+                    /** @todo Remove workaround once paperjs will be fixed */
+                    const {insert} = reg.path;
+                    reg.path.importJSON(json);
+                    reg.path.insert = insert;
+                } else if (type === 'CompoundPath') {
+                    reg.path = new paper.CompoundPath();
+                    reg.path.importJSON(json);
+                } else {
 
-            /*
-               Activate the paper.js project corresponding to this section. If it does not yet
-               exist, create a new canvas and associate it to the new project. Hide the previous
-               section if it exists.
-           */
+                    /** @todo catch future path types */
+                    reg.path = new paper.Path();
 
-
-            // change current section index (for loading and saving)
-            me.section = me.currentImage;
-            me.fileID = `${me.source}`;
-
-            // hide previous section
-            if( me.prevImage && paper.projects[me.ImageInfo[me.prevImage].projectID] ) {
-                paper.projects[me.ImageInfo[me.prevImage].projectID].activeLayer.visible = false;
-                paper.projects[me.ImageInfo[me.prevImage].projectID].view.element.style.display = "none";
-            }
-
-            // if this is the first time a section is accessed, create its canvas, its project,
-            // and load its regions from the database
-            if( typeof me.ImageInfo[me.currentImage].projectID === "undefined" ) {
-
-                // create canvas
-                var canvas = document.createElement("canvas");
-                canvas.classList.add("overlay");
-                canvas.id =  me.currentImage;
-                me.dom.querySelector("#paperjs-container").appendChild(canvas);
-
-                // create project
-                paper.setup(canvas);
-                me.ImageInfo[me.currentImage].projectID = paper.project.index;
-
-                // load regions from database
-                if( me.config.useDatabase ) {
-                    me.microdrawDBLoad()
-                        .then(function(data) {
-                            for( let i = 0; i < data.length; i += 1 ) {
-                                const reg = {};
-                                reg.name = data[i].annotation.name;
-                                reg.uid = data[i].annotation.uid;
-                                const json = data[i].annotation.path;
-
-                                const [type] = json;
-                                if (type === 'Path') {
-                                    reg.path = new paper.Path();
-
-                                    /** @todo Remove workaround once paperjs will be fixed */
-                                    const {insert} = reg.path;
-                                    reg.path.importJSON(json);
-                                    reg.path.insert = insert;
-                                } else if (type === 'CompoundPath') {
-                                    reg.path = new paper.CompoundPath();
-                                    reg.path.importJSON(json);
-                                } else {
-
-                                    /** @todo catch future path types */
-                                    reg.path = new paper.Path();
-
-                                    /** @todo Remove workaround once paperjs will be fixed */
-                                    const {insert} = reg.path;
-                                    reg.path.importJSON(json);
-                                    reg.path.insert = insert;
-                                }
-
-                                me.newRegion({
-                                    name: reg.name,
-                                    uid: reg.uid,
-                                    path:reg.path
-                                });
-                            }
-                            paper.view.draw();
-
-                            // on db load, do not select any region by default
-                            me.selectRegion(null);
-                            
-                            // if image has no hash, save one
-                            me.ImageInfo[me.currentImage].Hash = data.Hash ? data.Hash : me.sectionHash(me.ImageInfo[me.currentImage]);
-
-                            paper.view.draw();
-
-                            if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
-                        })
-                        .catch(function(error) {
-                            console.error('< microdrawDBLoad resolve error', error);
-                        });
+                    /** @todo Remove workaround once paperjs will be fixed */
+                    const {insert} = reg.path;
+                    reg.path.importJSON(json);
+                    reg.path.insert = insert;
                 }
 
-                if( me.debug ) { console.log('Set up new project, currentImage: ' + me.currentImage + ', ID: ' + me.ImageInfo[me.currentImage].projectID); }
+                me.newRegion(reg);
             }
+            paper.view.draw();
 
-            // activate the current section and make it visible
-            paper.projects[me.ImageInfo[me.currentImage].projectID].activate();
+            // on db load, do not select any region by default
+            me.selectRegion(null);
+            
+            // if image has no hash, save one
+            me.ImageInfo[me.currentImage].Hash = data.Hash ? data.Hash : me.sectionHash(me.ImageInfo[me.currentImage]);
+
+            paper.view.draw();
+
+            if( me.debug ) { console.log("< microdrawDBLoad resolve success. Number of regions:", me.ImageInfo[me.currentImage].Regions.length); }
+        },
+
+        _activatePaperProjectAndMakeVisible: (projectID) => {
+            paper.projects[projectID].activate();
             paper.project.activeLayer.visible = true;
             paper.project.view.element.style.display = "block";
+        },
 
-            // resize the view to the correct size
+        _hidePaperProject: (projectID) => {
+            paper.projects[projectID].activeLayer.visible = false;
+            paper.projects[projectID].view.element.style.display = "none";
+        },
+
+        _hidePreviousSection: () => {
+            if(me.prevImage && Object.prototype.hasOwnProperty.call(me.ImageInfo[me.prevImage], 'projectID')) {
+                const projectID = me.ImageInfo[me.prevImage].projectID;
+                me._hidePaperProject(projectID);
+            }
+        },
+
+        _resizePaperViewToMatchContainer: () => {
             var width = me.dom.querySelector("#paperjs-container").offsetWidth;
             var height = me.dom.querySelector("#paperjs-container").offsetHeight;
             paper.view.viewSize = [
@@ -1399,13 +1346,90 @@ const Microdraw = (function () {
             paper.settings.handleSize = 10;
             // me.updateRegionList();
             paper.view.draw();
+        },
 
-            /**
-             * @todo Commenting this line out solves the image size issues set size of the current overlay to match the size of the current image
-             */
+        _releaseAndDeleteCanvas: (canvas) => {
+            canvas.width = 0;
+            canvas.height = 0;
+            canvas.remove();
+            // delete canvas;
+            canvas = null;
+        },
 
-            //me.magicV = me.viewer.world.getItemAt(0).getContentSize().x / 100;
+        _createCanvasAndAddToPaper: () => {
+            // let prevCanvas = me.dom.querySelector("#paperjs-container canvas");
+            // if(typeof prevCanvas === "object" && prevCanvas !== null) {
+            //   me._releaseAndDeleteCanvas(prevCanvas);
+            // }
+            const canvas = document.createElement("canvas");
+            canvas.classList.add("overlay");
+            canvas.id =  me.currentImage;
+            me.dom.querySelector("#paperjs-container").appendChild(canvas);
 
+            // create project
+            paper.setup(canvas);
+        },
+
+        /**
+         * @function initAnnotationOverlay
+         * @returns {void}
+         */
+        initAnnotationOverlay: async () => {
+            if( me.debug ) { console.log("> initAnnotationOverlay"); }
+
+            // do not start loading a new annotation if a previous one is still being loaded
+            if(me.annotationLoadingFlag === true) {
+                return;
+            }
+
+            /*
+               Activate the paper.js project corresponding to this section. If it does not yet
+               exist, create a new canvas and associate it to the new project. Hide the previous
+               section if it exists.
+           */
+
+            // change current section index (for loading and saving)
+            me.section = me.currentImage;
+            me.fileID = `${me.source}`;
+
+            me._hidePreviousSection();
+
+            let regions;
+            let projectID;
+            
+            if(Object.prototype.hasOwnProperty.call(me.ImageInfo[me.currentImage], 'projectID')) {
+              ({projectID, Regions: regions} = me.ImageInfo[me.currentImage]);
+            } else {
+              // first time this section is accessed: create its canvas, project,
+              // and load its regions from the database
+              me._createCanvasAndAddToPaper();
+
+              projectID = paper.project.index;
+              me.ImageInfo[me.currentImage].projectID = projectID;
+
+              // load regions from database
+              if( me.config.useDatabase ) {
+                let data;
+                try {
+                    data = await me.microdrawDBLoad();
+                } catch(err) {
+                    throw new Error(err);
+                }
+                me._initImageRegionsAndPaper(data);
+                regions = me.ImageInfo[me.currentImage].Regions;
+              }
+
+              if( me.debug ) {
+                console.log(
+`Set up new project.
+  currentImage: ${me.currentImage}
+  ID: ${me.ImageInfo[me.currentImage].projectID}`
+                );
+              }
+            }
+
+            me._activatePaperProjectAndMakeVisible(projectID);
+            me._resizePaperViewToMatchContainer();
             me.transform();
         },
 
@@ -1799,7 +1823,8 @@ const Microdraw = (function () {
               // 1st promise in array: always load the default tools
               Promise.all([
                 me.loadScript("/lib/jquery-1.11.0.min.js"),
-                me.loadScript("/lib/paper-full-0.9.25.min.js"),
+                // me.loadScript("/lib/paper-full-0.9.25.min.js"),
+                me.loadScript("/lib/paper-full-0.12.11.min.js"),
                 me.loadScript("/lib/openseadragon/openseadragon.js")
               ])
               .then(() => {
