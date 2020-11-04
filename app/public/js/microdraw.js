@@ -238,6 +238,18 @@ const Microdraw = (function () {
         },
 
         /**
+         * Create a new path from a Paper json object
+         * @param {object} json Paper json object
+         * @returns {object} Paper path (which is automatically added to the active project)
+         */
+        _pathFromJSON: (json) => {
+          const path = new paper.Path();
+          path.importJSON(json);
+
+          return path;
+        },
+
+        /**
          * @function selectRegion
          * @desc Make the region selected
          * @param {object} reg The region to select, or null to deselect allr egions
@@ -944,14 +956,9 @@ const Microdraw = (function () {
                 const el = undo.regions[i];
                 const project = paper.projects[me.ImageInfo[undo.imageNumber].projectID];
 
-                /* Create the path and add it to a specific project.*/
-                const path = new paper.Path();
-                project.addChild(path);
+                const path = me._pathFromJSON(el.json);
 
-                /** @todo This is a workaround for an issue on paper.js. It needs to be removed when the issue will be solved */
-                const {insert} = path.insert;
-                path.importJSON(el.json);
-                path.insert = insert;
+                // remove, because paths are automatically added to the current activeLayer by default
 
                 reg = me.newRegion({
                     name: el.name,
@@ -1045,18 +1052,14 @@ const Microdraw = (function () {
                 if( me.findRegionByName(me.copyRegion.name) ) {
                     me.copyRegion.name += " Copy";
                 }
-                var reg = JSON.parse(JSON.stringify(me.copyRegion));
-                reg.path = new paper.Path();
 
-                /**
-                 * @todo Workaround for paperjs. remove when the issue will be solver
-                 */
-                const {insert} = reg.path.insert;
-                reg.path.importJSON(me.copyRegion.path);
-                reg.path.insert = insert;
+                const path = me._pathFromJSON(me.copyRegion.path);
 
+                const reg = JSON.parse(JSON.stringify(me.copyRegion));
+                reg.path = path;
                 reg.path.fullySelected = true;
-                var color = me.regionColor(reg.name);
+
+                const color = me.regionColor(reg.name);
                 reg.path.fillColor = 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.5)';
                 me.newRegion({
                     name: me.copyRegion.name,
@@ -1175,14 +1178,11 @@ const Microdraw = (function () {
                 console.log("Loading data from localStorage");
                 const obj = JSON.parse(localStorage.Microdraw);
                 for( let i = 0; i < obj.Regions.length; i += 1 ) {
-                    const json = obj.Regions[i].path;
-                    const reg = {
+                    me.newRegion({
                       name: obj.Regions[i].name,
                       uid: obj.Regions[i].uid,
-                      path: new paper.Path()
-                    };
-                    reg.path.importJSON(json);
-                    me.newRegion(reg);
+                      path: me._pathFromJSON(obj.Regions[i].path)
+                    });
                 }
                 paper.view.draw();
             }
@@ -1282,25 +1282,19 @@ const Microdraw = (function () {
                 const json = data[i].annotation.path;
 
                 const [type] = json;
-                if (type === 'Path') {
-                    reg.path = new paper.Path();
-
-                    /** @todo Remove workaround once paperjs will be fixed */
-                    const {insert} = reg.path;
-                    reg.path.importJSON(json);
-                    reg.path.insert = insert;
-                } else if (type === 'CompoundPath') {
+                switch(type) {
+                  case 'Path': {
+                    reg.path = me._pathFromJSON(json);
+                    break;
+                  }
+                  case 'CompoundPath': {
                     reg.path = new paper.CompoundPath();
                     reg.path.importJSON(json);
-                } else {
-
+                    break;
+                  }
+                  default:
                     /** @todo catch future path types */
-                    reg.path = new paper.Path();
-
-                    /** @todo Remove workaround once paperjs will be fixed */
-                    const {insert} = reg.path;
-                    reg.path.importJSON(json);
-                    reg.path.insert = insert;
+                    reg.path = me._pathFromJSON(json);
                 }
 
                 me.newRegion(reg);
