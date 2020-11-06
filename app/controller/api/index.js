@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
 const multer = require('multer');
 
 const fs = require('fs');
@@ -105,7 +104,7 @@ const saveFromGUI = async function (req, res) {
         Hash,
         annotation
     })
-    .then(() => res.status(200).send())
+    .then(() => res.status(200).send({success: true}))
     .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
 };
 

@@ -1,6 +1,39 @@
 /*global Microdraw*/
 /*global $*/
 
+const fadeOut = function (el) {
+  el.style.opacity = 1;
+
+  (function fade() {
+    if ((el.style.opacity -= 0.1) < 0) {
+      el.style.display = "none";
+    } else {
+      requestAnimationFrame(fade);
+    }
+  }());
+};
+
+const fadeIn = function (el) {
+  el.style.opacity = 0;
+  el.style.display = "block";
+
+  (function fade() {
+    var val = parseFloat(el.style.opacity);
+    if (!((val += 0.1) > 1)) {
+      el.style.opacity = val;
+      requestAnimationFrame(fade);
+    }
+  }());
+};
+
+const _dialog = function (el, message) {
+  el.innerHTML = message;
+  fadeIn(el);
+  setTimeout(() => {
+    fadeOut(el);
+  }, 2000);
+};
+
 var ToolSave = { save: (function() {
 
   const configureValuesToSave = function (sl) {
@@ -24,35 +57,76 @@ var ToolSave = { save: (function() {
     return value;
   };
 
-  const saveAnnotationToDB = function (data) {
-    Object.assign(data, { action: "save"});
-    const {slice, Hash} = data;
+  const _processOneSection = function (sl) {
+    if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
 
-    var pr = new Promise((resolve, reject) => {
-      $.ajax({
-        url: '/api',
-        type: "POST",
-        data: data,
-        success: (result) => {
-          console.log("< microdrawDBSave. Successfully saved regions:",
-            Microdraw.ImageInfo[data.slice].Regions.length,
-            "section: " + slice.toString(),
-            "response:",
-            result
-          );
-          // update hash
-          Microdraw.ImageInfo[slice].Hash = Hash;
-          resolve("section " + slice);
-        },
-        error: (jqXHR, textStatus, err) => {
-          console.log("< microdrawDBSave. ERROR: " + textStatus + " " + err, "section: " + slice.toString());
-          reject(err);
-        }
-      });
-    })
-      .catch(console.log);
+      return;
+    }
+
+    // configure value to be saved
+    const value = configureValuesToSave(sl);
+
+    // check if the section annotations have changed since loaded by computing a hash
+    const h = Microdraw.hash(JSON.stringify(value)).toString(16);
+    const section = Microdraw.ImageInfo[sl];
+
+    // if the section hash is undefined, this section has not yet been loaded.
+    // Do not save anything for this section
+    if( typeof section.Hash === "undefined" || h === section.Hash ) {
+
+      return;
+    }
+
+    value.Hash = h;
+
+    const pr = new Promise(async (resolve, reject) => {
+      let res, req;
+      try {
+        req = await fetch('/api', {
+          method: "POST",
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            action: 'save',
+            source: Microdraw.source,
+            slice: sl,
+            project: Microdraw.project,
+            Hash: h,
+            annotation: JSON.stringify(value)
+          })
+        });
+        res = await req.json();
+        console.log("< microdrawDBSave. Successfully saved regions:",
+          Microdraw.ImageInfo[sl].Regions.length,
+          "section: " + sl.toString(),
+          "response:", res
+        );
+        // update hash
+        Microdraw.ImageInfo[sl].Hash = h;
+        resolve(sl);
+      } catch(err) {
+        reject(err);
+      }
+    });
 
     return pr;
+  };
+
+  const _successFeedback = function (savedSections) {
+    const el = Microdraw.dom.querySelector('#saveDialog');
+    let message = "";
+
+    if(savedSections.length === 0) {
+      message = "No changes to save";
+    } else {
+      message = "Saving sections: " + savedSections.join(" ");
+    }
+    _dialog(el, message);
+  };
+
+  const _errorFeedback = function (err) {
+    const el = Microdraw.dom.querySelector('#saveDialog');
+    _dialog(el, "Unable to save. Try again later.");
+    console.log(err);
   };
 
   /**
@@ -60,67 +134,33 @@ var ToolSave = { save: (function() {
      * @desc Save SVG overlay to microdrawDB
      * @returns {void}
      */
-  var microdrawDBSave = function microdrawDBSave() {
+  var microdrawDBSave = function () {
     if( Microdraw.debug ) {
       console.log("> save promise");
     }
 
     var promiseArray = [];
-    var savedSections = "Saving sections: ";
+    var savedSections = [];
 
     // eslint-disable-next-line max-statements
     Object.keys(Microdraw.ImageInfo).forEach((sl) => {
-      if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
-        return;
+      const pr = _processOneSection(sl);
+      if(pr) {
+        console.log("pushing POST promise");
+        promiseArray.push(pr);
+        savedSections.push(sl);
       }
-
-      // configure value to be saved
-      const value = configureValuesToSave(sl);
-
-      // check if the section annotations have changed since loaded by computing a hash
-      const h = Microdraw.hash(JSON.stringify(value)).toString(16);
-      const section = Microdraw.ImageInfo[sl];
-
-      if( Microdraw.debug > 1 ) {
-        console.log("hash:", h, "original hash:", section.Hash);
-      }
-
-      // if the section hash is undefined, this section has not yet been loaded.
-      // Do not save anything for this section
-      if( typeof section.Hash === "undefined" || h === section.Hash ) {
-        if(Microdraw.debug > 1) {
-          console.log(`sl ${sl}`, "No change, no save");
-        }
-
-        return;
-      }
-
-      value.Hash = h;
-      savedSections += sl.toString() + ' ';
-
-      // post data to database
-      promiseArray.push(saveAnnotationToDB({
-        source: Microdraw.source,
-        slice: sl,
-        project: Microdraw.project,
-        Hash: h,
-        annotation: JSON.stringify(value)
-      }));
     });
 
-    Promise.all(promiseArray).then((values) => {
-      console.log(values);
-    })
-      .catch(console.log);
+    console.log(promiseArray);
 
-    //show dialog box with timeout
-    $('#saveDialog')
-      .html(savedSections)
-      .fadeIn();
-    setTimeout(function() {
-      $("#saveDialog")
-        .fadeOut(500);
-    }, 2000);
+    Promise.all(promiseArray)
+      .then(() => {
+        _successFeedback(savedSections);
+      })
+      .catch((err) => {
+        _errorFeedback(err);
+      });
   };
 
   var tool = {
