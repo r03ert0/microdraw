@@ -17,8 +17,8 @@ const newPath = './test/e2e/screenshots/';
 const refPath = './test/reference-screenshots/';
 const width = 800;
 const height = 600;
+const pct1 = 0.01 * width * height;
 const pct5 = 0.05 * width * height;
-
 
 async function delay(delayTimeout) {
   await new Promise((resolve) => {
@@ -105,5 +105,6 @@ module.exports = {
   refPath,
   width,
   height,
+  pct1,
   pct5
 }
