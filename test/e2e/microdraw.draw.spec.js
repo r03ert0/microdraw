@@ -128,7 +128,7 @@ describe('Editing tools: draw polygons and curves', async () => {
     const filename = "draw.07.cat-draw-addPoint.png";
     await page.screenshot({path: U.newPath + filename}) ;
     const diff = U.compareImages(U.newPath + filename, U.refPath + filename);
-    assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
+    assert(diff<U.pct1, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
   it('removes a point', async () => {
@@ -144,7 +144,7 @@ describe('Editing tools: draw polygons and curves', async () => {
     const filename = "draw.08.cat-draw-deletePoint.png";
     await page.screenshot({path: U.newPath + filename}) ;
     const diff = U.compareImages(U.newPath + filename, U.refPath + filename);
-    assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
+    assert(diff<U.pct1, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
   it('closes normally', async () => {
