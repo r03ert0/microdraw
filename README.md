@@ -18,7 +18,7 @@ as of 2018-07-09
 * install nodejs
 * install mongo
 
-* checkout the repository `git clone https://github.com/r03ert0/microdraw.git`
+* checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
 * `cd microdraw`
 * install the project
   * cd into microdraw
@@ -30,7 +30,7 @@ as of 2018-07-09
 * test data can be viewed at http://localhost:3000/data?source=/test_data/cat.json
 
 #### with docker
-* checkout the repository `git clone https://github.com/r03ert0/microdraw.git`
+* checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
 * `cd microdraw/bin`
 * `docker-compose up`
 * open http://localhost:3000 to see MicroDraws landing page and click any of the data links provided
