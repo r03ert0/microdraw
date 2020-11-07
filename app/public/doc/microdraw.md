@@ -19,9 +19,9 @@ MicroDraw has a rich set of annotation tools.
 
 ![](/img/home.svg =17x17) Home resets the image zoom and translation to fit the app window.
 
-![](/img/zoomin.svg =17x17) Zoom into the image conserving the centre point.
+![](/img/zoomIn.svg =17x17) Zoom into the image conserving the centre point.
 
-![](/img/zoomout.svg =17x17) Zoom out of the image conserving the centre point.
+![](/img/zoomOut.svg =17x17) Zoom out of the image conserving the centre point.
 
 ![](/img/navigate.svg =17x17) Navigation: Click and drag to translate the image, click on a point to zoom in on it,  
 shift-click to zoom out. On a tablet, translation and zooming can be done using pinching.
@@ -35,13 +35,13 @@ region. Clicking on a part of the image where there is no region drawn, deselect
 
 ![](/img/drawLine.svg =17x17) Draw a line: Click and drag to draw the vectorial path that defines a line, for example separating 2 cytoarchitectonic regions.
 
-![](/img/addpoint.svg =17x17) Add point: Click on a region's path to add a new anchor point to it.
+![](/img/addPoint.svg =17x17) Add point: Click on a region's path to add a new anchor point to it.
 
-![](/img/deletepoint.svg =17x17) Delete point: Click on an anchor point to delete it.
+![](/img/deletePoint.svg =17x17) Delete point: Click on an anchor point to delete it.
 
-![](/img/addregion.svg =17x17) Union: Merge 2 overlapping regions into one single region. First, select a region using the select tool, then click the union tool, and then click on a second, overlapping region to join it with the first one.
+![](/img/addRegion.svg =17x17) Union: Merge 2 overlapping regions into one single region. First, select a region using the select tool, then click the union tool, and then click on a second, overlapping region to join it with the first one.
 
-![](/img/subtractregion.svg =17x17) Difference: Subtract one region from another region. First, select one region, then click the difference tool, and then click into a second region to delete the overlapping part from the first region.
+![](/img/subtractRegion.svg =17x17) Difference: Subtract one region from another region. First, select one region, then click the difference tool, and then click into a second region to delete the overlapping part from the first region.
 
 ![](/img/splitRegion.svg =17x17) Division: Split a region based on an overlapping second region. First, select one region, then select the division tool, and then click into the second region to split the first one into 2 parts along the overlapping path. The resulting regions will be split along a perfectly matching contour.
 
