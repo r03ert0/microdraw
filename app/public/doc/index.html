@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 
 <head>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" media="all">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500" media="all">
     <style>
     body {
         margin: 0 auto;
         margin-left: 310px;
         max-width: 50em;
         font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+        font-weight: 300;
         line-height: 1.5;
-        color: #555;
+        color: #fff;
+        background: #222;
         padding: 4em 1em;
+        text-indent: -2em;
     }
     #wrapperToc {
     	position: fixed;
@@ -27,27 +30,37 @@
     	overflow-y: scroll;
     }
 
-    .a {
-    	color: #000000;
+    a {
+    	color: lightgrey;
     	text-decoration: none;
     }
 
     .link {
-    	color: #000000;
+    	color: #ffffff;
     	text-decoration: none;
     }
 
-    h1,h2,strong {
-        color: #333;
+    img {
+      padding-right: 8px;
     }
 
-    h2 {
+    img #toolset {
+      padding-left: 2em;
+    }
+
+    h1,h2,strong {
+        color: #ffffff;
+        font-weight: 300;
+    }
+
+    h3 {
         margin-top: 1em;
         padding-top: 1em;
+        font-weight: 100;
     }
     code,
     pre {
-      background: #eee;
+      background: #333;
     }
 
     code {
@@ -65,7 +78,7 @@
     <script src="https://cdn.rawgit.com/showdownjs/showdown/1.4.3/dist/showdown.min.js"></script>
     <script>
     var req = new XMLHttpRequest();
-    req.open('GET', 'brainbox.md');
+    req.open('GET', 'microdraw.md');
     req.onreadystatechange = function() {
         var converter = new showdown.Converter();
         var text      = this.responseText;
