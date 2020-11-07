@@ -89,7 +89,7 @@ const Microdraw = (function () {
         return result;
       },
 
-      sectionHash: function (section) {
+      sectionValueForHashing: function (section) {
         const value = {
           Regions: [],
           RegionsToRemove: []
@@ -107,8 +107,13 @@ const Microdraw = (function () {
           value.RegionsToRemove.push(uid);
         }
 
-        const hash = me.hash(JSON.stringify(section)).toString(16);
-    
+        return value;
+      },
+
+      sectionHash: function (section) {
+        const value = me.sectionValueForHashing(section);
+        const hash = me.hash(JSON.stringify(value)).toString(16);
+  
         return hash;
       },
 

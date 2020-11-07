@@ -26,36 +26,25 @@ const fadeIn = function (el) {
   }());
 };
 
-const _dialog = function (el, message) {
+const _dialog = async ({el, message, doFadeOut=true, delay=2000, background="#333"}) => {
+  if(typeof doFadeOut === "undefined") {
+    doFadeOut = true;
+  }
+
   el.innerHTML = message;
+  el.style.background = background;
   fadeIn(el);
-  setTimeout(() => {
-    fadeOut(el);
-  }, 2000);
+  await new Promise((resolve) => {
+    setTimeout(() => {
+      if(doFadeOut) {
+        fadeOut(el);
+      }
+      resolve();
+    }, delay);  
+  });
 };
 
 var ToolSave = { save: (function() {
-
-  const configureValuesToSave = function (sl) {
-    var section = Microdraw.ImageInfo[sl];
-    var value = {};
-    value.Regions = [];
-    value.RegionsToRemove = [];
-
-    for(const reg of section.Regions) {
-      value.Regions.push({
-        path: JSON.parse(reg.path.exportJSON()),
-        name: reg.name,
-        uid: reg.uid
-      });
-    }
-
-    for( const uid of section.RegionsToRemove ) {
-      value.RegionsToRemove.push(uid);
-    }
-
-    return value;
-  };
 
   const _processOneSection = function (sl) {
     if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
@@ -64,12 +53,11 @@ var ToolSave = { save: (function() {
     }
 
     // configure value to be saved
-    const value = configureValuesToSave(sl);
+    var section = Microdraw.ImageInfo[sl];
+    const value = Microdraw.sectionValueForHashing(section);
+    const h = Microdraw.hash(JSON.stringify(value)).toString(16);
 
     // check if the section annotations have changed since loaded by computing a hash
-    const h = Microdraw.hash(JSON.stringify(value)).toString(16);
-    const section = Microdraw.ImageInfo[sl];
-
     // if the section hash is undefined, this section has not yet been loaded.
     // Do not save anything for this section
     if( typeof section.Hash === "undefined" || h === section.Hash ) {
@@ -95,13 +83,10 @@ var ToolSave = { save: (function() {
           })
         });
         res = await req.json();
-        console.log("< microdrawDBSave. Successfully saved regions:",
-          Microdraw.ImageInfo[sl].Regions.length,
-          "section: " + sl.toString(),
-          "response:", res
-        );
+
         // update hash
-        Microdraw.ImageInfo[sl].Hash = h;
+        section.Hash = h;
+
         resolve(sl);
       } catch(err) {
         reject(err);
@@ -111,21 +96,27 @@ var ToolSave = { save: (function() {
     return pr;
   };
 
-  const _successFeedback = function (savedSections) {
+  const _savingFeedback = async function (savedSections) {
     const el = Microdraw.dom.querySelector('#saveDialog');
     let message = "";
 
     if(savedSections.length === 0) {
       message = "No changes to save";
+      await _dialog({el, message});
     } else {
       message = "Saving sections: " + savedSections.join(" ");
+      await _dialog({el, message, doFadeOut: false});
     }
-    _dialog(el, message);
+  };
+  
+  const _successFeedback = function (savedSections) {
+    const el = Microdraw.dom.querySelector('#saveDialog');
+    _dialog({el, message: "Successfully saved", delay: 1000, background: "#2a3"});
   };
 
   const _errorFeedback = function (err) {
     const el = Microdraw.dom.querySelector('#saveDialog');
-    _dialog(el, "Unable to save. Try again later.");
+    _dialog({el, message: "Unable to save, try again later", background: "#d34"});
     console.log(err);
   };
 
@@ -134,7 +125,7 @@ var ToolSave = { save: (function() {
      * @desc Save SVG overlay to microdrawDB
      * @returns {void}
      */
-  var microdrawDBSave = function () {
+  var microdrawDBSave = async function () {
     if( Microdraw.debug ) {
       console.log("> save promise");
     }
@@ -152,15 +143,17 @@ var ToolSave = { save: (function() {
       }
     });
 
-    console.log(promiseArray);
+    await _savingFeedback(savedSections);
 
-    Promise.all(promiseArray)
-      .then(() => {
-        _successFeedback(savedSections);
-      })
-      .catch((err) => {
-        _errorFeedback(err);
-      });
+    if(promiseArray.length > 0) {
+      Promise.all(promiseArray)
+        .then(() => {
+          _successFeedback();
+        })
+        .catch((err) => {
+          _errorFeedback(err);
+        });
+    }
   };
 
   var tool = {
