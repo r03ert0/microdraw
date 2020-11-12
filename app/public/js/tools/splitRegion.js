@@ -6,7 +6,7 @@ var ToolSplitRegion = {splitRegion: (function() {
 
     _findHitItem: function (point) {
       const hitResult = paper.project.hitTest(point, {
-        tolerance: Microdraw.tolerance,
+        tolerance : Microdraw.tolerance/paper.view.zoom,
         stroke: true,
         segments: true,
         fill: true,

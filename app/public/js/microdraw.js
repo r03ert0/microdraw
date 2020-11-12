@@ -38,7 +38,7 @@ const Microdraw = (function () {
       config: {},                  // App configuration object
       isMac: navigator.platform.match(/Mac/i),
       isIOS: navigator.platform.match(/(iPhone|iPod|iPad)/i),
-      tolerance: 3,
+      tolerance: 4, // tolerance for hit test. This value is divided by paper.view.zoom to make it work across resolutions
       counter: 1,
       tap: false,
       currentColorRegion: null,

@@ -11,7 +11,7 @@ var ToolDeletePoint = { deletePoint : (function() {
          */
     mouseDown : function mouseDown(point) {
       var hitResult = paper.project.hitTest(point, {
-        tolerance : Microdraw.tolerance,
+        tolerance : Microdraw.tolerance/paper.view.zoom,
         stroke : true,
         segments : true,
         fill : true,

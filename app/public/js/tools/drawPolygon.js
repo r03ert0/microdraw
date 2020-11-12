@@ -68,7 +68,10 @@ var ToolDrawPolygon = {drawPolygon: (function() {
 
       } else {
         // test if user is closing the polygon
-        const hitResult = paper.project.hitTest(point, {tolerance:Microdraw.tolerance, segments:true});
+        const hitResult = paper.project.hitTest(point, {
+          tolerance : Microdraw.tolerance/paper.view.zoom,
+          segments:true
+        });
         if( hitResult
                     && hitResult.item === Microdraw.region.path
                     && hitResult.segment.point === Microdraw.region.path.segments[0].point ) {
