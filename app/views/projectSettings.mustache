@@ -2,18 +2,18 @@
 <html>
 
 <head>
-    {{> partials/header }}
-    <link rel="stylesheet" type="text/css" href="/css/ui.css" />
-    <link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:100' type='text/css' />
-    <link rel="stylesheet" type="text/css" href="/css/projectSettings-style.css" />
-    <link rel="stylesheet" type="text/css" href="/css/access-style.css" />
-    <style>
-        input, textarea {
-            background: none;
-            border: none;
-            width: 100%;
-        }
-    </style>
+  {{> partials/header }}
+  <link rel="stylesheet" type="text/css" href="/css/ui.css" />
+  <link rel="stylesheet" href='https://fonts.googleapis.com/css?family=Roboto:100' type='text/css' />
+  <link rel="stylesheet" type="text/css" href="/css/projectSettings-style.css" />
+  <link rel="stylesheet" type="text/css" href="/css/access-style.css" />
+  <style>
+    input, textarea {
+      background: none;
+      border: none;
+      width: 100%;
+    }
+  </style>
 </head>
 
 <body>
@@ -22,172 +22,172 @@
     
     <!-- Header (fixed height) -->
     <div style="flex:0 0 64px">
-        <!-- Top-right menu bar -->
-        <div id="menu">
-            <img id="addProject" class="button" title="add project" src='/img/plus.svg'/>
-            <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
-            <a href="https://github.com/neuroanatomy/microdraw/issues/new" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
-            <a href="https://github.com/neuroanatomy" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
-            <div id="MyLogin">
-                <span>{{{login}}}</span>
-            </div>
+      <!-- Top-right menu bar -->
+      <div id="menu">
+        <img id="addProject" class="button" title="add project" src='/img/plus.svg'/>
+        <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
+        <a href="https://github.com/neuroanatomy/microdraw/issues/new" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
+        <a href="https://github.com/neuroanatomy" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
+        <div id="MyLogin">
+          <span>{{{login}}}</span>
         </div>
+      </div>
 
-        <!-- Small left-top logo -->
-        <div style="display:inline-block;margin:10px">
-            <a href='/' style="text-decoration:none">
-                <img style='height:56px;vertical-align:middle' src='/img/microdraw-white.svg'/>
-            </a>
-            <input v-model="projectInfo.name" style="width:auto;text-align:left;font-family:Roboto,sans-serif;font-size:36px;font-weight:100;vertical-align:middle" class="noEmptyWithPlaceholder" placeholder="Enter a project name">
-        </div>
+      <!-- Small left-top logo -->
+      <div style="display:inline-block;margin:10px">
+        <a href='/' style="text-decoration:none">
+          <img style='height:56px;vertical-align:middle' src='/img/microdraw-white.svg'/>
+        </a>
+        <input v-model="projectInfo.name" style="width:auto;text-align:left;font-family:Roboto,sans-serif;font-size:36px;font-weight:100;vertical-align:middle" class="noEmptyWithPlaceholder" placeholder="Enter a project name">
+      </div>
     </div>
     
     <!-- Content (variable height) -->
     <div id="content" style="flex:1 0 auto;justify-content:center;position:relative">
     
-        <!-- to center -->
-        <div id="centeringDiv">
+      <!-- to center -->
+      <div id="centeringDiv">
 
-                <div id="projImage">
-                    <a href='/project/{{projectShortname}}'><svg id="jdenticon" width="100%" height="100%"></svg></a>
-                </div>
-
-                <div id="projDescription">
-                    <a href='/project/{{projectShortname}}'><h1>{{projectShortname}}</h1></a>
-                    <input v-model="projectInfo.url" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project website">
-                    <p>by <a href='/user/{{owner}}'>{{owner}}</a></p>
-                    <textarea v-model="projectInfo.description" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project description"></textarea>
-                    <p><span id="numCollaborators">[[projectInfo.collaborators.list.length]]</span> Collaborators</p>
-                    <p><span id="numAnnotations">[[projectInfo.annotations.list.length]]</span> Annotations</p>
-                    <p><span id="numFiles">[[projectInfo.files.list.length]]</span> Data Files</p>
-
-                    <!-- Save or Cancel -->
-                    <div style="display:block;margin:0 auto;width:200px">
-                        <h2 id="saveChanges" class="pushButton">Save Changes</h2>
-                        <h2 id="deleteProject" class="pushButton">Delete Project</h2>
-                        <h2 id="goToProject" class="pushButton">Go to Project</h2>
-                        <p id="saveFeedback"></p>
-                    </div>
-                </div>
-                
-                <div id="projTable">
-
-                            <!-- Tab Content 1: Access -->
-                            <h2 class="selection-header">Access</h2>
-                            <table id="access" class="tabContent" style="padding:10px;display:table">
-                                <thead>
-                                    <tr>
-                                        <th>Nickname</th>
-                                        <th>Name</th>
-                                        <th>Collaborators</th>
-                                        <th>Annotations</th>
-                                        <th>Data Files</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="val in projectInfo.collaborators.list">
-                                        <td>
-                                            <autocomplete-input v-model="val.userID" @change="updateName(val, event)" class="noEmptyWithPlaceholder" placeholder="Enter user ID"></autocomplete-input>
-                                            <!--<input v-model="val.userID" class="noEmptyWithPlaceholder" placeholder="User ID">-->
-                                        </td>
-                                        <td>
-                                            <input v-model="val.name" class="noEmptyWithPlaceholder" placeholder="User Name">
-                                        </td>
-                                        <td>
-                                            <div class='access' :data-level='["none","view","edit","add","remove"].indexOf(val.access.collaborators)'>
-                                                <span class='view' title='view collaborators'></span>
-                                                <span class='edit' title='edit collaborators'></span>
-                                                <span class='add' title='add collaborators'></span>
-                                                <span class='remove' title='remove collaborators'></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class='access' :data-level='["none","view","edit","add","remove"].indexOf(val.access.annotations)'>
-                                                <span class='view' title='view collaborators'></span>
-                                                <span class='edit' title='edit collaborators'></span>
-                                                <span class='add' title='add collaborators'></span>
-                                                <span class='remove' title='remove collaborators'></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class='access' :data-level='["none","view","edit","add","remove"].indexOf(val.access.files)'>
-                                                <span class='view' title='view collaborators'></span>
-                                                <span class='edit' title='edit collaborators'></span>
-                                                <span class='add' title='add collaborators'></span>
-                                                <span class='remove' title='remove collaborators'></span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div style="text-align:right">
-                                <img id="addCollaborator" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/plus-square.svg' title='add collaborator'/>
-                                <img id="removeCollaborator" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/minus-square.svg' title='remove collaborator'/>
-                            </div>
-                            
-                            
-                            <!-- Tab Content 2: Annotations -->
-                            <h2 class="selection-header">Annotations</h2>
-                            <table id="annotations" class="tabContent" style="padding:10px">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Type</th>
-                                        <th>Value</th>
-                                        <th>Display</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="val in projectInfo.annotations.list">
-                                        <td>
-                                            <input v-model="val.name" contentEditable=true class='noEmptyWithPlaceholder' placeholder="Enter annotation name">
-                                        </td>
-                                        <td>
-                                            <select class='mui-select' :selectedIndex="annotationType.indexOf(val.type)">
-                                                <option v-for="opt in annotationType">[[opt]]</option>
-                                            </select>
-                                        </td>
-                                        <td contentEditable=true class='noEmpty'>
-                                            <select class='mui-select' :selectedIndex="labelSets.indexOf(val.values)">
-                                                <option v-for="opt in labelSets">[[opt]]</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <div class='display' :data-check='val.display'></div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div style="text-align:right">
-                                <img id="addAnnotation" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/plus-square.svg' title='add annotation'/>
-                                <img id="removeAnnotation" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/minus-square.svg' title='remove annotation'/>
-                            </div>
-
-                            <!-- Tab Content 3: Data -->
-                            <h2 class="selection-header">Data Files</h2>
-                            <table id="files" class="tabContent" style="padding:10px">
-                                <thead>
-                                    <tr>
-                                        <th>URL</th>
-                                        <th>Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="val in projectInfo.files.list">
-                                        <td><input v-model="val.source" contentEditable=true class='noEmptyWithPlaceholder' placeholder="Enter data file URL"></td>
-                                        <td><input v-model="val.name" contentEditable=true class='noEmptyWithPlaceholder' placeholder="Enter data file name"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <div style="text-align:right">
-                                <img id="importFiles" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/upload-square.svg' title='upload csv'/>
-                                <img id="exportFiles" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/download-square.svg' title='download csv'/>
-                                <img id="addFile" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/plus-square.svg' title='add new url entry'/>
-                                <img id="removeFile" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/minus-square.svg' title='remove url entry'/>
-                            </div>
-                </div>
+        <div id="projImage">
+          <a href='/project/{{projectShortname}}'><svg id="jdenticon" width="100%" height="100%"></svg></a>
         </div>
-        <!-- end of centering div -->
+
+        <div id="projDescription">
+          <a href='/project/{{projectShortname}}'><h1>{{projectShortname}}</h1></a>
+          <input v-model="projectInfo.url" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project website">
+          <p>by <a href='/user/{{owner}}'>{{owner}}</a></p>
+          <textarea v-model="projectInfo.description" style="text-align:center" class="noEmptyWithPlaceholder" placeholder="Enter a project description"></textarea>
+          <p><span id="numCollaborators">[[projectInfo.collaborators.list.length]]</span> Collaborators</p>
+          <p><span id="numAnnotations">[[projectInfo.annotations.list.length]]</span> Annotations</p>
+          <p><span id="numFiles">[[projectInfo.files.list.length]]</span> Data Files</p>
+
+          <!-- Save or Cancel -->
+          <div style="display:block;margin:0 auto;width:200px">
+            <h2 id="saveChanges" class="pushButton">Save Changes</h2>
+            <h2 id="deleteProject" class="pushButton">Delete Project</h2>
+            <h2 id="goToProject" class="pushButton">Go to Project</h2>
+            <p id="saveFeedback"></p>
+          </div>
+        </div>
+        
+        <div id="projTable">
+
+          <!-- Tab Content 1: Access -->
+          <h2 class="selection-header">Access</h2>
+          <table id="access" class="tabContent" style="padding:10px;display:table">
+              <thead>
+                <tr>
+                  <th>Nickname</th>
+                  <th>Name</th>
+                  <th>Collaborators</th>
+                  <th>Annotations</th>
+                  <th>Data Files</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="val in projectInfo.collaborators.list">
+                  <td>
+                    <autocomplete-input v-model="val.userID" @change="updateName(val, event)" class="noEmptyWithPlaceholder" placeholder="Enter user ID"></autocomplete-input>
+                    <!--<input v-model="val.userID" class="noEmptyWithPlaceholder" placeholder="User ID">-->
+                  </td>
+                  <td>
+                    <input v-model="val.name" class="noEmptyWithPlaceholder" placeholder="User Name">
+                  </td>
+                  <td>
+                    <div class='access' :data-level='["none","view","edit","add","remove"].indexOf(val.access.collaborators)'>
+                      <span class='view' title='view collaborators'></span>
+                      <span class='edit' title='edit collaborators'></span>
+                      <span class='add' title='add collaborators'></span>
+                      <span class='remove' title='remove collaborators'></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class='access' :data-level='["none","view","edit","add","remove"].indexOf(val.access.annotations)'>
+                      <span class='view' title='view collaborators'></span>
+                      <span class='edit' title='edit collaborators'></span>
+                      <span class='add' title='add collaborators'></span>
+                      <span class='remove' title='remove collaborators'></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class='access' :data-level='["none","view","edit","add","remove"].indexOf(val.access.files)'>
+                      <span class='view' title='view collaborators'></span>
+                      <span class='edit' title='edit collaborators'></span>
+                      <span class='add' title='add collaborators'></span>
+                      <span class='remove' title='remove collaborators'></span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+          </table>
+          <div style="text-align:right">
+            <img id="addCollaborator" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/plus-square.svg' title='add collaborator'/>
+            <img id="removeCollaborator" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/minus-square.svg' title='remove collaborator'/>
+          </div>
+          
+          
+          <!-- Tab Content 2: Annotations -->
+          <h2 class="selection-header">Annotations</h2>
+          <table id="annotations" class="tabContent" style="padding:10px">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Display</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="val in projectInfo.annotations.list">
+                  <td>
+                    <input v-model="val.name" contentEditable=true class='noEmptyWithPlaceholder' placeholder="Enter annotation name">
+                  </td>
+                  <td>
+                    <select class='mui-select' :selectedIndex="annotationType.indexOf(val.type)">
+                      <option v-for="opt in annotationType">[[opt]]</option>
+                    </select>
+                  </td>
+                  <td contentEditable=true class='noEmpty'>
+                    <select class='mui-select' :selectedIndex="labelSets.indexOf(val.values)">
+                      <option v-for="opt in labelSets">[[opt]]</option>
+                    </select>
+                  </td>
+                  <td>
+                    <div class='display' :data-check='val.display'></div>
+                  </td>
+                </tr>
+              </tbody>
+          </table>
+          <div style="text-align:right">
+            <img id="addAnnotation" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/plus-square.svg' title='add annotation'/>
+            <img id="removeAnnotation" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/minus-square.svg' title='remove annotation'/>
+          </div>
+
+          <!-- Tab Content 3: Data -->
+          <h2 class="selection-header">Data Files</h2>
+          <table id="files" class="tabContent" style="padding:10px">
+            <thead>
+              <tr>
+                <th>URL</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="val in projectInfo.files.list">
+                <td><input v-model="val.source" contentEditable=true class='noEmptyWithPlaceholder' placeholder="Enter data file URL"></td>
+                <td><input v-model="val.name" contentEditable=true class='noEmptyWithPlaceholder' placeholder="Enter data file name"></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="text-align:right">
+            <img id="importFiles" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/upload-square.svg' title='upload csv'/>
+            <img id="exportFiles" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/download-square.svg' title='download csv'/>
+            <img id="addFile" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/plus-square.svg' title='add new url entry'/>
+            <img id="removeFile" class="button" style="width:20px; height:20px; margin:8 2 0 0" src='/img/minus-square.svg' title='remove url entry'/>
+          </div>
+        </div>
+      </div>
+      <!-- end of centering div -->
 
     </div>
     <!-- End Content -->
@@ -198,38 +198,39 @@
 
     <!-- Footer (fixed height) -->
     <div style="flex:0 0 100px;background-color:#000">
-        <p style="width:100%;font-size:small;text-align:center"> 
-            <a target="_blank" href="https://neuroanatomy.github.io">
-                <img src="/img/naat-bw.svg" style="width:28px;height:28px;margin-right:4px;display:inline-block;vertical-align:middle"/></a>
-            <a target="_blank" href="https://neuroanatomy.github.io" class="linkNoULine">
-                groupe de neuroanatomie appliquée et théorique
-            </a>
-        </p>
+      <p style="width:100%;font-size:small;text-align:center"> 
+        <a target="_blank" href="https://neuroanatomy.github.io">
+          <img src="/img/naat-bw.svg" style="width:28px;height:28px;margin-right:4px;display:inline-block;vertical-align:middle"/></a>
+        <a target="_blank" href="https://neuroanatomy.github.io" class="linkNoULine">
+          groupe de neuroanatomie appliquée et théorique
+        </a>
+      </p>
     </div>
     
     <!-- Import files -->
     <!-- black overlay -->
     <div id='importFilesDialog' style='display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.7);z-index:100'>
-        <!-- centered content -->
-        <div style='position:relative;padding:1rem;margin:2rem auto;background-color:#333;max-width:600px;text-align:center;border:1px solid #777;height:calc(100% - 4rem);box-sizing:border-box'>
-            <!-- overflow: scroll -->
-            <div style='display:inline-block;max-width:600px;padding:2rem;overflow:scroll;max-height:calc(100% - 10rem)'>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>URL</th>
-                            <th>Name</th>
-                        </tr>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-            <!-- Import/Cancel buttons -->
-            <div style="display:block;margin:0 auto;max-width:200px">
-                <h2 id="importFilesDialogOk" class="pushButton">Import</h2>
-                <h2 id="importFilesDialogCancel" class="pushButton">Cancel</h2>
-            </div>
+      <!-- centered content -->
+      <div style='position:relative;padding:1rem;margin:2rem auto;background-color:#333;max-width:600px;text-align:center;border:1px solid #777;height:calc(100% - 4rem);box-sizing:border-box'>
+        <!-- overflow: scroll -->
+        <div style='display:inline-block;max-width:600px;padding:2rem;overflow:scroll;max-height:calc(100% - 10rem)'>
+          <table>
+            <thead>
+              <tr>
+                <th>URL</th>
+                <th>Name</th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
         </div>
+        <!-- Import/Cancel buttons -->
+        <div style="display:block;margin:0 auto;max-width:200px">
+          <h2 id="importFilesDialogOk" class="pushButton">Import</h2>
+          <h2 id="importFilesDialogCancel" class="pushButton">Cancel</h2>
+        </div>
+      </div>
     </div>
     
 </div>
@@ -254,17 +255,17 @@ var projectShortname = "{{{projectShortname}}}";
 -->
 
 <style>
-    .awesomplete > ul {
-        background: #222
-    }
-    .awesomplete > ul:before {
-        background: none;
-        border: none;
-    }
-    .awesomplete mark,
-    .awesomplete li[aria-selected="true"] mark {
-        background: #555;
-    }
+  .awesomplete > ul {
+    background: #222
+  }
+  .awesomplete > ul:before {
+    background: none;
+    border: none;
+  }
+  .awesomplete mark,
+  .awesomplete li[aria-selected="true"] mark {
+    background: #555;
+  }
 </style>
 
 <script>
@@ -274,33 +275,34 @@ Vue.component('autocomplete-input', {
   mounted () {
     let self = this;
     this.$nextTick(() => {
-        const input = self.$refs.awesomplete;
-        const aw = new Awesomplete(input, { minChars: 3, list: this.list });
-        input.addEventListener('input', (e) => {
-            if(input.value.length>=3) {
-                const xhr = new XMLHttpRequest();
-                xhr.onload = function () {
-                    const res = JSON.parse(xhr.responseText);
-                    if(xhr.status >= 200 && xhr.status < 300 && typeof res !== 'undefined') {
-                        aw.list = res.map((v)=>v.username);
-                        aw.evaluate();
-                    }
-                };
-                xhr.open('GET', `/search/json/users?q=${input.value}`);
-                xhr.send();
+      const input = self.$refs.awesomplete;
+      const aw = new Awesomplete(input, { minChars: 3, list: this.list });
+      input.addEventListener('input', (e) => {
+        console.log("value", input.value);
+        if(input.value.length>=3) {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function () {
+            const res = JSON.parse(xhr.responseText);
+            if(xhr.status >= 200 && xhr.status < 300 && typeof res !== 'undefined') {
+              aw.list = res.map((v)=>v.username);
+              aw.evaluate();
             }
-        });
-        input.addEventListener('awesomplete-select', (e) => {
-            const self = this;
-            this.$emit('input', e.text.value);
-            const xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-                const res = JSON.parse(xhr.responseText);
-                self.$emit('change', e);
-            };
-            xhr.open('GET', `/user/json/${e.text.value}`);
-            xhr.send();
-        })
+          };
+          xhr.open('GET', `/search/json/users?q=${input.value}`);
+          xhr.send();
+        }
+      });
+      input.addEventListener('awesomplete-select', (e) => {
+        const self = this;
+        this.$emit('input', e.text.value);
+        const xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          const res = JSON.parse(xhr.responseText);
+          self.$emit('change', e);
+        };
+        xhr.open('GET', `/user/json/${e.text.value}`);
+        xhr.send();
+      })
     })
   },
   template: `<input ref="awesomplete" v-bind:value="value" v-on:input="$emit('input',$event.target.value)"/>`
@@ -567,14 +569,14 @@ function exportFiles() {
 }
 
 function addCollaborator() {
-    app.projectInfo.collaborators.list.push({
-        userID: "",
-        access: {
-            collaborators:"view",
-            annotations:"view",
-            files:"view"
-        }
-    });
+  app.projectInfo.collaborators.list.push({
+    userID: "",
+    access: {
+      collaborators:"view",
+      annotations:"view",
+      files:"view"
+    }
+  });
 }
 function removeCollaborator(param) {
     var index=document.querySelector("table#access .selected").rowIndex - 1;
