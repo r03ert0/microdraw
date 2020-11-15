@@ -45,16 +45,19 @@ router.get('/', async function (req, res) {
         }
     }
 
+    // include backups
+    const backup = (typeof req.query.backup === "undefined")?false:true;
+
     const query = {
         fileID: buildFileID(req.query),
         // user: { $in: [...users, user] },
-        project: project
+        project: project,
     };
     console.log("api get query", query);
 
     let annotations;
     try {
-      annotations = await req.app.db.findAnnotations(query);
+      annotations = await req.app.db.findAnnotations(query, backup);
     } catch(err) {
       throw new Error(err);
     }

@@ -111,13 +111,22 @@ module.exports = function(overwriteMongoPath, callback) {
      * @param {Object} searchQuery having fields: fileID : string, user:string
      * @returns {Promise} to resolve as an array of annotations
      */
-  const findAnnotations = async (searchQuery) => {
+  const findAnnotations = async (searchQuery, backup) => {
     if (!checkHealth()) {
       throw new Error('db connection not healthy');
     }
 
-    const query = Object.assign({}, searchQuery, { backup: { $exists: false } });
+    let query;
+
+    // include backups
+    if(typeof backup === "undefined" || backup === false) {
+      query = Object.assign({}, searchQuery, { backup: { $exists: false } });
+    } else {
+      query = Object.assign({}, searchQuery);
+    }
+
     console.log("findAnnotations query", query);
+
     let annotations;
     try {
       annotations = await db.get('annotations').find(query);
