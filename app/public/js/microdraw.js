@@ -233,8 +233,19 @@ const Microdraw = (function () {
        * @returns {object} Paper path (which is automatically added to the active project)
        */
       _pathFromJSON: (json) => {
-        const path = new paper.Path();
-        path.importJSON(json);
+        let path;
+        switch(json[0]) {
+          case 'Path': {
+            path = new paper.Path();
+            path.importJSON(json);
+            break;
+          }
+          case 'CompoundPath': {
+            path = new paper.CompoundPath();
+            path.importJSON(json);
+            break;
+          }
+        }
 
         return path;
       },
@@ -834,7 +845,11 @@ const Microdraw = (function () {
        * @returns {Object} The undo object
        */
       getUndo: function () {
-        const undo = { imageNumber: me.currentImage, regions: [], drawingPolygonFlag: me.drawingPolygonFlag };
+        const undo = {
+          imageNumber: me.currentImage,
+          regions: [],
+          drawingPolygonFlag: me.drawingPolygonFlag
+        };
         const info = me.ImageInfo[me.currentImage].Regions;
 
         for( let i = 0; i < info.length; i += 1 ) {
