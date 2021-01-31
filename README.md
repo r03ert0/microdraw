@@ -19,7 +19,7 @@ As of July 2018
 * Install nodejs
 * Install mongo
 
-* checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
+* Checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
 * `cd microdraw`
 * install the project
   * cd into microdraw
