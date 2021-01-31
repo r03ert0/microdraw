@@ -11,7 +11,7 @@ Data visualisation uses OpenSeadragon, and data annotation uses Paper.js.
 
 ## Developer install instructions
 
-As of 2018-07-09
+As of July 2018
 
 ### Basic Steps
 
