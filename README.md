@@ -10,7 +10,8 @@ high resolution data, such as that produced by high-throughput histology.
 Data visualisation uses OpenSeadragon, and data annotation uses Paper.js.
 
 ## Developer install instructions
-as of 2018-07-09
+
+As of 2018-07-09
 
 ### Basic Steps
 
