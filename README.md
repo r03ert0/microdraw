@@ -17,7 +17,7 @@ As of July 2018
 
 #### Without docker
 * Install nodejs
-* install mongo
+* Install mongo
 
 * checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
 * `cd microdraw`
