@@ -10,15 +10,16 @@ high resolution data, such as that produced by high-throughput histology.
 Data visualisation uses OpenSeadragon, and data annotation uses Paper.js.
 
 ## Developer install instructions
-as of 2018-07-09
+
+As of July 2018
 
 ### Basic Steps
 
-#### without docker
-* install nodejs
-* install mongo
+#### Without docker
+* Install nodejs
+* Install mongo
 
-* checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
+* Checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
 * `cd microdraw`
 * install the project
   * cd into microdraw
@@ -29,7 +30,7 @@ as of 2018-07-09
 * open http://localhost:3000 to see MicroDraws landing page and click any of the data links provided
 * test data can be viewed at http://localhost:3000/data?source=/test_data/cat.json
 
-#### with docker
+#### With docker
 * checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
 * `cd microdraw/bin`
 * `docker-compose up`
