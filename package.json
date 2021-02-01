@@ -9,7 +9,7 @@
     "mocha": "node node_modules/mocha/bin/mocha --exit",
     "mocha-brk": "node node_modules/mocha/bin/mocha --inspect-brk",
     "lint": "eslint",
-    "test-e2e": "node node_modules/mocha/bin/mocha ./test/e2e/*.spec.js"
+    "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha ./test/e2e/*.spec.js"
   },
   "dependencies": {
     "bcrypt": "^3.0.8",

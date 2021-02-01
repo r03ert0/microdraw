@@ -315,8 +315,8 @@ const Microdraw = (function () {
         paper.view.draw();
 
         // Update region tag
-        me.dom.querySelector(".region-tag#" + reg.uid + ">.region-name").textContent = name;
-        me.dom.querySelector(".region-tag#" + reg.uid + ">.region-color").style['background-color'] = 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.67)';
+        // me.dom.querySelector(".region-tag#" + reg.uid + ">.region-name").textContent = name;
+        // me.dom.querySelector(".region-tag#" + reg.uid + ">.region-color").style['background-color'] = 'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',0.67)';
       },
 
       /**
