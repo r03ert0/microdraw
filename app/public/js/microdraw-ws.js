@@ -4,7 +4,13 @@
 
 /* global Microdraw */
 
-var ws = new window.WebSocket("wss://localhost:8080");
+let wshostname;
+if(Microdraw.secure) {
+  wshostname = "wss://" + Microdraw.wshostname;
+} else {
+  wshostname = "ws://" + Microdraw.wshostname;
+}
+var ws = new window.WebSocket(wshostname);
 
 /**
   * @param {object} data Data received

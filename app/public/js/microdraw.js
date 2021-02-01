@@ -11,6 +11,10 @@
 const Microdraw = (function () {
   const me = {
       debug: 1,
+      hostname: "http://localhost:3000",
+      wshostname: "localhost:8080",
+      secure: true,
+
       ImageInfo: {},               // regions for each sections, can be accessed by the section name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
                                   // regions contain a paper.js path, a unique ID and a name
       imageOrder: [],              // names of sections ordered by their openseadragon page numbers
