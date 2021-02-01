@@ -250,28 +250,7 @@ const Microdraw = (function () {
         return path;
       },
 
-      /**
-       * @function selectRegion
-       * @desc Make the region selected
-       * @param {object} reg The region to select, or null to deselect allr egions
-       * @returns {void}
-       */
-      selectRegion: function (reg) {
-        if( me.debug>1 ) { console.log("> selectRegion"); }
-
-        // Select path
-        for( let i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
-          if( me.ImageInfo[me.currentImage].Regions[i] === reg ) {
-            reg.path.selected = true;
-            reg.path.fullySelected = true;
-            me.region = reg;
-          } else {
-            me.ImageInfo[me.currentImage].Regions[i].path.selected = false;
-            me.ImageInfo[me.currentImage].Regions[i].path.fullySelected = false;
-          }
-        }
-        paper.view.draw();
-
+      _selectRegionInList: function (reg) {
         // Select region name in list
         [].forEach.call(me.dom.querySelectorAll("#regionList > .region-tag"), function(r) {
           r.classList.add("deselected");
@@ -294,6 +273,31 @@ const Microdraw = (function () {
             tag.classList.add("selected");
           }
         }
+      },
+
+      /**
+       * @function selectRegion
+       * @desc Make the region selected
+       * @param {object} reg The region to select, or null to deselect allr egions
+       * @returns {void}
+       */
+      selectRegion: function (reg) {
+        if( me.debug>1 ) { console.log("> selectRegion"); }
+
+        // Select path
+        for( let i = 0; i < me.ImageInfo[me.currentImage].Regions.length; i += 1 ) {
+          if( me.ImageInfo[me.currentImage].Regions[i] === reg ) {
+            reg.path.selected = true;
+            reg.path.fullySelected = true;
+            me.region = reg;
+          } else {
+            me.ImageInfo[me.currentImage].Regions[i].path.selected = false;
+            me.ImageInfo[me.currentImage].Regions[i].path.fullySelected = false;
+          }
+        }
+        paper.view.draw();
+
+        me._selectRegionInList(reg);
 
         if(me.debug>1) { console.log("< selectRegion"); }
       },
@@ -1673,74 +1677,61 @@ const Microdraw = (function () {
        * @desc Load general microdraw configuration
        * @returns {Promise<void[]>} returns a promise that resolves when the configuration is loaded
        */
-      loadConfiguration: function () {
-        return Promise.all([
-
-          // 1st promise in array: always load the default tools
-          Promise.all([
-            me.loadScript("/lib/jquery-1.11.0.min.js"),
-            me.loadScript("/lib/paper-full-0.12.11.min.js"),
-            me.loadScript("/lib/openseadragon/openseadragon.js")
-          ])
-          .then(() => {
-            return me.loadScript("/lib/openseadragon-viewerinputhook.min.js");
-          })
-          .then(() => {
-            return Promise.all([
-              me.loadScript("/lib/OpenSeadragonScalebar/openseadragon-scalebar.js"),
-            //   me.loadScript("/lib/openseadragon-screenshot/openseadragonScreenshot.min.js"),
-              me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/Openseadragon-screenshot@v0.0.1/openseadragonScreenshot.js"),
-              me.loadScript("/lib/FileSaver.js/FileSaver.min.js"),
-              me.loadScript("/js/neurolex-ontology.js"),
-              me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/muijs@v0.1.1/mui.js"),
-              me.loadScript("https://unpkg.com/codeflask/build/codeflask.min.js"),
-              me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/consolita.js@0.2.1/consolita.js"),
-        
-              me.loadScript('/js/tools/home.js'),
-              me.loadScript('/js/tools/navigate.js'),
-              me.loadScript('/js/tools/zoomIn.js'),
-              me.loadScript('/js/tools/zoomOut.js'),
-              me.loadScript('/js/tools/previous.js'),
-              me.loadScript('/js/tools/next.js'),
-              me.loadScript('/js/tools/closeMenu.js'),
-              me.loadScript('/js/tools/openMenu.js')
-            ]);
-          })
-          .then(function () {
-              $.extend(me.tools, ToolHome);
-              $.extend(me.tools, ToolNavigate);
-              $.extend(me.tools, ToolZoomIn);
-              $.extend(me.tools, ToolZoomOut);
-              $.extend(me.tools, ToolPrevious);
-              $.extend(me.tools, ToolNext);
-              $.extend(me.tools, ToolCloseMenu);
-              $.extend(me.tools, ToolOpenMenu);
-          }),
-
-          // 2nd promise in array: load configuration file, then load the tools accordingly
-          fetch("/js/configuration.json")
-            .then((r) => r.json())
-            .then((data) => {
-              me.config = data;
-
-                return Promise.all(
-                  // tools loaded dynamically, based on user configuration, server configuration etc.
-                  data.presets.default.map( (item) => {
-
-                    /* load script + extend me.tools */
-                    return me.loadScript(item.scriptPath)
-                      .then( () => {
-                        // there maybe multiple exported variables
-                        item.exportedVar.forEach( (variable) => {
-
-                          /** @todo use ES 6 for proper module import. eval should be avoided when possible */
-                          eval(`$.extend(me.tools,${variable})`);
-                        });
-                      });
-                  })
-                );
-              })
+      loadConfiguration: async () => {
+        await Promise.all([
+          me.loadScript("/lib/jquery-1.11.0.min.js"),
+          me.loadScript("/lib/paper-full-0.12.11.min.js"),
+          me.loadScript("/lib/openseadragon/openseadragon.js"),
+          me.loadScript("/js/microdraw-ws.js")
         ]);
+
+        await me.loadScript("/lib/openseadragon-viewerinputhook.min.js");
+
+        await Promise.all([
+          me.loadScript("/lib/OpenSeadragonScalebar/openseadragon-scalebar.js"),
+          // me.loadScript("/lib/openseadragon-screenshot/openseadragonScreenshot.min.js"),
+          me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/Openseadragon-screenshot@v0.0.1/openseadragonScreenshot.js"),
+          me.loadScript("/lib/FileSaver.js/FileSaver.min.js"),
+          me.loadScript("/js/neurolex-ontology.js"),
+          me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/muijs@v0.1.1/mui.js"),
+          me.loadScript("https://unpkg.com/codeflask/build/codeflask.min.js"),
+          me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/consolita.js@0.2.1/consolita.js"),
+    
+          me.loadScript('/js/tools/home.js'),
+          me.loadScript('/js/tools/navigate.js'),
+          me.loadScript('/js/tools/zoomIn.js'),
+          me.loadScript('/js/tools/zoomOut.js'),
+          me.loadScript('/js/tools/previous.js'),
+          me.loadScript('/js/tools/next.js'),
+          me.loadScript('/js/tools/closeMenu.js'),
+          me.loadScript('/js/tools/openMenu.js')
+        ]);
+
+        $.extend(me.tools, ToolHome);
+        $.extend(me.tools, ToolNavigate);
+        $.extend(me.tools, ToolZoomIn);
+        $.extend(me.tools, ToolZoomOut);
+        $.extend(me.tools, ToolPrevious);
+        $.extend(me.tools, ToolNext);
+        $.extend(me.tools, ToolCloseMenu);
+        $.extend(me.tools, ToolOpenMenu);
+
+        // load configuration file, then load the tools accordingly
+        const r = await fetch("/js/configuration.json")
+        const data = await r.json();
+        me.config = data;
+
+        // tools loaded dynamically, based on user configuration, server configuration etc.
+        data.presets.default.map( async (item) => {
+            // load script + extend me.tools
+            await me.loadScript(item.scriptPath);
+
+            // there maybe multiple exported variables
+            item.exportedVar.forEach( (variable) => {
+              /** @todo use ES 6 for proper module import. eval should be avoided when possible */
+              eval(`$.extend(me.tools,${variable})`);
+            });
+        });
       },
 
       /**
@@ -2041,29 +2032,25 @@ const Microdraw = (function () {
         }
       },
 
-      init: function (dom) {
+      init: async function (dom) {
         me.dom = dom;
-        me.loadConfiguration()
-          .then(function () {
-            if( me.config.useDatabase ) {
-              Promise.all([]) // [microdrawDBIP(), MyLoginWidget.init()]
-                .then(function () {
-                  me.params = me.deparam();
-                  me.section = me.currentImage;
-                  me.source = me.params.source;
-                  if(typeof me.params.project !== 'undefined') {
-                      me.project = me.params.project;
-                  }
-                  // updateUser();
-                })
-                .then(me.initMicrodraw);
-            } else {
-              me.params = me.deparam();
-              me.initMicrodraw();
-            }
-          })
-          .then( () => me.loadSourceJson())
-          .then( (json) => me.initOpenSeadragon(json));
+
+        await me.loadConfiguration();
+
+        me.params = me.deparam();
+
+        if( me.config.useDatabase ) {
+          me.section = me.currentImage;
+          me.source = me.params.source;
+          if(typeof me.params.project !== 'undefined') {
+              me.project = me.params.project;
+          }
+        }
+
+        me.initMicrodraw();
+
+        const json = await me.loadSourceJson();
+        me.initOpenSeadragon(json);
       }
   };
   

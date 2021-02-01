@@ -23,3 +23,9 @@ access.log
 package-lock.json
 app/controller/api/tmp
 test/e2e/screenshots/
+.gitignore
+cert.pem
+cfg.json
+key.pem
+blacklist.json
+whitelist.json
