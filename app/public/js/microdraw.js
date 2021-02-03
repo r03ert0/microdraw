@@ -1170,6 +1170,9 @@ const Microdraw = (function () {
         // set current image to new image
         me.currentImage = imageNumber;
 
+        // display slice number
+        me.dom.querySelector("#slice-number").innerHTML = `Slice ${imageNumber}`;
+
         me.viewer.open(me.ImageInfo[me.currentImage].source);
       },
 
@@ -1827,7 +1830,10 @@ const Microdraw = (function () {
         });
         MUI.push(me.dom.querySelector("#sliderBlock #previous"), () => { me.clickTool("previous"); });
         MUI.push(me.dom.querySelector("#sliderBlock #next"), () => { me.clickTool("next"); });
-        MUI.slider(me.dom.querySelector("#sliderBlock #slice"), (x) => { me.sliderOnChange(x|0); });
+        MUI.slider(me.dom.querySelector("#sliderBlock #slice"), (x) => {
+          const newImageNumber = Math.round((me.imageOrder.length-1)*x/100);
+          me.sliderOnChange(newImageNumber);
+        });
         MUI.chose(me.dom.querySelector("#clickTool.mui-chose"), (title) => {
           const el = me.dom.querySelector(`[title="${title}"]`);
           const tool = el.id;
@@ -1941,6 +1947,9 @@ const Microdraw = (function () {
           me.initSlider(0, obj.tileSources.length, 1, me.params.slice);
           me.currentImage = me.imageOrder[[parseInt(me.params.slice, 10)]];
         }
+
+        // display slice number
+        me.dom.querySelector("#slice-number").innerHTML = `Slice ${me.currentImage}`;
 
         me.params.tileSources = obj.tileSources;
         if (typeof obj.fileID !== 'undefined') {
