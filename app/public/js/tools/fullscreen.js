@@ -7,8 +7,10 @@ var ToolFullscreen = { fullscreen : (function() {
 
     _configureParentElement: () => {
       if(document.querySelector("#microdraw")) {
+        tool._displayMode = "project";
         tool._parentElement = document.querySelector("#microdraw");
       } else {
+        tool._displayMode = "data";
         tool._parentElement = document.querySelector("#content");
       }
     },
@@ -19,16 +21,22 @@ var ToolFullscreen = { fullscreen : (function() {
       tool._parentElement.style.position = "fixed";
       tool._parentElement.style.top = 0;
       tool._parentElement.style.left = 0;
-      tool._parentElement.style.zIndex = 16;
       tool._parentElement.style.height = "100%";
+
+      if(tool._displayMode === "project") {
+        document.querySelector("#resizeButton").style.display = "none";
+      }
     },
 
     _exitFullscreen: () => {
       tool._parentElement.style.position = "";
       tool._parentElement.style.top = "";
       tool._parentElement.style.left = "";
-      tool._parentElement.style.zIndex = "";
       tool._parentElement.style.height = tool._prevStyle.height;
+
+      if(tool._displayMode === "project") {
+        document.querySelector("#resizeButton").style.display = "";
+      }
     },
 
     /**
