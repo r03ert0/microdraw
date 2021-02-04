@@ -1704,6 +1704,7 @@ const Microdraw = (function () {
           me.loadScript("https://unpkg.com/codeflask/build/codeflask.min.js"),
           me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/consolita.js@0.2.1/consolita.js"),
     
+          me.loadScript('/js/tools/fullscreen.js'),
           me.loadScript('/js/tools/home.js'),
           me.loadScript('/js/tools/navigate.js'),
           me.loadScript('/js/tools/zoomIn.js'),
@@ -1714,6 +1715,7 @@ const Microdraw = (function () {
           me.loadScript('/js/tools/openMenu.js')
         ]);
 
+        $.extend(me.tools, ToolFullscreen);
         $.extend(me.tools, ToolHome);
         $.extend(me.tools, ToolNavigate);
         $.extend(me.tools, ToolZoomIn);
@@ -1828,6 +1830,7 @@ const Microdraw = (function () {
         Array.prototype.forEach.call(me.dom.querySelectorAll('#buttonsBlock div.mui.push'), (el) => {
           el.addEventListener('click', me.toolSelection);
         });
+        MUI.toggle(me.dom.querySelector("#fullscreen"), () => { me.clickTool("fullscreen"); });
         MUI.push(me.dom.querySelector("#sliderBlock #previous"), () => { me.clickTool("previous"); });
         MUI.push(me.dom.querySelector("#sliderBlock #next"), () => { me.clickTool("next"); });
         MUI.slider(me.dom.querySelector("#sliderBlock #slice"), (x) => {
