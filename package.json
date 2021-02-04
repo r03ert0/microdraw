@@ -5,10 +5,10 @@
   "scripts": {
     "start": "node ./bin/www",
     "debug": "node --inspect-brk ./bin/www",
-    "test": "node test.js",
-    "mocha": "node node_modules/mocha/bin/mocha --exit",
-    "mocha-brk": "node node_modules/mocha/bin/mocha --inspect-brk",
     "lint": "eslint",
+    "test": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node test.js",
+    "mocha": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --exit",
+    "mocha-brk": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --inspect-brk",
     "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha ./test/e2e/*.spec.js"
   },
   "dependencies": {
