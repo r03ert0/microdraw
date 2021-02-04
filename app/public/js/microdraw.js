@@ -1019,11 +1019,11 @@ const Microdraw = (function () {
           me.saveUndo(undoInfo);
           if(me.debug) { console.log( "paste " + me.copyRegion.name ); }
           if( me.findRegionByName(me.copyRegion.name) ) {
-            me.copyRegion.name += " Copy";
+            // me.copyRegion.name += " Copy";
           }
 
           const reg = JSON.parse(JSON.stringify(me.copyRegion));
-          reg.path = me._pathFromJSON(me.copyRegion.path);
+          reg.path = me._pathFromJSON(JSON.parse(me.copyRegion.path));
           reg.path.fullySelected = true;
 
           const color = me.regionColor(reg.name);
