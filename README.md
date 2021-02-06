@@ -32,10 +32,11 @@ As of July 2018
 
 #### With docker
 * checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
-* `cd microdraw/bin`
+* `cd microdraw`
+* `docker-compose build`
 * `docker-compose up`
-* open http://localhost:3000 to see MicroDraws landing page and click any of the data links provided
-* test data can be viewed at http://localhost:3000/data?source=/test_data/cat.json
+* open http://localhost:3001 to see MicroDraw's landing page and click any of the data links provided
+* test data can be viewed at http://localhost:3001/data?source=/test_data/cat.json
 
 ### Users management
 Microdraw utilises [passportjs](http://www.passportjs.org/) to manage user login. By default, Microdraw is configured to use `Github` and `local` strageties. 
