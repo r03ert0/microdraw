@@ -6,19 +6,15 @@ services:
       - '27017:27017'
   microdraw:
     container_name: microdraw
+    image: microdraw
+    build: .
     depends_on:
       - 'mongo'
-    build: .
-    image: microdraw
     ports:
     - '3001:3001'
     - '8080:8080'
     volumes:
       - .:/microdraw
-      - ./cfg.json.example:/microdraw/cfg.json
-      - ./app/auth/github-keys.json.example:/microdraw/app/auth/github-keys.json
-      - ./app/controller/microdrawWebsocketServer/whitelist.json.example:/microdraw/app/controller/microdrawWebsocketServer/whitelist.json
-      - ./app/controller/microdrawWebsocketServer/blacklist.json.example:/microdraw/app/controller/microdrawWebsocketServer/blacklist.json
       - /microdraw/node_modules
     environment:
       - MONGODB=mongodb://mongo:27017/microdraw
