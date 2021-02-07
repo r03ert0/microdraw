@@ -1,4 +1,4 @@
-FROM node:8-alpine
+FROM node:12-alpine
 
 # alpine images do not have certtificates bundled
 RUN apk --no-cache add ca-certificates

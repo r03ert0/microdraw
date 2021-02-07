@@ -1,0 +1,21 @@
+version: '3'
+services:
+  mongo:
+    image: 'mongo'
+    ports:
+      - '27017:27017'
+  microdraw:
+    container_name: microdraw
+    image: microdraw
+    build: .
+    depends_on:
+      - 'mongo'
+    ports:
+    - '3001:3001'
+    - '8080:8080'
+    volumes:
+      - .:/microdraw
+      - /microdraw/node_modules
+    environment:
+      - MONGODB=mongodb://mongo:27017/microdraw
+      - TOKEN_DURATION=86400000
