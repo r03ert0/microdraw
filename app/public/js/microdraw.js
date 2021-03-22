@@ -1943,7 +1943,7 @@ const Microdraw = (function () {
 
         // init slider that can be used to change between slides
 
-        if(me.params.slice === "undefined") { // this is correct: the string "undefined", not type
+        if(me.params.slice === "undefined" || typeof me.params.slice === "undefined") { // this is correct: the string "undefined", or the type
           me.initSlider(0, obj.tileSources.length, 1, Math.round(obj.tileSources.length / 2));
           me.currentImage = me.imageOrder[Math.floor(obj.tileSources.length / 2)];
           me.addSliceToURL(me.currentImage);
