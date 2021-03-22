@@ -87,6 +87,8 @@ var ToolAddRegion = { addRegion : (function() {
       }
       newPath.fillColor = pathB.fillColor;
       newPath.strokeColor = pathB.strokeColor;
+      newPath.strokeScaling = false;
+
 
       return newPath;
     },
