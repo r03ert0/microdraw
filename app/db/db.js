@@ -107,9 +107,8 @@ module.exports = function(overwriteMongoPath, callback) {
   });
 
   /**
-     * @function findAnnotations
-     * @param {Object} searchQuery having fields: fileID : string, username:string
-     * @returns {Promise} to resolve as an array of annotations
+     * @param {object} searchQuery having fields: fileID : string, username:string
+     * @returns {object} to resolve as an array of annotations
      */
   const findAnnotations = async (searchQuery, backup) => {
     if (!checkHealth()) {
@@ -146,7 +145,6 @@ module.exports = function(overwriteMongoPath, callback) {
   };
 
   /**
-     * @function updateAnnotation
      * @description Update annotation object, appending new regions, replacing existing ones
      * @param {Object} saveQuery having fields: fileID: string, username: string, project: string, Hash: string, annotation: JSON.stringify(Object{Regions: string[]})
      * @returns {Promise} to resolve when saving is complete

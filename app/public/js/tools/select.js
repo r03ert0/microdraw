@@ -1,9 +1,10 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 
 var ToolSelect = {select: (function() {
-  var tool = {
+  const tool = {
 
     /**
          * @function mouseDrag

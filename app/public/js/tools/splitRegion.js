@@ -1,8 +1,9 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 var ToolSplitRegion = {splitRegion: (function() {
-  var tool = {
+  const tool = {
 
     _findHitItem: function (point) {
       const hitResult = paper.project.hitTest(point, {

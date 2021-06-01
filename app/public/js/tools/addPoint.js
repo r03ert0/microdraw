@@ -1,5 +1,7 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable no-unused-vars */
+/* eslint-disable max-statements */
+/* global Microdraw */
+/* global paper */
 
 var ToolAddPoint = { addPoint : (function() {
   const _findRegion = function (item) {
@@ -17,10 +19,9 @@ var ToolAddPoint = { addPoint : (function() {
   var tool = {
 
     /**
-         * @function mouseDown
-         * @param {object} point The point where you clicked (x,y)
-         * @returns {void}
-         */
+     * @param {object} point The point where you clicked (x,y)
+     * @returns {void}
+     */
     mouseDown : function mouseDown(point) {
       var hitResult = paper.project.hitTest(point, {
         tolerance : Microdraw.tolerance/paper.view.zoom,
@@ -29,6 +30,7 @@ var ToolAddPoint = { addPoint : (function() {
         fill : true,
         handles : true
       });
+      let prevRegion;
       Microdraw.newRegionFlag = false;
 
       if( hitResult ) {
@@ -55,11 +57,10 @@ var ToolAddPoint = { addPoint : (function() {
     },
 
     /**
-         * @function click
-         * @desc add an additional point to the selected annotation
-         * @param {string} prevTool The previous tool to which the selection goes back
-         * @returns {void}
-         */
+     * @desc add an additional point to the selected annotation
+     * @param {string} prevTool The previous tool to which the selection goes back
+     * @returns {void}
+     */
     click : function click(prevTool) {
       Microdraw.navEnabled = false;
       Microdraw.handle = null;

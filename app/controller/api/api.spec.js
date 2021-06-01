@@ -47,7 +47,7 @@ chai.use(chaiHttp)
 
 describe('Mocha works', () => {
     it('mocha works in api.spec.js', () => {
-        assert.equal(1, 1)
+        assert.strictEqual(1, 1)
     })
 })
 
@@ -266,7 +266,7 @@ describe('controller/api/index.js', () => {
                             .query({
                                 project
                             })
-                            .then(res => {
+                            .then((res) => {
                                 assert(findAnnotations.calledWith({
                                     fileID: `undefined&slice=undefined`,
                                     project
@@ -286,7 +286,12 @@ describe('controller/api/index.js', () => {
                     annotation: 'testworld',
                     project: 'alreadyTestedPreviously'
                 }
-                const { action, source, slice, ...rest } = sendItem
+                const {
+                    action,
+                    source,
+                    slice,
+                    ...rest
+                } = sendItem
                 let res
 
                 beforeEach(async () => {

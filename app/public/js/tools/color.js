@@ -1,4 +1,5 @@
-/*global Microdraw*/
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
 
 var ToolColor = { color : (function() {
   const {dom} = Microdraw;
@@ -56,7 +57,6 @@ var ToolColor = { color : (function() {
     },
 
     /**
-     * @function color
      * @desc Select a color to draw with
      * @param {string} prevTool The previous tool to which the selection goes back
      * @returns {void}

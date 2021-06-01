@@ -1,7 +1,7 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable max-statements */
-/*global Microdraw*/
-/*global paper*/
+/* global Microdraw */
+/* global paper */
 
 var ToolAddRegion = { addRegion : (function() {
   var tool = {
@@ -139,6 +139,7 @@ var ToolAddRegion = { addRegion : (function() {
         return;
       }
 
+      // eslint-disable-next-line no-constant-condition
       if(true) {
         // select hitRegion
         Microdraw.selectRegion(hitRegion);
@@ -158,10 +159,9 @@ var ToolAddRegion = { addRegion : (function() {
     },
 
     /**
-         * @function mouseDown
-         * @param {object} point The point where you clicked (x,y)
-         * @returns {void}
-         */
+     * @param {object} point The point where you clicked (x,y)
+     * @returns {void}
+     */
     mouseDown : function (point) {
       const hitResult = paper.project.hitTest(point, {
         tolerance : Microdraw.tolerance/paper.view.zoom,
@@ -183,11 +183,11 @@ var ToolAddRegion = { addRegion : (function() {
     },
 
     /**
-         * @function click
-         * @desc add an additional point to the selected annotation
-         * @param {string} prevTool The previous tool to which the selection goes back
-         * @returns {void}
-         */
+     * @desc add an additional point to the selected annotation
+     * @param {string} prevTool The previous tool to which the selection goes back
+     * @returns {void}
+     */
+    // eslint-disable-next-line no-unused-vars
     click : function click(prevTool) {
       Microdraw.navEnabled = false;
       Microdraw.handle = null;

@@ -1,9 +1,9 @@
 /* eslint-disable radix */
 /* eslint-disable no-plusplus */
 // const async = require('async');
-const dateFormat = require('dateformat');
-//const checkAccess = require('../checkAccess/checkAccess.js');
-//const dataSlices = require('../dataSlices/dataSlices.js');
+// const dateFormat = require('dateformat');
+// const checkAccess = require('../checkAccess/checkAccess.js');
+// const dataSlices = require('../dataSlices/dataSlices.js');
 
 const validator = function (req, res, next) {
   next();
@@ -38,7 +38,6 @@ const project = function (req, res) {
 };
 
 /**
- * @function settings
  * @desc Render the settings page GUI
  * @param {Object} req Req object from express
  * @param {Object} res Res object from express
@@ -170,7 +169,9 @@ const apiProject = function (req, res) {
           let i;
           const arr = req.query.var.split('/');
           for (i in arr) {
-            json = json[arr[i]];
+            if({}.hasOwnProperty.call(arr, i)) {
+              json = json[arr[i]];
+            }
           }
         }
         res.send(json);
@@ -261,16 +262,14 @@ const deleteProject = function (req, res) {
   }
 };
 
-const ProjectController = function () {
-  this.validator = validator;
-  this.apiProject = apiProject;
-  this.apiProjectAll = apiProjectAll;
-  this.apiProjectFiles = apiProjectFiles;
-  this.project = project;
-  this.projectNew = projectNew;
-  this.settings = settings;
-  this.postProject = postProject;
-  this.deleteProject = deleteProject;
+module.exports = {
+  validator,
+  apiProject,
+  apiProjectAll,
+  apiProjectFiles,
+  project,
+  projectNew,
+  settings,
+  postProject,
+  deleteProject
 };
-
-module.exports = new ProjectController();

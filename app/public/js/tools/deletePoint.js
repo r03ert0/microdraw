@@ -1,14 +1,15 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable max-statements */
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 var ToolDeletePoint = { deletePoint : (function() {
   var tool = {
 
     /**
-         * @function mouseDown
-         * @param {object} point The point where you clicked (x,y)
-         * @returns {void}
-         */
+     * @param {object} point The point where you clicked (x,y)
+     * @returns {void}
+     */
     mouseDown : function mouseDown(point) {
       var hitResult = paper.project.hitTest(point, {
         tolerance : Microdraw.tolerance/paper.view.zoom,
@@ -17,6 +18,7 @@ var ToolDeletePoint = { deletePoint : (function() {
         fill : true,
         handles : true
       });
+      let prevRegion;
       Microdraw.newRegionFlag = false;
 
       if( hitResult ) {

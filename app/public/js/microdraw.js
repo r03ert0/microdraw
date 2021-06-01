@@ -3,7 +3,7 @@
 /*eslint max-statements: ["error", 80]*/
 /*eslint max-lines: ["error", 3000]*/
 /*eslint no-alert: "off"*/
-/*global paper*/
+/* global paper */
 /*global OpenSeadragon*/
 /*global Ontology*/
 /*global MUI*/
@@ -53,7 +53,6 @@ const Microdraw = (function () {
       */
 
       /**
-       * @function debugPrint
        * @param {string} msg Message to print to console.
        * @param {int} level Minimum debug level to print.
        * @returns {void}
@@ -65,7 +64,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function regionUID
        * @returns {string} Get a unique random alphanumeric identifier for the region
        */
       regionUID: function () {
@@ -79,7 +77,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function hash
        * @param {string} str String to hash
        * @returns {string} A hash
        */
@@ -122,7 +119,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function regionHashColor
        * @desc Produces a color based on a region name.
        * @param {string} name Name of the region.
        * @returns {number} color Default color of the region based on its name.
@@ -143,7 +139,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function regionColor
        * @desc Gets the color for a region based on its name
        * @param {string} name Name of the region.
        * @returns {number} color Color of the region based on its name.
@@ -170,7 +165,6 @@ const Microdraw = (function () {
       },
 
         /**
-       * @function findRegionByUID
        * @param {number} uid Unique ID of a region.
        * @returns {object} The region corresponding to the given ID
        */
@@ -194,7 +188,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function regionTag
        * @param {string} name Name of the region.
        * @param {string} uid Unique ID of the region.
        * @returns {string} str The color of the region.
@@ -280,7 +273,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function selectRegion
        * @desc Make the region selected
        * @param {object} reg The region to select, or null to deselect allr egions
        * @returns {void}
@@ -307,7 +299,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function changeRegionName
        * @param {object} reg The entry in the region's array.
        * @param {string} name Name of the region.
        * @returns {void}
@@ -328,7 +319,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function toggleRegion
        * @desc Toggle the visibility of a region
        * @param {object} reg The region whose visibility is to toggle
        * @returns {void}
@@ -358,7 +348,6 @@ const Microdraw = (function () {
 
 
       /**
-       * @function pad
        * @desc Add leading zeros
        * @param {number} number A number
        * @param {length} length The desired length for the resulting string
@@ -372,7 +361,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function annotationStyle
        * @desc Get current alpha & color values for colorPicker display
        * @param {object} reg The selected region.
        * @returns {void}
@@ -500,7 +488,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function findRegionByName
        * @desc Find region by its name
        * @param {string} name Name of the region from the ontology list
        * @returns {object} The region
@@ -519,7 +506,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function appendRegionTagsFromOntology
        * @param {array} o Array with ontology terms
        * @returns {void}
        */
@@ -550,7 +536,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function clickHandler
        * @desc Interaction: mouse and tap: If on a computer, it will send click event; if on tablet, it will send touch event.
        * @param {object} event Event
        * @returns {void}
@@ -561,7 +546,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function pressHandler
        * @param {object} event Event
        * @returns {void}
        */
@@ -575,7 +559,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function releaseHandler
        * @param {object} event Event
        * @returns {void}
        */
@@ -589,7 +572,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function dragHandler
        * @param {object} event Event
        * @returns {void}
        */
@@ -603,7 +585,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function dragEndHandler
        * @param {object} event Event
        * @returns {void}
        */
@@ -618,7 +599,6 @@ const Microdraw = (function () {
 
 
       /**
-       * @function scrollHandler
        * @param {object} ev Scroll event
        * @returns {void}
        */
@@ -633,7 +613,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function mouseDown
        * @param {number} x X-coordinate for mouse down
        * @param {number} y Y-coordinate for mouse down
        * @returns {void}
@@ -654,7 +633,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function mouseDrag
        * @param {number} x X-coordinate where drag event started
        * @param {number} y Y-coordinate where drag event started
        * @param {number} dx Size of the drag step in the X axis
@@ -684,7 +662,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function mouseUp
        * @returns {void}
        */
       mouseUp: function () {
@@ -695,7 +672,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function simplify
        * @desc Simplify the region path
        * @returns {void}
        */
@@ -712,7 +688,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function setRegionColor
        * @desc Set picked color & alpha
        * @returns {void}
        */
@@ -741,7 +716,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function onFillColorPicker
        * @desc Update all values on the fly
        * @param {number} value The value assigned to the color picker
        * @returns {void}
@@ -761,7 +735,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function onSelectStrokeColor
        * @returns {void}
        */
       onSelectStrokeColor: function () {
@@ -772,7 +745,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function onAlphaSlider
        * @param {number} value The value assigned to alpha slider
        * @returns {void}
        */
@@ -784,7 +756,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function onAlphaInput
        * @param {number} value The value assigned to alpha input field
        * @returns {void}
        */
@@ -796,7 +767,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function onStrokeWidthDec
        * @returns {void}
        */
       onStrokeWidthDec: function () {
@@ -806,7 +776,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function onStrokeWidthInc
        * @returns {void}
        */
       onStrokeWidthInc: function () {
@@ -818,7 +787,6 @@ const Microdraw = (function () {
       /*** UNDO ***/
 
       /**
-       * @function cmdUndo
        * @desc Command to actually perform an undo.
        * @returns {void}
        */
@@ -833,7 +801,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function cmdRedo
        * @desc Command to actually perform a redo.
        * @returns {void}
        */
@@ -848,7 +815,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function getUndo
        * @desc Return a complete copy of the current state as an undo object.
        * @returns {Object} The undo object
        */
@@ -875,7 +841,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function saveUndo
        * @desc Save an undo object. This has the side-effect of initializing the redo stack.
        * @param {object} undoInfo The undo info object
        * @returns {void}
@@ -886,7 +851,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function setImage
        * @param {number} imageNumber The image number
        * @returns {void}
        */
@@ -904,7 +868,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function applyUndo
        * @desc Restore the current state from an undo object.
        * @param {object} undo The undo object to apply
        * @returns {void}
@@ -958,7 +921,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function commitMouseUndo
        * @desc If we have actually made a change with a mouse operation, commit the undo information.
        * @returns {void}
        */
@@ -970,7 +932,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function backToPreviousTool
        * @param {string} prevTool Name of the previously selected tool
        * @returns {void}
        */
@@ -982,7 +943,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function backToSelect
        * @returns {void}
        */
       backToSelect: function () {
@@ -993,7 +953,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function cmdDeleteSelected
        * @desc This function deletes the currently selected object.
        * @returns {void}
        */
@@ -1010,7 +969,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function cmdPaste
        * @returns {void}
        */
       cmdPaste: function () {
@@ -1039,7 +997,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function cmdCopy
        * @returns {void}
        */
       cmdCopy: function () {
@@ -1052,7 +1009,6 @@ const Microdraw = (function () {
       },
 
       //  /**
-      //    * @function selectTool
       //    * @returns {void}
       //    */
       //   selectTool: function () {
@@ -1078,7 +1034,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function toolSelection
        * @returns {void}
        */
       toolSelection: function () {
@@ -1092,7 +1047,6 @@ const Microdraw = (function () {
       */
 
       /**
-       * @function microdrawDBLoad
        * @desc Load SVG overlay from microdrawDB
        * @returns {Promise} A promise to return an array of paths of the current section.
        * @default returns an empty array. Can/should be overwritten in save.js. Users can use their own save.js for different backend.
@@ -1105,7 +1059,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function save
        * @returns {void}
        */
       save: function () {
@@ -1128,7 +1081,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function load
        * @returns {void}
        */
       load: function () {
@@ -1153,7 +1105,6 @@ const Microdraw = (function () {
       */
 
       /**
-       * @function loadImage
        * @param {number} imageNumber The image number
        * @returns {void}
        */
@@ -1177,7 +1128,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function loadNextImage
        * @returns {void}
        */
       loadNextImage: function () {
@@ -1195,7 +1145,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function loadPreviousImage
        * @returns {void}
        */
       loadPreviousImage: function () {
@@ -1214,7 +1163,6 @@ const Microdraw = (function () {
 
 
       /**
-       * @function resizeAnnotationOverlay
        * @returns {void}
        */
       resizeAnnotationOverlay: function () {
@@ -1306,7 +1254,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function initAnnotationOverlay
        * @returns {void}
        */
       initAnnotationOverlay: async () => {
@@ -1348,7 +1295,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function transform
        * @returns {void}
        */
       transform: function () {
@@ -1366,7 +1312,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function deparam
        * @returns {Object} Returns an object containing URL parametres
        */
       deparam: function () {
@@ -1386,7 +1331,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function loginChanged
        * @returns {void} Returns a promise that is fulfilled when the user is loged in
        */
       loginChanged: function () {
@@ -1404,7 +1348,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function initShortCutHandler
        * @returns {void}
        */
       initShortCutHandler: function () {
@@ -1428,7 +1371,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function shortCutHandler
        * @param {string} theKey Key used for the shortcut
        * @param {function} callback Function called for the specific key shortcut
        * @returns {void}
@@ -1449,7 +1391,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function initSlider
        * @desc Initialises a slider to easily change between sections
        * @param {number} minVal Minimum value
        * @param {number} maxVal Maximum value
@@ -1484,7 +1425,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function sliderOnChange
        * @desc Called when the slider value is changed to load a new section
        * @param {number} newImageNumber Index of the image selected using the slider
        * @returns {void}
@@ -1497,7 +1437,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function updateSliderValue
        * @desc Used to update the slider value if the section was changed by another control
        * @param {number} newIndex section number to which the slider will be set
        * @returns {void}
@@ -1541,7 +1480,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function sectionNameOnEnter
        * @param {object} event Event produced by the enter key
        * @returns {void}
        */
@@ -1560,7 +1498,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function updateURL
        * @desc Used to update the URL with the slice value if the section was changed by another control
        * @param {number} newIndex section number to which the URL will be set
        * @returns {void}
@@ -1584,7 +1521,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function addSliceToURL
        * @desc Used to update the URL with the slice value if none is given by user
        * @param {number} newIndex section number to which the URL will be set
        * @returns {void}
@@ -1608,7 +1544,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function loadSourceJson
        * @desc Load source json (from server)
        * @returns {promise} returns a promise, resolving as a microdraw compatible object
        */
@@ -1680,7 +1615,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function loadConfiguration
        * @desc Load general microdraw configuration
        * @returns {Promise<void[]>} returns a promise that resolves when the configuration is loaded
        */
@@ -1744,7 +1678,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function loadScript
        * @desc Loads script from path if test is not fulfilled
        * @param {string} path Path to script, either a local path or a url
        * @param {function} testScriptPresent Function to test if the script is already present. If undefined, the script will be loaded.
@@ -1771,7 +1704,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function changeToolbarDisplay
        * @desc Changes the way in which the toolbar is displayed
        * @param {string} display Position where the toolbar is displayed
        * @returns {void}
@@ -1796,7 +1728,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function toggleTextInput
        * @param {string} mode One from Chat or Script
        * @returns {void}
        */
@@ -1820,7 +1751,6 @@ const Microdraw = (function () {
       },
 
       /**
-       * @function initMicrodraw
        * @returns {void}
        */
       initMicrodraw: async () => {
@@ -1890,7 +1820,6 @@ const Microdraw = (function () {
       },
 
       /**
-        * @function initOpenSeadragon
         * @param {Object} obj DZI json configuration object
         * @returns {void}
         */
@@ -2011,9 +1940,7 @@ const Microdraw = (function () {
         me.viewer.addHandler('open', function () {
           me.initAnnotationOverlay();
         });
-        me.viewer.addHandler('animation', function () {
-          me.transform();
-        });
+        me.viewer.addHandler('animation', me.transform);
         me.viewer.addHandler("animation-start", function () {
           me.isAnimating = true;
         });
@@ -2036,7 +1963,6 @@ const Microdraw = (function () {
       },
 
       /**
-        * @function toggleMenu
         * @return {void}
         */
       toggleMenu: function () {

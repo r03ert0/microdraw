@@ -1,4 +1,4 @@
-/*global Microdraw*/
+/* global Microdraw */
 /*global $*/
 
 const fadeOut = function (el) {

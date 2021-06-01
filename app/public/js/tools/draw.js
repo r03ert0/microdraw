@@ -1,5 +1,5 @@
-/*global Microdraw*/
-/*global paper*/
+/* global Microdraw */
+/* global paper */
 
 var ToolDraw = { draw: (function () {
   var tool = {

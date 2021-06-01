@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+/* eslint-disable radix */
 // const async = require('async');
 const dateFormat = require('dateformat');
 //const checkAccess = require('../checkAccess/checkAccess.js');
@@ -93,7 +95,8 @@ const api_userAll = function (req, res) {
  */
 
 /**
- * @function api_userFiles
+ * @param {object} req Request object
+ * @param {object} res Response object
  * @returns {void}
  */
 const api_userFiles = function (req, res) {
@@ -125,13 +128,14 @@ const api_userFiles = function (req, res) {
 };
 
 /**
- * @function api_userAtlas
- */
-
-/**
  * @todo Check access rights for this route
  */
 
+/**
+ * @param {object} req Request object
+ * @param {object} res Response object
+ * @returns {void}
+ */
 const api_userAtlas = function (req, res) {
   const {userName} = req.params;
   const start = parseInt(req.query.start);
@@ -160,17 +164,18 @@ const api_userAtlas = function (req, res) {
 };
 
 /**
-* @function api_userProjects
- */
-
-/**
  * @todo Check access rights for this route
  */
 
+/**
+ * @param {object} req Request object
+ * @param {object} res Response object
+ * @returns {void}
+ */
 const api_userProjects = function (req, res) {
   const {userName} = req.params;
-  const start = parseInt(req.query.start);
-  const length = parseInt(req.query.length);
+  // const start = parseInt(req.query.start);
+  // const length = parseInt(req.query.length);
 
   req.appConfig.db.queryUserProjects(userName)
     .then((result) => {
@@ -181,14 +186,12 @@ const api_userProjects = function (req, res) {
     });
 };
 
-const userController = function () {
-  this.validator = validator;
-  this.api_user = api_user;
-  this.api_userAll = api_userAll;
-  this.api_userFiles = api_userFiles;
-  this.api_userAtlas = api_userAtlas;
-  this.api_userProjects = api_userProjects;
-  this.user = user;
+module.exports = {
+  validator,
+  api_user,
+  api_userAll,
+  api_userFiles,
+  api_userAtlas,
+  api_userProjects,
+  user
 };
-
-module.exports = new userController();

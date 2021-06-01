@@ -1,5 +1,7 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable max-statements */
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 var ToolDrawLine = {
   drawLine: (function () {
