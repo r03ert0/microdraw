@@ -30,7 +30,7 @@
             <a href='/' style="text-decoration:none">
                 <img style='height:56px;vertical-align:middle' src='/img/microdraw-white.svg'/>
             </a><span style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100;vertical-align:middle" id="fontLogo"> 
-                <a href='/' style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100; text-decoration:none">{{nickname}}</a>
+                <a href='/' style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100; text-decoration:none">{{username}}</a>
             </span>
         </div>
     </div>
@@ -50,7 +50,7 @@
             <!-- #userDescription -->
             <div id="userDescription">
                 <h1>{{username}}</h1>
-                <h2>{{nickname}}</h2>
+                <h2>{{name}}</h2>
                 <p>{{joined}}</p>
                 <p>[[userInfo.dataFiles.length]] Datasets</p>
                 <p>[[userInfo.atlasFiles.length]] Atlas Files</p>
@@ -246,7 +246,7 @@ function queryFiles() {
             console.log('The request failed!');
         }
     };
-    xhr.open('GET', `/user/json/{{nickname}}/files?start=${cursorFiles}&length=100`);
+    xhr.open('GET', `/user/json/{{username}}/files?start=${cursorFiles}&length=100`);
     xhr.send();
 }
 function appendFiles(list) {
@@ -267,7 +267,7 @@ function queryAtlas(list) {
             console.log('The request failed!');
         }
     };
-    xhr.open('GET', `/user/json/{{nickname}}/atlas?start=${app.userInfo.atlasFiles.length}&length=100`);
+    xhr.open('GET', `/user/json/{{username}}/atlas?start=${app.userInfo.atlasFiles.length}&length=100`);
     xhr.send();
 }
 function appendAtlas(list) {
@@ -288,7 +288,7 @@ function queryProjects() {
             console.log('The request failed!');
         }
     };
-    xhr.open('GET', `/user/json/{{nickname}}/projects?start=${app.userInfo.projects.length}&length=100`);
+    xhr.open('GET', `/user/json/{{username}}/projects?start=${app.userInfo.projects.length}&length=100`);
     xhr.send();
 }
 function appendProjects(list) {

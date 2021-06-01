@@ -21,7 +21,7 @@ describe('annotation saved by puppeteer can be retrieved', () => {
     }).then((annotations) => {
       annotations.forEach((a) => {
         const path = a && a.annotation && a.annotation.path;
-        const {segments} = path[1];
+        const [, {segments}] = path;
         if (segments) {
           segments.forEach((s) => {
             assert(Array.isArray(s));

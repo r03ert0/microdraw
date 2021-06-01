@@ -1,3 +1,6 @@
+/* eslint-disable global-require */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-console */
 'use strict';
 /*eslint no-console: ["error", { allow: ["warn", "error"] }] */
 
@@ -115,7 +118,7 @@ var checkAnyoneUser = function () {
       console.log('"anyone" user absent: adding one.', err);
       const anyone = {
         username: 'anyone',
-        nickname: 'anyone',
+        // nickname: 'anyone',
         name: 'Any User',
         joined: (new Date()).toJSON()
       };

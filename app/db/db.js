@@ -108,12 +108,16 @@ module.exports = function(overwriteMongoPath, callback) {
 
   /**
      * @function findAnnotations
-     * @param {Object} searchQuery having fields: fileID : string, user:string
+     * @param {Object} searchQuery having fields: fileID : string, username:string
      * @returns {Promise} to resolve as an array of annotations
      */
   const findAnnotations = async (searchQuery, backup) => {
     if (!checkHealth()) {
       throw new Error('db connection not healthy');
+    }
+
+    if(Object.keys(searchQuery).includes("username")) {
+      throw new Error("There is no property 'username' in annotations, use 'user' instead");
     }
 
     let query;
@@ -144,16 +148,16 @@ module.exports = function(overwriteMongoPath, callback) {
   /**
      * @function updateAnnotation
      * @description Update annotation object, appending new regions, replacing existing ones
-     * @param {Object} saveQuery having fields: fileID: string, user: string, project: string, Hash: string, annotation: JSON.stringify(Object{Regions: string[]})
+     * @param {Object} saveQuery having fields: fileID: string, username: string, project: string, Hash: string, annotation: JSON.stringify(Object{Regions: string[]})
      * @returns {Promise} to resolve when saving is complete
      */
-  const updateAnnotation = async (saveQuery) => {
+  const updateAnnotation = async ({fileID, user, project, Hash, annotation: annotationString}) => {
     if (!checkHealth()) {
       throw new Error('db connection not healthy');
     }
 
     // get new annotations and ID
-    const { fileID, user, project, Hash, annotation: annotationString } = saveQuery;
+    // const { fileID, username, project, Hash, annotation: annotationString } = saveQuery;
     const annotation = JSON.parse(annotationString);
     const {Regions: newAnnotations, RegionsToRemove: uidsToRemove} = annotation;
 
@@ -199,7 +203,7 @@ module.exports = function(overwriteMongoPath, callback) {
       await db.get('annotations').update(
         Object.assign(
           {},
-          { fileID, /*user, */project }, // update annotations authored by anyone
+          { fileID, /*user,*/ project }, // update annotations authored by anyone
           { backup: { $exists: false } }
         ),
         { $set: { backup: true } },
@@ -212,7 +216,7 @@ module.exports = function(overwriteMongoPath, callback) {
     // add new version
     const arrayTobeSaved = annotation.Regions.map((region) => ({
       fileID,
-      user,
+      user, // "user" property in annotation corresponds to "username" everywhere else
       project,
       Hash,
       annotation: region
@@ -321,7 +325,7 @@ module.exports = function(overwriteMongoPath, callback) {
     db.get('projects').find({
       $or: [
         {owner: requestedUser},
-        {"collaborators.list": {$elemMatch:{userID: requestedUser}}}
+        {"collaborators.list": {$elemMatch:{username: requestedUser}}}
       ],
       backup: {$exists: false}
     })

@@ -77,7 +77,7 @@
           <table id="access" class="tabContent" style="padding:10px;display:table">
               <thead>
                 <tr>
-                  <th>Nickname</th>
+                  <th>User Name</th>
                   <th>Name</th>
                   <th>Collaborators</th>
                   <th>Annotations</th>
@@ -87,8 +87,8 @@
               <tbody>
                 <tr v-for="val in projectInfo.collaborators.list">
                   <td>
-                    <autocomplete-input v-model="val.userID" @change="updateName(val, event)" class="noEmptyWithPlaceholder" placeholder="Enter user ID"></autocomplete-input>
-                    <!--<input v-model="val.userID" class="noEmptyWithPlaceholder" placeholder="User ID">-->
+                    <autocomplete-input v-model="val.username" @change="updateName(val, event)" class="noEmptyWithPlaceholder" placeholder="Enter user ID"></autocomplete-input>
+                    <!--<input v-model="val.username" class="noEmptyWithPlaceholder" placeholder="User ID">-->
                   </td>
                   <td>
                     <input v-model="val.name" class="noEmptyWithPlaceholder" placeholder="User Name">
@@ -510,7 +510,7 @@ function disableDeleteOnAnyoneUser(e) {
     if(curTable === "access") {
         // check if the selected user is 'anyone'
         const rowIndex = e.currentTarget.querySelector("tr.selected").rowIndex - 1;
-        if(app.projectInfo.collaborators.list[rowIndex].userID === 'anyone') {
+        if(app.projectInfo.collaborators.list[rowIndex].username === 'anyone') {
             // if yes, disable the 'remove' button
             document.querySelector("#removeCollaborator").classList.add('disabled');
         } else {
@@ -570,7 +570,7 @@ function exportFiles() {
 
 function addCollaborator() {
   app.projectInfo.collaborators.list.push({
-    userID: "",
+    username: "",
     access: {
       collaborators:"view",
       annotations:"view",

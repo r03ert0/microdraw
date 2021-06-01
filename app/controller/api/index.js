@@ -18,8 +18,8 @@ router.get('/', async function (req, res) {
     console.warn(req.query);
 
     // current user
-    const user = (req.user && req.user.username) || 'anyone';
-    console.log(`current user: ${user}`);
+    const username = (req.user && req.user.username) || 'anyone';
+    console.log(`current user: ${username}`);
 
     // project name
     const project = (req.query.project) || '';
@@ -37,9 +37,9 @@ router.get('/', async function (req, res) {
         console.log(`project owner: ${owner}, users: ${users}`);
 
         // check if user is among the allowed project's users
-        userIndex = [...users, owner].indexOf(user);
+        userIndex = [...users, owner].indexOf(username);
         if(userIndex<0) {
-            res.status(403).send(`User ${user} not part of project ${project}`);
+            res.status(403).send(`User ${username} not part of project ${project}`);
 
             return;
         }
@@ -50,7 +50,7 @@ router.get('/', async function (req, res) {
 
     const query = {
         fileID: buildFileID(req.query),
-        // user: { $in: [...users, user] },
+        // user: { $in: [...users, username] },
         project: project,
     };
     console.log("api get query", query);
@@ -73,8 +73,8 @@ const saveFromGUI = async function (req, res) {
     const { Hash, annotation } = req.body;
     
     // current user
-    const user = (req.user && req.user.username) || 'anyone';
-    console.log(`current user: ${user}`);
+    const username = (req.user && req.user.username) || 'anyone';
+    console.log(`current user: ${username}`);
 
     // project name
     const project = (req.body.project) || '';
@@ -88,21 +88,22 @@ const saveFromGUI = async function (req, res) {
       const users = result
         && result.collaborators
         && result.collaborators.list
-        && result.collaborators.list.map((u)=>u.username);
+        && result.collaborators.list.map((u) => u.username);
       console.log(`project owner: ${owner}, users: ${users}`);
 
       // check if user is among the allowed project's users
-      userIndex = [...users, owner].indexOf(user);
+      userIndex = [...users, owner].indexOf(username);
       if(userIndex<0) {
-        res.status(403).send(`User ${user} not part of project ${project}`);
+        res.status(403).send(`User ${username} not part of project ${project}`);
 
         return;
       }
     }
 
+    const fileID = buildFileID(req.body);
     req.app.db.updateAnnotation({
-        fileID : buildFileID(req.body),
-        user,
+        fileID,
+        user: username,
         project,
         Hash,
         annotation
@@ -142,7 +143,7 @@ const loadAnnotationFile = function (annotationPath) {
 
 const saveFromAPI = async function (req, res) {
     const fileID = buildFileID(req.query);
-    const user = req.user && req.user.username;
+    const username = req.user && req.user.username;
     const { project, Hash } = req.query;
     const rawString = TMP_DIR
         ? fs.readFileSync(req.files[0].path).toString()
@@ -155,7 +156,7 @@ const saveFromAPI = async function (req, res) {
     } else {
         const { action } = req.query;
         const annotations = action === 'append'
-            ? await req.app.db.findAnnotations({ fileID, user, project })
+            ? await req.app.db.findAnnotations({ fileID, user: username, project })
             : { Regions: [] };
 
         /**
@@ -164,7 +165,7 @@ const saveFromAPI = async function (req, res) {
         const { Regions, ...rest } = annotations
         req.app.db.updateAnnotation({
             fileID,
-            user,
+            user: username,
             project,
             Hash,
             annotation: JSON.stringify({
@@ -188,8 +189,8 @@ router.post('/', function (req, res) {
 });
 
 const filterAuthorizedUserOnly = (req, res, next) => {
-    const user = req.user && req.user.username;
-    if (typeof user === 'undefined') {
+    const username = req.user && req.user.username;
+    if (typeof username === 'undefined') {
         return res.status(401).send({msg:'Invalid user'});
     } else {
         return next()

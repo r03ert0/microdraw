@@ -16,91 +16,93 @@ describe('Mocha Started',()=>{
 describe('testing db.js',()=>{
 
     const dummyUser = {
-        username : 'tommy jones',
-        age : 14
+        username: 'tommyjones',
+        name: 'Tommy Jones',
+        age: 14
     }
     const dummyUser2 = {
-        username : 'jessica jones',
-        age : 55
+        username: 'jessicajones',
+        name: 'Jessica Jones',
+        age: 55
     }
 
     const dummyGithubUser1 = {
-        username: 'github1 username',
+        username: 'github1username',
         name: 'github1 name',
-        nickename: 'github1 nickname',
+        // nickname: 'github1 nickname',
         url: 'github1 url',
         brainboxURL: 'github1 brainbox URL',
         joined: 'github1 joined'
     }
 
     const dummyAnnotation = {
-        fileID : 'dummy fileID 1',
-        user : 'tommy jones',
-        annotation : JSON.stringify({
-            annotationKey1 : 'dummy annotation 1 annotation value 1',
-            annotationkey2 : 'dummy annotation 1 annotation value 2',
-            Regions : ['dummy annotation 1 region1','dummy annotation 1 region2']
+        fileID: 'dummy fileID 1',
+        user: 'tommyjones', // "user" in annotation is "username" everywhere else
+        annotation: JSON.stringify({
+            annotationKey1: 'dummy annotation 1 annotation value 1',
+            annotationkey2: 'dummy annotation 1 annotation value 2',
+            Regions: ['dummy annotation 1 region1','dummy annotation 1 region2']
         }),
-        Hash : 'abc123'
+        Hash: 'abc123'
     }
 
     const expectedSavedDummy = [{
-        fileID : 'dummy fileID 1',
-        user : 'tommy jones',
-        annotation : 'dummy annotation 1 region2',
-        Hash : 'abc123'
+        fileID: 'dummy fileID 1',
+        user: 'tommyjones', // "user" in annotation is "username" everywhere else
+        annotation: 'dummy annotation 1 region2',
+        Hash: 'abc123'
     },{
-        fileID : 'dummy fileID 1',
-        user : 'tommy jones',
-        annotation : 'dummy annotation 1 region1',
-        Hash : 'abc123'
+        fileID: 'dummy fileID 1',
+        user: 'tommyjones',
+        annotation: 'dummy annotation 1 region1',
+        Hash: 'abc123'
     }]
 
     const dummyAnnotation_updated = {
-        fileID : 'dummy fileID 1',
-        user : 'tommy jones',
-        annotation : JSON.stringify({
-            annotationKey1 : 'dummy annotation 1 annotation value 1 updated',
-            annotationkey2 : 'dummy annotation 1 annotation value 2 updated',
-            Regions : ['dummy annotation 1 updated region1','dummy annotation 1 updated region2']
+        fileID: 'dummy fileID 1',
+        user: 'tommyjones', // "user" in annotation is "username" everywhere else
+        annotation: JSON.stringify({
+            annotationKey1: 'dummy annotation 1 annotation value 1 updated',
+            annotationkey2: 'dummy annotation 1 annotation value 2 updated',
+            Regions: ['dummy annotation 1 updated region1','dummy annotation 1 updated region2']
         }),
-        Hash : 'abc123 updated'
+        Hash: 'abc123 updated'
     }
 
     const expectedSavedDummyUpdated = [{
-        fileID : 'dummy fileID 1',
-        user : 'tommy jones',
-        annotation : 'dummy annotation 1 updated region2',
-        Hash : 'abc123 updated'
+        fileID: 'dummy fileID 1',
+        user: 'tommyjones',
+        annotation: 'dummy annotation 1 updated region2',
+        Hash: 'abc123 updated'
     },{
-        fileID : 'dummy fileID 1',
-        user : 'tommy jones',
-        annotation : 'dummy annotation 1 updated region1',
-        Hash : 'abc123 updated'
+        fileID: 'dummy fileID 1',
+        user: 'tommyjones',
+        annotation: 'dummy annotation 1 updated region1',
+        Hash: 'abc123 updated'
     }]
 
 
     const dummyAnnotation2 = {
-        fileID : 'dummy fileID 2',
-        user : 'anyone',
-        annotation : JSON.stringify({
-            annotationKey1 : 'dummy annotation 2 annotation value 1',
-            annotationkey2 : 'dummy annotation 2 annotation value 2',
-            Regions : ['dummy annotation 2 region1','dummy annotation 2 region2']
+        fileID: 'dummy fileID 2',
+        user: 'anyone',
+        annotation: JSON.stringify({
+            annotationKey1: 'dummy annotation 2 annotation value 1',
+            annotationkey2: 'dummy annotation 2 annotation value 2',
+            Regions: ['dummy annotation 2 region1','dummy annotation 2 region2']
         }),
-        Hash : '123abc'
+        Hash: '123abc'
     }
 
     const expectedSavedDummy2 = [{
-        fileID : 'dummy fileID 2',
-        user : 'anyone',
-        annotation : 'dummy annotation 2 region1',
-        Hash : '123abc'
+        fileID: 'dummy fileID 2',
+        user: 'anyone',
+        annotation: 'dummy annotation 2 region1',
+        Hash: '123abc'
     },{
-        fileID : 'dummy fileID 2',
-        user : 'anyone',
-        annotation : 'dummy annotation 2 region2',
-        Hash : '123abc'
+        fileID: 'dummy fileID 2',
+        user: 'anyone',
+        annotation: 'dummy annotation 2 region2',
+        Hash: '123abc'
     }]
 
     before(() => db.db._db.dropDatabase())
@@ -144,7 +146,7 @@ describe('testing db.js',()=>{
 
     it('querying the empty mongodb should not yield any results',(done)=>{
         db.queryUser({
-            username : dummyUser.username
+            username: dummyUser.username
         }).then(user=>{
             done('should have been empty, but not really empty')
         }).catch(e=>{
@@ -175,10 +177,10 @@ describe('testing db.js',()=>{
         it('querying the inserted users should work as expected',(done)=>{
             Promise.all([
                 db.queryUser({
-                    username : dummyUser.username
+                    username: dummyUser.username
                 }),
                 db.queryUser({
-                    username : dummyUser2.username
+                    username: dummyUser2.username
                 })
             ]).then(users=>{
                 expect(users).to.deep.equal([
@@ -330,7 +332,7 @@ describe('testing db.js',()=>{
         
         it('should fetch an empty array when no results could be found',(done)=>{
             db.findAnnotations({
-                fileID : 'clearly a non-existent fileid'
+                fileID: 'clearly a non-existent fileid'
             }).then(annotations=>{
                 expect(annotations).to.be.deep.equal([])
                 done()
