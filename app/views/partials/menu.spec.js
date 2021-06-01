@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-undef */
 const chai = require('chai');
 const assert = require('assert');
 const request = require('request');

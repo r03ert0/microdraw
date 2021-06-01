@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+/* eslint-disable max-statements */
 
 const mustacheExpress = require('mustache-express');
 const path = require('path');
@@ -49,7 +51,7 @@ module.exports = (app) => {
 
   app.get('/image', getHttpImg);
 
-  app.get('/microdraw', (req, res, next) => {
+  app.get('/microdraw', (req, res /*, next*/) => {
     res.render('partials/microdraw');
   });
 
