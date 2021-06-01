@@ -25,20 +25,20 @@ const user = function (req, res) {
   const login = (req.user) ?
     ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
     ('<a href=\'/auth/github\'>Log in with GitHub</a>');
-  const requestedUser = req.params.userName;
+  const username = req.params.userName;
 
   // Store return path in case of login
   req.session.returnTo = req.originalUrl;
 
-  req.appConfig.db.queryUser({username: requestedUser})
+  req.appConfig.db.queryUser({username})
     .then((json) => {
       if (json) {
         const context = {
-          username: json.name,
+          username, // json.name,
           // nickname: json.nickname,
           joined: dateFormat(json.joined, 'dddd d mmm yyyy, HH:MM'),
           avatar: json.avatarURL,
-          title: requestedUser,
+          title: json.name,
           userInfo: JSON.stringify(json),
           tab: req.query.tab || 'data',
           login

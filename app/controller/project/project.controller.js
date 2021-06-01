@@ -97,6 +97,11 @@ var settings = function(req, res) {
       // find username and name for each of the collaborators in the project
       const arr1 = [];
       for(let j=0; j<json.collaborators.list.length; j++) {
+        if (Object.keys(json.collaborators.list[j]).includes("username") === false) {
+
+          return res.send("Error with user in project. Contact the adminstrators at https://mattermost.brainhack.org/brainhack/channels/microdraw").status(500);
+        }
+
         arr1.push(req.appConfig.db.queryUser({username: json.collaborators.list[j].username}));
       }
 
