@@ -27,7 +27,7 @@ module.exports = function(overwriteMongoPath, callback) {
     if (!checkHealth()) {
       return reject(new Error('db connection not healthy'));
     }
-    db.get('user').update({
+    db.get('users').update({
       username: user.username
     }, {
       $set: user
