@@ -1,13 +1,14 @@
 /* eslint-disable no-sync */
+const fs = require('fs');
 const GithubStrategy = require('passport-github').Strategy;
 const passport = require('passport');
-const fs = require('fs');
 const path = require('path');
 
 module.exports = (app) => {
   try{
     const githubKeys = fs.readFileSync( path.join(__dirname, 'github-keys.json'), 'utf-8' );
     const githubKeysJson = JSON.parse(githubKeys);
+
     passport.use(new GithubStrategy( githubKeysJson,
       (accessToken, refreshToken, profile, done) => done(null, profile)));
 
@@ -43,9 +44,7 @@ module.exports = (app) => {
       }));
 
     return;
-  }catch( e ) {
-
+  } catch( e ) {
     console.log('./app/auth/github.js', 'github-key.json missing or parsing github-keys.json and setting route error', e);
-
   }
 };
