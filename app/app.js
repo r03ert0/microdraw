@@ -107,29 +107,40 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 
 /* setup DB */
-var checkAnyoneUser = function () {
+// var checkAnyoneUser = function () {
 
-  /* check that the 'anyone' user exists. Insert it if it doesn't */
-  db.queryUser({username: 'anyone'})
-    .then((res) => {
-      console.log('"anyone" user correctly configured.', res);
-    })
-    .catch((err) => {
-      console.log('"anyone" user absent: adding one.', err);
-      const anyone = {
-        username: 'anyone',
-        // nickname: 'anyone',
-        name: 'Any User',
-        joined: (new Date()).toJSON()
-      };
-      db.addUser(anyone);
-    });
-};
-const db = require('./db/db')(null, checkAnyoneUser);
-app.db = db;
+//   /* check that the 'anyone' user exists. Insert it if it doesn't */
+//   db.queryUser({username: 'anyone'})
+//     .then((res) => {
+//       console.log('"anyone" user correctly configured.', res);
+//     })
+//     .catch((err) => {
+//       console.log('"anyone" user absent: adding one.', err);
+//       const anyone = {
+//         username: 'anyone',
+//         // nickname: 'anyone',
+//         name: 'Any User',
+//         joined: (new Date()).toJSON()
+//       };
+//       db.addUser(anyone);
+//     });
+// };
+// const db = require('./db/db')(null, checkAnyoneUser);
+// app.db = db;
 
 /* setup authentication */
-require('./auth/auth')(app);
+const nwl = require('neuroweblab');
+nwl.init({
+  app,
+  MONGO_DB: process.env.MONGODB_TEST || process.env.MONGODB || '127.0.0.1:27017/microdraw',
+  dirname: path.join(__dirname, "/auth/"),
+  usernameField: "username",
+  usersCollection: "users",
+  projectsCollection: "projects",
+  annotationsCollection: "annotations"
+});
+global.authTokenMiddleware = nwl.authTokenMiddleware;
+const {db} = app;
 
 /* setup GUI routes */
 require('./routes/routes')(app);
