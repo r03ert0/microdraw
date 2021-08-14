@@ -1,6 +1,6 @@
 # MicroDraw
 
-[![CircleCI](https://circleci.com/gh/r03ert0/microdraw/tree/master.svg?style=shield)](https://circleci.com/gh/r03ert0/microdraw/tree/master) [![Join the chat at https://gitter.im/r03ert0/microdraw](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/r03ert0/microdraw?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![CI](https://github.com/neuroanatomy/microdraw/actions/workflows/main.yml/badge.svg)](https://github.com/neuroanatomy/microdraw/actions/workflows/main.yml) [![CircleCI](https://circleci.com/gh/r03ert0/microdraw/tree/master.svg?style=shield)](https://circleci.com/gh/r03ert0/microdraw/tree/master) [![Join the chat at https://gitter.im/r03ert0/microdraw](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/r03ert0/microdraw?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ![microdraw-vervet](https://user-images.githubusercontent.com/2310732/31443628-40b315ec-ae9a-11e7-9c2e-d133b5921687.png)
 
