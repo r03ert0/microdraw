@@ -82,8 +82,8 @@ describe('sinon works', () => {
 })
 
 describe('controller/api/index.js', () => {
-    const annoationInDb = {
-        Regions: ['hello: world', 'foobar']
+    const annotationInDb = {
+        Regions: [{annotation: {uid: 'abc'}}, {annotation: {uid: 'cde'}}]
     }
     let _server,
         queryPublicProject = false,
@@ -103,13 +103,15 @@ describe('controller/api/index.js', () => {
         url = `http://127.0.0.1:${port}`,
     
         returnFoundAnnotation = true,
-        updateAnnotation = sinon.stub().resolves(), 
-        findAnnotations = sinon.stub().callsFake(() => Promise.resolve( returnFoundAnnotation ? annoationInDb : {Regions: []} )),
+        updateAnnotations = sinon.stub().resolves(), 
+        insertAnnotations = sinon.stub().resolves(), 
+        findAnnotations = sinon.stub().callsFake(() => Promise.resolve( returnFoundAnnotation ? annotationInDb : {Regions: []} )),
         queryProject = sinon.stub().callsFake(() => Promise.resolve(queryPublicProject ? publicProject : privateProject))        
     
     before(() => {
         app.db = {
-            updateAnnotation,
+            updateAnnotations,
+            insertAnnotations,
             findAnnotations,
             queryProject
         }
@@ -117,7 +119,8 @@ describe('controller/api/index.js', () => {
     })
 
     beforeEach(() => {
-        updateAnnotation.resetHistory()
+        updateAnnotations.resetHistory()
+        insertAnnotations.resetHistory()
         findAnnotations.resetHistory()
         queryProject.resetHistory()
     })
@@ -283,7 +286,7 @@ describe('controller/api/index.js', () => {
                     source: '/path/to/json.json',
                     slice: 24,
                     Hash: 'testworld',
-                    annotation: 'testworld',
+                    annotation: '{"Regions": [], "RegionsToRemove": []}',
                     project: 'alreadyTestedPreviously'
                 }
                 const {
@@ -326,18 +329,21 @@ describe('controller/api/index.js', () => {
                         expect(status).to.equal(200)
                     })
 
-                    it('updateAnnotation should be called', () => {
-                        assert(updateAnnotation.called)
+                    it('updateAnnotations should be called', () => {
+                        assert(updateAnnotations.called)
                     })
 
-                    it('updateAnnotation called with correct arg', () => {
-
-                        assert(updateAnnotation.calledWith({
-                            fileID: '/path/to/json.json&slice=24',
-                            user: USER_BOB.username,
-                            ...rest
-                        }))
+                    it('insertAnnotations should be called', () => {
+                        assert(insertAnnotations.called)
                     })
+
+                    // it('updateAnnotation called with correct arg', () => {
+                    //     assert(updateAnnotations.calledWith({
+                    //         fileID: '/path/to/json.json&slice=24',
+                    //         user: USER_BOB.username,
+                    //         ...rest
+                    //     }))
+                    // })
                 })
             })
         })
@@ -454,10 +460,13 @@ describe('controller/api/index.js', () => {
                             assert(findAnnotations.notCalled)
                         })
     
-                        it('updateAnnotation NOT called', () => {
-                            assert(updateAnnotation.notCalled)
+                        it('updateAnnotations NOT called', () => {
+                            assert(updateAnnotations.notCalled)
                         })
-                    })
+
+                        it('insertAnnotations NOT called', () => {
+                            assert(insertAnnotations.notCalled)
+                        })                    })
                     describe('action=append', () => {
 
                         let res
@@ -481,9 +490,12 @@ describe('controller/api/index.js', () => {
                         })
     
                         it('updateAnnotation NOT called', () => {
-                            assert(updateAnnotation.notCalled)
+                            assert(updateAnnotations.notCalled)
                         })
-                    })
+
+                        it('insertAnnotation NOT called', () => {
+                            assert(insertAnnotations.notCalled)
+                        })                    })
                 })
                 
                 // describe('authenicated user', () => {
