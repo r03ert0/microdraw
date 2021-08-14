@@ -69,6 +69,83 @@ function buildFileID({source, slice}) {
     return `${source}&slice=${slice}`;
 }
 
+const updateAnnotation = async (req, {
+    fileID,
+    user,
+    project,
+    Hash,
+    annotationString
+}) => {
+    // get new annotations and ID
+    const annotation = JSON.parse(annotationString);
+    const {Regions: newAnnotations, RegionsToRemove: uidsToRemove} = annotation;
+
+    // get previous annotations
+    let prevAnnotations;
+    try {
+      prevAnnotations = await req.app.db.findAnnotations({fileID, user, project});
+    } catch(err) {
+      throw new Error(err);
+    }
+
+    // update previous annotations with new annotations,
+    // overwrite what already exists, remove those marked for removal
+    for(const prevAnnot of prevAnnotations.Regions) {
+      const {uid} = prevAnnot.annotation;
+      let foundInPrevious = false;
+      for(const newAnnot of newAnnotations) {
+        if(newAnnot.uid === uid) {
+          foundInPrevious = true;
+          break;
+        }
+      }
+
+      let markedForRemoval = false;
+      if(uidsToRemove) {
+        for(const uidToRemove of uidsToRemove) {
+          if(uid === uidToRemove) {
+            markedForRemoval = true;
+            break;
+          }
+        }
+      }
+
+      if(!foundInPrevious && !markedForRemoval) {
+        newAnnotations.push(prevAnnot.annotation);
+      }      
+    }
+    annotation.Regions = newAnnotations;
+
+    // mark previous version as backup
+    try {
+      await req.app.db.updateAnnotations(
+        Object.assign(
+          {},
+          { fileID, /*user,*/ project }, // update annotations authored by anyone
+          { backup: { $exists: false } }
+        ),
+        { $set: { backup: true } },
+        { multi: true }
+      );
+    } catch (err) {
+      throw new Error(err);
+    }
+
+    // add new version
+    const arrayTobeSaved = annotation.Regions.map((region) => ({
+      fileID,
+      user, // "user" property in annotation corresponds to "username" everywhere else
+      project,
+      Hash,
+      annotation: region
+    }));
+    try {
+      await req.app.db.insertAnnotations(arrayTobeSaved);
+    } catch(err) {
+      throw new Error(err);
+    }
+}
+
 const saveFromGUI = async function (req, res) {
     const { Hash, annotation } = req.body;
     
@@ -101,15 +178,19 @@ const saveFromGUI = async function (req, res) {
     }
 
     const fileID = buildFileID(req.body);
-    req.app.db.updateAnnotation({
+    updateAnnotation(req, {
         fileID,
         user: username,
         project,
         Hash,
-        annotation
+        annotationString: annotation
     })
-    .then(() => res.status(200).send({success: true}))
-    .catch((e) => res.status(500).send({err:JSON.stringify(e)}));
+    .then(() => {
+      res.status(200).send({success: true})
+    })
+    .catch((e) => {
+      res.status(500).send({err:JSON.stringify(e)})
+    });
 };
 
 /**
@@ -163,12 +244,12 @@ const saveFromAPI = async function (req, res) {
          * use object destruction to avoid mutation of annotations object
          */
         const { Regions, ...rest } = annotations
-        req.app.db.updateAnnotation({
+        updateAnnotation(req, {
             fileID,
             user: username,
             project,
             Hash,
-            annotation: JSON.stringify({
+            annotationString: JSON.stringify({
                 ...rest,
                 Regions: Regions.concat(json.map(v => v.annotation))
             })
