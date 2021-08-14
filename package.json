@@ -8,7 +8,7 @@
     "lint": "eslint",
     "test": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node test.js",
     "mocha": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --exit",
-    "mocha-brk": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --inspect-brk",
+    "mocha-brk": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --inspect-brk --timeout=10000000",
     "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha ./test/e2e/*.spec.js"
   },
   "dependencies": {
@@ -24,6 +24,7 @@
     "monk": "^7.1.1",
     "multer": "^1.4.1",
     "mustache-express": "latest",
+    "neuroweblab": "github:neuroanatomy/neuroweblab",
     "passport": "^0.4.0",
     "passport-github": "latest",
     "passport-local": "^1.0.0",
