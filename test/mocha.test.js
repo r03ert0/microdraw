@@ -6,13 +6,13 @@ require('../app/routes/routeExtensions.spec');
 require('../app/controller/api/api.spec');
 
 /**
- * testing auth
+ * testing auth: moved to NWL
  */
-require('../app/auth/token.spec');
+// require('../app/auth/token.spec');
 // require('../app/auth/local.spec');
-require('../app/auth/auth.spec');
+// require('../app/auth/auth.spec');
 
 /**
- * testing db
+ * testing db: moved to NWL
  */
-require('../app/db/db.spec');
+// require('../app/db/db.spec');
