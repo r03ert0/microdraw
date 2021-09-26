@@ -3,7 +3,8 @@
 
 const mustacheExpress = require('mustache-express');
 const path = require('path');
-const {authTokenMiddleware, getTokenEndPoint} = require('../auth/token');
+const nwl = require('neuroweblab');
+const {authTokenMiddleware, getTokenEndPoint} = nwl;
 const {getHttpImg} = require('../serveHttpImages/serveHttpImages');
 console.log(getHttpImg);
 
