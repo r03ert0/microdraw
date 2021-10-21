@@ -1391,7 +1391,7 @@ const Microdraw = (function () {
       },
 
       /**
-       * @desc Initialises a slider to easily change between sections
+       * @desc Initialises a slider to change between sections
        * @param {number} minVal Minimum value
        * @param {number} maxVal Maximum value
        * @param {number} step Increase from one slider position to the next
@@ -1634,7 +1634,7 @@ const Microdraw = (function () {
           me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/Openseadragon-screenshot@v0.0.1/openseadragonScreenshot.js"),
           me.loadScript("/lib/FileSaver.js/FileSaver.min.js"),
           me.loadScript("/js/neurolex-ontology.js"),
-          me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/muijs@v0.1.1/mui.js"),
+          me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/muijs@v0.1.2/mui.js"),
           me.loadScript("https://unpkg.com/codeflask/build/codeflask.min.js"),
           me.loadScript("https://cdn.jsdelivr.net/gh/r03ert0/consolita.js@0.2.1/consolita.js"),
     
