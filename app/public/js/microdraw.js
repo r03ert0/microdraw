@@ -1623,6 +1623,7 @@ const Microdraw = (function () {
           me.loadScript("/lib/jquery-1.11.0.min.js"),
           me.loadScript("/lib/paper-full-0.12.11.min.js"),
           me.loadScript("/lib/openseadragon/openseadragon.js"),
+          me.loadScript("https://unpkg.com/hippy-hippo@0.0.1/dist/hippy-hippo-umd.js"),
           me.loadScript("/js/microdraw-ws.js")
         ]);
 
