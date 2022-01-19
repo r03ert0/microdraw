@@ -22,7 +22,7 @@ test/*.png
 access.log
 package-lock.json
 app/controller/api/tmp
-test/e2e/screenshots/
+test/e2e/screenshots/*.png
 .gitignore
 cert.pem
 cfg.json

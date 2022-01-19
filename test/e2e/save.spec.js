@@ -3,7 +3,24 @@ const assert = require('assert');
 const mongoDbPath = process.env.MONGODB_TEST;
 if (!mongoDbPath) { throw new Error(`MONGODB_TEST must be explicitly set to avoid overwriting production `); }
 
-const db = require('../../app/db/db')(mongoDbPath);
+const mockedExpress = {
+  use: () => {},
+  get: () => {},
+  post: () => {},
+  set: () => {}
+};
+const path = require('path');
+const nwl = require('neuroweblab');
+nwl.init({
+  app: mockedExpress,
+  dirname: path.join(__dirname, "/auth/"),
+  MONGO_DB: process.env.MONGODB_TEST,
+  usernameField: "username",
+  usersCollection: "users",
+  projectsCollection: "projects",
+  annotationsCollection: "annotations"
+});
+const {db} = mockedExpress;
 
 describe('mocha works', () => {
   it('mocha works', () => {
@@ -13,7 +30,7 @@ describe('mocha works', () => {
 
 describe('annotation saved by puppeteer can be retrieved', () => {
   after(() => {
-    db.db.close();
+    db.mongoDB().close();
   });
   it('works', (done) => {
     db.findAnnotations({
