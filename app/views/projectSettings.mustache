@@ -638,17 +638,19 @@ function saveChanges() {
             const res = JSON.parse(xhr.responseText);
             console.log(xhr.responseText);
             if(res.success) {
-                document.querySelector("#saveFeedback").textContent = "Successfully saved";
+                const message = (res.message != null) ? res.message : "Successfully saved";
+                document.querySelector("#saveFeedback").textContent = res.message;
                 setTimeout(function() {
                     document.querySelector("#saveFeedback").textContent = "";
                 },2000);
             }
         } else {
-            document.querySelector("#saveFeedback").textContent = "Unable to save. Please try again later";
-            setTimeout(function() {
-                document.querySelector("#saveFeedback").textContent = "";
-            },3000);
-            console.log(err);
+          const message = (res.error != null) ? res.error : "Unable to save. Please try again later";
+          document.querySelector("#saveFeedback").textContent = message;
+          setTimeout(function() {
+              document.querySelector("#saveFeedback").textContent = "";
+          },3000);
+          console.log(err);
         }
     };
     const url = `/project/json/${app.projectInfo.shortname}`;

@@ -4,7 +4,7 @@
 const mustacheExpress = require('mustache-express');
 const path = require('path');
 const nwl = require('neuroweblab');
-const {authTokenMiddleware, getTokenEndPoint} = nwl;
+const {authTokenMiddleware} = nwl;
 const {getHttpImg} = require('../serveHttpImages/serveHttpImages');
 console.log(getHttpImg);
 
@@ -47,8 +47,6 @@ module.exports = (app) => {
   app.use('/project', require('../controller/project/'));
 
   app.use('/search', require('../controller/search/'));
-
-  app.get('/token', getTokenEndPoint);
 
   app.get('/image', getHttpImg);
 

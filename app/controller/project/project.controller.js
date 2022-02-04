@@ -4,7 +4,7 @@
 // const dateFormat = require('dateformat');
 // const checkAccess = require('../checkAccess/checkAccess.js');
 // const dataSlices = require('../dataSlices/dataSlices.js');
-
+const { AccessControlService } = require('neuroweblab');
 const validator = function (req, res, next) {
   next();
 };
@@ -220,17 +220,28 @@ const apiProjectFiles = function (req, res) {
   res.send({});
 };
 
-const postProject = function (req, res) {
-  // const {projectName} = req.params;
-  // const {username} = req.user;
-  console.log("POST project", req.body);
-  const projectInfo = JSON.parse(req.body.data);
+const postProject = async function (req, res) {
+  let loggedUser = "anyone";
+  if(req.isAuthenticated()) {
+    loggedUser = req.user.username;
+  } else
+  if(req.isTokenAuthenticated) {
+    loggedUser = req.tokenUsername;
+  }
+  const newProject = JSON.parse(req.body.data);
+  const oldProject = await req.appConfig.db.queryProject({shortname: newProject.shortname});
 
-  req.appConfig.db.upsertProject(projectInfo)
-    .then((o) => { console.log('postProject', o); res.send({success: true, response: o}); })
+  const ignoredChanges = AccessControlService.preventUnauthorizedUpdates(newProject, oldProject, loggedUser);
+  let successMessage = "Project settings updated.";
+  if(ignoredChanges.length > 0) {
+    successMessage += ` Some changes (on ${ignoredChanges.join(', ')}) were ignored due to a lack of permissions.`;
+  }
+
+  req.appConfig.db.upsertProject(newProject)
+    .then((o) => { console.log('postProject', o); res.send({success: true, response: o, message: successMessage}); })
     .catch((e) => res
       .send(e)
-      .status(403)
+      .status(500)
       .end());
 };
 
