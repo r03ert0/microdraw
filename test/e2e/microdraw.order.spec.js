@@ -88,7 +88,7 @@ describe('Editing tools: order', async () => {
     assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });

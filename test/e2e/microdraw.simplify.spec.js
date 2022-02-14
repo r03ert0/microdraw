@@ -23,8 +23,10 @@ let browser;
 let page;
 
 describe('Editing tools: simplify', async () => {
+  before(async () => {
+    browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  });
   it('opens a data page', async () => {
-    browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], dumpio: false});
     page = await browser.newPage();
     await page.setViewport({width: U.width, height: U.height})
     const diff = await U.comparePageScreenshots(
@@ -73,7 +75,7 @@ describe('Editing tools: simplify', async () => {
   }).timeout(0);
 
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });

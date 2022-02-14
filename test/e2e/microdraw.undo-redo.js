@@ -123,7 +123,7 @@ describe('Editing tools: undo and redo', async () => {
   }).timeout(0);
 
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });

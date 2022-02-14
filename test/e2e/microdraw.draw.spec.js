@@ -147,7 +147,7 @@ describe('Editing tools: draw polygons and curves', async () => {
     assert(diff<U.pct1, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });

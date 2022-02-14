@@ -23,8 +23,10 @@ let browser;
 let page;
 
 describe('Editing tools: Copy and paste', async () => {
-  it('opens a data page', async () => {
+  before(async () => {
     browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  });
+  it('opens a data page', async () => {
     page = await browser.newPage();
     await page.setViewport({width: U.width, height: U.height})
     const diff = await U.comparePageScreenshots(
@@ -72,7 +74,7 @@ describe('Editing tools: Copy and paste', async () => {
     assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });
