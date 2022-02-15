@@ -104,7 +104,7 @@ const testingCredentials = {
 };
 
 const insertUser = function (user) {
-  return db.get('suser').insert(user);
+  return db.get('users').insert(user);
 };
 
 const insertProject = function (project) {
