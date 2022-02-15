@@ -1,20 +1,29 @@
-
-/*
-const path = require('path')
-exports.getMockfsConfig = (dirname, filename, content) => {
-    const obj = {}
-    obj[path.join(dirname, filename)] = content
-    return obj
-}
-*/
-
 const fs = require('fs');
 const path = require('path');
 const {PNG} = require('pngjs');
 const pixelmatch = require('pixelmatch');
 const monk = require('monk');
-const db = monk(process.env.MONGODB_TEST);
+const chai = require('chai');
+
+let db, server;
 const serverURL = "http://127.0.0.1:3000";
+
+const initResources = () => {
+  db = monk(process.env.MONGODB_TEST);
+  const {server: appServer} = require('../app/app');
+  server = appServer;
+};
+
+const closeResources = () => {
+  if (db) {
+    db.close();
+  }
+  if (server) {
+    server.close();
+  }
+};
+
+const getServer = () => server;
 
 const newPath = './test/e2e/screenshots/';
 const refPath = './test/reference-screenshots/';
@@ -160,7 +169,7 @@ const parseCookies = (str) => str
     },
     "files": {
         "list": [
-          {source: "https://microdraw.pasteur.fr/vervet/vervet.json", name: "vervet"}
+          {source: "https://microdraw.pasteur.fr/test_data/cat.json", name: "Cat"}
         ]
     },
     "annotations": {
@@ -173,42 +182,6 @@ const parseCookies = (str) => str
             }
         ]
     }
-};
-
-const {server} = require('../app/app');
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-chai.use(chaiHttp);
-const agent = chai.request.agent(server);
-let cookies = [];
-let token = '';
-
-const setToken = (t) => token = t;
-const setCookies = (c) => cookies = c;
-const getCookies = () => cookies;
-
-const get = function(url, logged) {
-  if (logged) {
-    return agent.get(url).query({ token });
-  }
-
-  return chai.request(serverURL).get(url);
-};
-
-const post = function(url, logged) {
-  if (logged) {
-    return agent.post(`${url}?token=${token}`);
-  }
-
-  return chai.request(serverURL).post(url);
-};
-
-const del = function(url, logged) {
-  if (logged) {
-    return agent.del(url).query({ token });
-  }
-
-  return chai.request(serverURL).del(url);
 };
 
 const createProjectWithPermission = function(name, accessProp) {
@@ -239,7 +212,7 @@ const createProjectWithPermission = function(name, accessProp) {
     },
     "files": {
         "list": [
-          {source: "https://microdraw.pasteur.fr/vervet/vervet.json", name: "vervet"}
+          {source: "https://microdraw.pasteur.fr/test_data/cat.json", name: "cat"}
         ]
     },
     "annotations": {
@@ -277,15 +250,11 @@ module.exports = {
   removeProject,
   queryProject,
   createProjectWithPermission,
+  initResources,
+  closeResources,
+  getServer,
   parseCookies,
-  get, post, del,
-  setCookies,
-  getCookies,
-  setToken,
   db,
-  agent,
-  cookies,
-  token,
   server,
   serverURL,
   testingCredentials,

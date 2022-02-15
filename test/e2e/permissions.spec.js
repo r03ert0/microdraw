@@ -1,16 +1,68 @@
 'use strict';
 
 const chai = require('chai');
-var {assert} = chai;
+var {assert, expect} = chai;
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const U = require('../../test/mocha.test.util');
 const _ = require('lodash');
 const puppeteer = require('puppeteer');
 
-const { get, post, del } = U;
-
 describe('TESTING PERMISSIONS', function () {
+  let agent;
+  let cookies = [];
+  let token = '';
+  
+  before(async () => {
+    agent = chai.request.agent(U.getServer());
+    await U.insertProject(U.privateProjectTest);
+    try {
+      await agent.post('/localSignup')
+        .send(U.testingCredentials)
+        .timeout(1000); // FIXME: (in nwl)works but hangs indefinitely
+    } catch(_e) {
+      //
+    }
+    let res = await agent.post('/localLogin').redirects(0)
+      .send(U.testingCredentials);
+    expect(res).to.have.cookie('connect.sid');
+    cookies = U.parseCookies(res.headers['set-cookie'][0]);
+    
+    res = await agent.get('/token');
+    assert.exists(res.body.token);
+    assert.isNotEmpty(res.body.token);
+    token = res.body.token;
+  });
+  
+  after(async function () {
+    await U.removeProject(U.privateProjectTest.shortname);
+    await U.removeUser(U.testingCredentials.username);
+  });
+  
+  const get = function(url, logged) {
+    if (logged) {
+      return agent.get(url).query({ token });
+    }
+  
+    return chai.request(U.serverURL).get(url);
+  };
+  
+  const post = function(url, logged) {
+    if (logged) {
+      return agent.post(`${url}?token=${token}`);
+    }
+  
+    return chai.request(U.serverURL).post(url);
+  };
+  
+  const del = function(url, logged) {
+    if (logged) {
+      return agent.del(url).query({ token });
+    }
+  
+    return chai.request(U.serverURL).del(url);
+  };
+
   const forbiddenStatusCodes = [403, 401];
 
   describe('Test basic unprivileged access', function() {
@@ -423,7 +475,7 @@ describe('TESTING PERMISSIONS', function () {
       before(async function() {
         browser = await puppeteer.launch({ headless: true, ignoreHTTPSErrors: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
         page = await browser.newPage();
-        await page.setCookie(...U.getCookies());
+        await page.setCookie(...cookies);
       });
   
       after(function() {
