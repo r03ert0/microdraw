@@ -111,13 +111,10 @@ const insertProject = function (project) {
   return db.get('projects').insert(project);
 };
 
-<<<<<<< HEAD
-=======
 const queryProject = function (shortname) {
   return db.get('projects').findOne({ shortname, backup: { $exists: 0 } });
 };
 
->>>>>>> More permission tests
 const removeUser = function (nickname) {
   return db.get('users').remove({nickname});
 };
