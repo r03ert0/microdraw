@@ -77,7 +77,7 @@ describe('Editing tools: convert polygons to bézier and vice-versa', async () =
     assert(diff<U.pct5, `${diff} pixels were different`);
   }).timeout(0);
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });

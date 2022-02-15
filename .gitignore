@@ -20,7 +20,6 @@ test/*.png
 .DS_Store
 .vscode
 access.log
-package-lock.json
 app/controller/api/tmp
 test/e2e/screenshots/*.png
 .gitignore

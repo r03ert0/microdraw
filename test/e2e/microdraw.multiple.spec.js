@@ -23,8 +23,10 @@ let browser;
 let page1, page2;
 
 describe('Editing tools: draw polygons and curves', async () => {
+  before(async () => {
+    browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  });
   it('opens a data page', async () => {
-    browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'], dumpio: false});
     page1 = await browser.newPage();
     page2 = await browser.newPage();
     await page1.setViewport({width: U.width, height: U.height})
@@ -99,7 +101,7 @@ describe('Editing tools: draw polygons and curves', async () => {
     assert(diff<U.pct5, `${diff} pixels were different`);
   }).timeout(0);
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });

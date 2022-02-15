@@ -23,9 +23,9 @@ let browser;
 let page;
 
 describe('View pages and data', async () => {
-  it('opens browser', async () => {
+  before(async () => {
     browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-  }).timeout(0);
+  });
 
   it('shows the landing page', async () => {
     page = await browser.newPage();
@@ -96,7 +96,7 @@ describe('View pages and data', async () => {
     assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
-  it('closes normally', async () => {
+  after(async () => {
     await browser.close();
   });
 });

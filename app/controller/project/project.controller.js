@@ -4,7 +4,7 @@
 // const dateFormat = require('dateformat');
 // const checkAccess = require('../checkAccess/checkAccess.js');
 // const dataSlices = require('../dataSlices/dataSlices.js');
-const { AccessControlService } = require('neuroweblab');
+const { AccessControlService, AccessLevel } = require('neuroweblab');
 const validator = function (req, res, next) {
   next();
 };
@@ -14,12 +14,22 @@ const project = function (req, res) {
     ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
     ('<a href=\'/auth/github\'>Log in with GitHub</a>');
   const requestedProject = req.params.projectName;
+  let loggedUser = "anyone";
+  if(req.isAuthenticated()) {
+    loggedUser = req.user.username;
+  } else if(req.isTokenAuthenticated) {
+    loggedUser = req.tokenUsername;
+  }
 
   // Store return path in case of login
   req.session.returnTo = req.originalUrl;
 
   req.appConfig.db.queryProject({shortname: requestedProject})
     .then((json) => {
+      if (!AccessControlService.canViewFiles(json, loggedUser)) {
+        res.status(403).send('Not authorized to view project');
+        return;
+      }
       if (json) {
         const context = {
           projectShortname: json.shortname,
@@ -58,7 +68,6 @@ var settings = function(req, res) {
     loggedUser = req.tokenUsername;
   }
 
-  // store return path in case of login
   req.session.returnTo = req.originalUrl;
 
   req.appConfig.db.queryProject({shortname: requestedProject})
@@ -89,6 +98,11 @@ var settings = function(req, res) {
             list: []
           }
         };
+      }
+
+      if (!AccessControlService.canViewFiles(json, loggedUser)) {
+        res.status(403).send('Not authorized to view project');
+        return;
       }
 
       // @todo empty the files.list because it will be filled progressively from the client
@@ -170,6 +184,19 @@ const apiProject = function (req, res) {
   req.appConfig.db.queryProject({shortname: req.params.projectName, backup: {$exists: false}})
     .then((json) => {
       if (json) {
+
+        let loggedUser = "anyone";
+        if(req.isAuthenticated()) {
+          loggedUser = req.user.username;
+        } else if(req.isTokenAuthenticated) {
+          loggedUser = req.tokenUsername;
+        }
+      
+        if (!AccessControlService.canViewFiles(json, loggedUser)) {
+          res.status(403).json({error: 'Not authorized to view project'});
+          return;
+        }
+  
         if (req.query.var) {
           let i;
           const arr = req.query.var.split('/');
@@ -181,9 +208,11 @@ const apiProject = function (req, res) {
         }
         res.send(json);
       } else {
-        res.send();
+        res.status(404).json({error: 'Project not found'});
       }
     });
+
+    return;
 };
 
 const apiProjectAll = function (req, res) {
@@ -221,15 +250,27 @@ const apiProjectFiles = function (req, res) {
 };
 
 const postProject = async function (req, res) {
-  let loggedUser = "anyone";
+  let loggedUser = 'anonymous';
   if(req.isAuthenticated()) {
     loggedUser = req.user.username;
-  } else
-  if(req.isTokenAuthenticated) {
+  } else if(req.isTokenAuthenticated) {
     loggedUser = req.tokenUsername;
   }
-  const newProject = JSON.parse(req.body.data);
+
+  if (loggedUser === 'anonymous') {
+    res.status(403).json({ error: 'error', message: 'User not authenticated' });
+
+    return;
+  }
+
+  const newProject = typeof req.body.data === "string" ? JSON.parse(req.body.data): req.body.data;
   const oldProject = await req.appConfig.db.queryProject({shortname: newProject.shortname});
+
+  if (!AccessControlService.hasFilesAccess(AccessLevel.EDIT, oldProject, loggedUser)) {
+    res.status(403).json({ error: 'error', message: 'User does not have edit rights' });
+
+    return;
+  }
 
   const ignoredChanges = AccessControlService.preventUnauthorizedUpdates(newProject, oldProject, loggedUser);
   let successMessage = "Project settings updated.";
@@ -245,26 +286,34 @@ const postProject = async function (req, res) {
       .end());
 };
 
-const deleteProject = function (req, res) {
+const deleteProject = async function (req, res) {
   console.log("DELETE Project");
 
-  let loggedUser = "anyone";
+  let loggedUser = 'anonymous';
   if(req.isAuthenticated()) {
     loggedUser = req.user.username;
-  } else
-  if(req.isTokenAuthenticated) {
+  } else if(req.isTokenAuthenticated) {
     loggedUser = req.tokenUsername;
   }
 
   // Store return path in case of login
   req.session.returnTo = req.originalUrl;
 
-  if(loggedUser === "anyone" ) {
-    res.send({message: "Log in required"})
+  if(loggedUser === 'anonymous') {
+    res
       .status(403)
+      .send({message: "Log in required"})
       .end();
   } else {
     const {projectName} = req.params;
+
+    const project = await req.appConfig.db.queryProject({shortname: projectName});
+    if (!AccessControlService.hasFilesAccess(AccessLevel.REMOVE, project, loggedUser)) {
+      console.log('WARNING: user does not have remove rights');
+      res.status(403).json({ success: false, message: 'The user is not allowed to delete this project' });
+
+      return;
+    }
 
     req.appConfig.db.deleteProject({shortname: projectName})
       .then((o) => {
