@@ -111,6 +111,13 @@ const insertProject = function (project) {
   return db.get('projects').insert(project);
 };
 
+<<<<<<< HEAD
+=======
+const queryProject = function (shortname) {
+  return db.get('projects').findOne({ shortname, backup: { $exists: 0 } });
+};
+
+>>>>>>> More permission tests
 const removeUser = function (nickname) {
   return db.get('users').remove({nickname});
 };
@@ -179,6 +186,10 @@ const agent = chai.request.agent(server);
 let cookies = [];
 let token = '';
 
+const setToken = (t) => token = t;
+const setCookies = (c) => cookies = c;
+const getCookies = () => cookies;
+
 const get = function(url, logged) {
   if (logged) {
     return agent.get(url).query({ token });
@@ -203,6 +214,59 @@ const del = function(url, logged) {
   return chai.request(serverURL).del(url);
 };
 
+const createProjectWithPermission = function(name, accessProp) {
+  const access = Object.assign({}, {
+    collaborators: "none",
+    annotations: "none",
+    files: "none"
+  }, accessProp);
+
+  const project = {
+    "name": name,
+    "shortname": name,
+    "url": "http://foo.bar",
+    "created": "2022-02-03T14:59:49.786Z",
+    "owner": "foo",
+    "collaborators": {
+        "list": [
+            {
+                "username": "anyone",
+                "access": {
+                    "collaborators": "none",
+                    "annotations": "none",
+                    "files": "none"
+                },
+                "name": "Any User"
+            },
+      ]
+    },
+    "files": {
+        "list": [
+          {source: "https://microdraw.pasteur.fr/vervet/vervet.json", name: "vervet"}
+        ]
+    },
+    "annotations": {
+        "list": [
+            {
+                "type": "vectorial",
+                "values": "Set I",
+                "display": true,
+                "name": "layer"
+            }
+        ]
+    }
+
+  };
+
+  project.collaborators.list.push({
+    access,
+    userID: testingCredentials.username,
+    username: testingCredentials.username,
+    name: testingCredentials.username
+  });
+
+  return project;
+};
 
 module.exports = {
   compareImages,
@@ -214,11 +278,19 @@ module.exports = {
   removeUser,
   insertProject,
   removeProject,
+  queryProject,
+  createProjectWithPermission,
   parseCookies,
   get, post, del,
+  setCookies,
+  getCookies,
+  setToken,
+  db,
   agent,
   cookies,
   token,
+  server,
+  serverURL,
   testingCredentials,
   privateProjectTest,
   newPath,

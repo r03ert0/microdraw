@@ -16,17 +16,18 @@ before(async function () {
   let res = await U.agent.post('/localLogin').redirects(0)
     .send(U.testingCredentials);
   expect(res).to.have.cookie('connect.sid');
-  U.cookies = U.parseCookies(res.headers['set-cookie'][0]);
+  U.setCookies(U.parseCookies(res.headers['set-cookie'][0]));
 
   res = await U.agent.get('/token');
   assert.exists(res.body.token);
   assert.isNotEmpty(res.body.token);
-  U.token = res.body.token;
+  U.setToken(res.body.token);
 });
 
 after(async function () {
   await U.agent.close();
+  await U.server.close();
   await U.removeProject(U.privateProjectTest.shortname);
   await U.removeUser(U.testingCredentials.username);
-  process.exit(0);
+  await U.db.close();
 });
