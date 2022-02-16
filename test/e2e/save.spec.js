@@ -3,8 +3,6 @@ const assert = require('assert');
 const mongoDbPath = process.env.MONGODB_TEST;
 if (!mongoDbPath) { throw new Error(`MONGODB_TEST must be explicitly set to avoid overwriting production `); }
 
-/*
-
 const mockedExpress = {
   use: () => {},
   get: () => {},
@@ -57,4 +55,3 @@ describe('annotation saved by puppeteer can be retrieved', () => {
       });
   });
 });
-*/
