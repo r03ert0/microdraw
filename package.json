@@ -7,9 +7,9 @@
     "debug": "node --inspect-brk ./bin/www",
     "lint": "eslint",
     "test": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node test.js",
-    "mocha": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --exit",
+    "mocha": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha",
     "mocha-brk": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --inspect-brk --timeout=10000000",
-    "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; LOCALSIGNIN=true node node_modules/mocha/bin/mocha ./test/e2e/runner.js ./test/e2e/*.spec.js"
+    "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; LOCALSIGNIN=true node node_modules/mocha/bin/mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --exit --timeout=100000"
   },
   "dependencies": {
     "bcrypt": "^3.0.8",
@@ -37,6 +37,7 @@
     "chai": "^4.2.0",
     "chai-http": "^4.2.1",
     "eslint": "^5.16.0",
+    "http-terminator": "^3.0.4",
     "mocha": "^6.1.4",
     "mock-fs": "^4.5.0",
     "morgan": "^1.9.1",

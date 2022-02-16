@@ -6,7 +6,6 @@ const path = require('path');
 const nwl = require('neuroweblab');
 const {authTokenMiddleware} = nwl;
 const {getHttpImg} = require('../serveHttpImages/serveHttpImages');
-console.log(getHttpImg);
 
 module.exports = (app) => {
   console.log(`configuring routes`);

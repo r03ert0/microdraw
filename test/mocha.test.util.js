@@ -1,20 +1,33 @@
-
-/*
-const path = require('path')
-exports.getMockfsConfig = (dirname, filename, content) => {
-    const obj = {}
-    obj[path.join(dirname, filename)] = content
-    return obj
-}
-*/
-
 const fs = require('fs');
 const path = require('path');
 const {PNG} = require('pngjs');
 const pixelmatch = require('pixelmatch');
-const monk = require('monk');
-const db = monk(process.env.MONGODB_TEST);
+const { createHttpTerminator } = require('http-terminator');
+
+let db, server, ws, httpTerminator;
 const serverURL = "http://127.0.0.1:3000";
+
+const initResources = () => {
+  const {server: appServer, app, wsServer} = require('../app/app');
+  server = appServer;
+  db = app.db.mongoDB();
+  ws = wsServer;
+  httpTerminator = createHttpTerminator({server});
+};
+
+const closeResources = async () => {
+  if (db) {
+    db.close();
+  }
+  if (ws) {
+    ws.close();
+  }
+  if (httpTerminator) {
+    await httpTerminator.terminate();
+  }
+};
+
+const getServer = () => server;
 
 const newPath = './test/e2e/screenshots/';
 const refPath = './test/reference-screenshots/';
@@ -111,6 +124,10 @@ const insertProject = function (project) {
   return db.get('projects').insert(project);
 };
 
+const queryProject = function (shortname) {
+  return db.get('projects').findOne({ shortname, backup: { $exists: 0 } });
+};
+
 const removeUser = function (nickname) {
   return db.get('users').remove({nickname});
 };
@@ -156,7 +173,7 @@ const parseCookies = (str) => str
     },
     "files": {
         "list": [
-          {source: "https://microdraw.pasteur.fr/vervet/vervet.json", name: "vervet"}
+          {source: "https://microdraw.pasteur.fr/test_data/cat.json", name: "Cat"}
         ]
     },
     "annotations": {
@@ -171,38 +188,59 @@ const parseCookies = (str) => str
     }
 };
 
-const {server} = require('../app/app');
-const chai = require('chai');
-const chaiHttp = require('chai-http');
-chai.use(chaiHttp);
-const agent = chai.request.agent(server);
-let cookies = [];
-let token = '';
+const createProjectWithPermission = function(name, accessProp) {
+  const access = Object.assign({}, {
+    collaborators: "none",
+    annotations: "none",
+    files: "none"
+  }, accessProp);
 
-const get = function(url, logged) {
-  if (logged) {
-    return agent.get(url).query({ token });
-  }
+  const project = {
+    "name": name,
+    "shortname": name,
+    "url": "http://foo.bar",
+    "created": "2022-02-03T14:59:49.786Z",
+    "owner": "foo",
+    "collaborators": {
+        "list": [
+            {
+                "username": "anyone",
+                "access": {
+                    "collaborators": "none",
+                    "annotations": "none",
+                    "files": "none"
+                },
+                "name": "Any User"
+            },
+      ]
+    },
+    "files": {
+        "list": [
+          {source: "https://microdraw.pasteur.fr/test_data/cat.json", name: "cat"}
+        ]
+    },
+    "annotations": {
+        "list": [
+            {
+                "type": "vectorial",
+                "values": "Set I",
+                "display": true,
+                "name": "layer"
+            }
+        ]
+    }
 
-  return chai.request(serverURL).get(url);
+  };
+
+  project.collaborators.list.push({
+    access,
+    userID: testingCredentials.username,
+    username: testingCredentials.username,
+    name: testingCredentials.username
+  });
+
+  return project;
 };
-
-const post = function(url, logged) {
-  if (logged) {
-    return agent.post(`${url}?token=${token}`);
-  }
-
-  return chai.request(serverURL).post(url);
-};
-
-const del = function(url, logged) {
-  if (logged) {
-    return agent.del(url).query({ token });
-  }
-
-  return chai.request(serverURL).del(url);
-};
-
 
 module.exports = {
   compareImages,
@@ -214,11 +252,15 @@ module.exports = {
   removeUser,
   insertProject,
   removeProject,
+  queryProject,
+  createProjectWithPermission,
+  initResources,
+  closeResources,
+  getServer,
   parseCookies,
-  get, post, del,
-  agent,
-  cookies,
-  token,
+  db,
+  server,
+  serverURL,
   testingCredentials,
   privateProjectTest,
   newPath,
