@@ -4,12 +4,13 @@
 // const dateFormat = require('dateformat');
 // const checkAccess = require('../checkAccess/checkAccess.js');
 // const dataSlices = require('../dataSlices/dataSlices.js');
+const _ = require('lodash');
 const { AccessControlService, AccessLevel } = require('neuroweblab');
 const validator = function (req, res, next) {
   next();
 };
 
-const project = function (req, res) {
+const project = async function (req, res) {
   const login = (req.user) ?
     ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
     ('<a href=\'/auth/github\'>Log in with GitHub</a>');
@@ -23,28 +24,27 @@ const project = function (req, res) {
 
   // Store return path in case of login
   req.session.returnTo = req.originalUrl;
-
-  req.appConfig.db.queryProject({shortname: requestedProject})
-    .then((json) => {
+  try {
+    const json = await req.appConfig.db.queryProject({shortname: requestedProject});
+    console.log('requestedProject', requestedProject);
+    if (json) {
       if (!AccessControlService.canViewFiles(json, loggedUser)) {
         res.status(403).send('Not authorized to view project');
         return;
       }
-      if (json) {
-        const context = {
-          projectShortname: json.shortname,
-          projectInfo: JSON.stringify(json),
-          login
-        };
-        res.render('project', context);
-      } else {
-        res.status(404).send('Project Not Found');
-      }
-    })
-    .catch((err) => {
-      console.log('ERROR:', err);
-      res.status(400).send('Error');
-    });
+      const context = {
+        projectShortname: json.shortname,
+        projectInfo: JSON.stringify(json),
+        login
+      };
+      res.render('project', context);
+    } else {
+      res.status(404).send('Project Not Found');
+    }
+  } catch(err) {
+    console.log('ERROR:', err);
+    res.status(400).send('Error');
+  }
 };
 
 /**
@@ -53,7 +53,7 @@ const project = function (req, res) {
  * @param {Object} res Res object from express
  * @returns {void}
  */
-var settings = function(req, res) {
+var settings = async function(req, res) {
   console.log("Settings");
   var login = (req.isAuthenticated()) ?
     ("<a href='/user/" + req.user.username + "'>" + req.user.username + "</a> (<a href='/logout'>Log Out</a>)")
@@ -63,82 +63,80 @@ var settings = function(req, res) {
   var loggedUser = "anyone";
   if(req.isAuthenticated()) {
     loggedUser = req.user.username;
-  } else
-  if(req.isTokenAuthenticated) {
+  } else if(req.isTokenAuthenticated) {
     loggedUser = req.tokenUsername;
   }
 
   req.session.returnTo = req.originalUrl;
 
-  req.appConfig.db.queryProject({shortname: requestedProject})
-    .then(function(json) {
-      if(typeof json === 'undefined') {
-        json = {
-          name: "",
-          shortname: requestedProject,
-          url: "",
-          created: (new Date()).toJSON(),
-          owner: loggedUser,
-          collaborators: {
-            list: [
-              {
-                username: 'anyone',
-                access: {
-                  collaborators: 'view',
-                  annotations: 'edit',
-                  files: 'view'
-                }
-              }
-            ]
-          },
-          files: {
-            list: []
-          },
-          annotations: {
-            list: []
-          }
-        };
-      }
-
-      if (!AccessControlService.canViewFiles(json, loggedUser)) {
-        res.status(403).send('Not authorized to view project');
-        return;
-      }
-
-      // @todo empty the files.list because it will be filled progressively from the client
-      // json.files.list = [];
-
-      // find username and name for each of the collaborators in the project
-      const arr1 = [];
-      for(let j=0; j<json.collaborators.list.length; j++) {
-        if (Object.keys(json.collaborators.list[j]).includes("username") === false) {
-
-          return res.send("Error with user in project. Contact the adminstrators at https://mattermost.brainhack.org/brainhack/channels/microdraw").status(500);
-        }
-
-        arr1.push(req.appConfig.db.queryUser({username: json.collaborators.list[j].username}));
-      }
-
-      Promise.all(arr1)
-        .then(function(obj) {
-          for(let j=0; j<obj.length; j++) {
-            if(obj[j]) { // name found
-              json.collaborators.list[j].name=obj[j].name;
-            } else { // name not found: set to empty
-              json.collaborators.list[j].name = "";
+  const json = await req.appConfig.db.queryProject({shortname: requestedProject});
+  if(typeof json === 'undefined') {
+    json = {
+      name: "",
+      shortname: requestedProject,
+      url: "",
+      created: (new Date()).toJSON(),
+      owner: loggedUser,
+      collaborators: {
+        list: [
+          {
+            username: 'anyone',
+            access: {
+              collaborators: 'view',
+              annotations: 'edit',
+              files: 'view'
             }
           }
-          var context = {
-            projectShortname: json.shortname,
-            owner: json.owner,
-            projectInfo: JSON.stringify(json),
-            login: login
-          };
-          res.render('projectSettings', context);
-        })
-        .catch((e) => console.log("Error:", e));
-    })
-    .catch((e) => console.log("Error:", e));
+        ]
+      },
+      files: {
+        list: []
+      },
+      annotations: {
+        list: []
+      }
+    };
+  }
+
+  if (!AccessControlService.canViewFiles(json, loggedUser)) {
+    res.status(403).send('Not authorized to view project');
+    return;
+  }
+
+  // @todo empty the files.list because it will be filled progressively from the client
+  // json.files.list = [];
+
+  // find username and name for each of the collaborators in the project
+  if (AccessControlService.canViewCollaborators(json, loggedUser)) {
+    const arr1 = [];
+    for(let j=0; j<json.collaborators.list.length; j++) {
+      if (Object.keys(json.collaborators.list[j]).includes("username") === false) {
+
+        return res.send("Error with user in project. Contact the adminstrators at https://mattermost.brainhack.org/brainhack/channels/microdraw").status(500);
+      }
+
+      arr1.push(req.appConfig.db.queryUser({username: json.collaborators.list[j].username}));
+    }
+
+    const collaboratorsList = await Promise.all(arr1);
+    for(let j=0; j<collaboratorsList.length; j++) {
+      if(collaboratorsList[j]) { // name found
+        json.collaborators.list[j].name=collaboratorsList[j].name;
+      } else { // name not found: set to empty
+        json.collaborators.list[j].name = "";
+      }
+    }
+  } else {
+    json.collaborators.list = json.collaborators.list.filter((collaborator) => collaborator.username === 'anyone');
+  }
+
+  var context = {
+    projectShortname: json.shortname,
+    owner: json.owner,
+    projectInfo: JSON.stringify(json),
+    login: login
+  };
+  res.render('projectSettings', context);
 };
 
 /**
@@ -179,40 +177,44 @@ const projectNew = function (req, res) {
   }
 };
 
-const apiProject = function (req, res) {
+const apiProject = async function (req, res) {
   console.log("GET project", req.params);
-  req.appConfig.db.queryProject({shortname: req.params.projectName, backup: {$exists: false}})
-    .then((json) => {
-      if (json) {
-
-        let loggedUser = "anyone";
-        if(req.isAuthenticated()) {
-          loggedUser = req.user.username;
-        } else if(req.isTokenAuthenticated) {
-          loggedUser = req.tokenUsername;
-        }
-      
-        if (!AccessControlService.canViewFiles(json, loggedUser)) {
-          res.status(403).json({error: 'Not authorized to view project'});
-          return;
-        }
-  
-        if (req.query.var) {
-          let i;
-          const arr = req.query.var.split('/');
-          for (i in arr) {
-            if({}.hasOwnProperty.call(arr, i)) {
-              json = json[arr[i]];
-            }
-          }
-        }
-        res.send(json);
-      } else {
-        res.status(404).json({error: 'Project not found'});
-      }
-    });
-
+  const json = await req.appConfig.db.queryProject({shortname: req.params.projectName, backup: {$exists: false}});
+  if (_.isNil(json)) {
+    res.status(404).json({error: 'Project not found'});
     return;
+  }
+
+  let loggedUser = "anyone";
+  if(req.isAuthenticated()) {
+    loggedUser = req.user.username;
+  } else if(req.isTokenAuthenticated) {
+    loggedUser = req.tokenUsername;
+  }
+
+  if (!AccessControlService.canViewFiles(json, loggedUser)) {
+    res.status(403).json({error: 'Not authorized to view project'});
+    return;
+  }
+
+  if (!AccessControlService.canViewCollaborators(json, loggedUser)) {
+    json.collaborators.list = json.collaborators.list.filter(collaborator => collaborator.username === 'anyone');
+  }
+
+  if (!AccessControlService.canViewAnnotations(json, loggedUser)) {
+    json.annotations.list = [];
+  }
+
+  if (req.query.var) {
+    let i;
+    const arr = req.query.var.split('/');
+    for (i in arr) {
+      if({}.hasOwnProperty.call(arr, i)) {
+        json = json[arr[i]];
+      }
+    }
+  }
+  res.send(json);
 };
 
 const apiProjectAll = function (req, res) {
