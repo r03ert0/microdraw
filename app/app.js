@@ -86,7 +86,7 @@ if (Config.secure) {
   microdrawWebsocketServer.server = http.createServer(app);
 }
 
-microdrawWebsocketServer.server.listen(8080, () => {
+const wsServer = microdrawWebsocketServer.server.listen(8080, () => {
   if (Config.secure) {
     console.log('Listening wss on port 8080');
   } else {
@@ -128,6 +128,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // const db = require('./db/db')(null, checkAnyoneUser);
 // app.db = db;
 
+
 /* setup authentication */
 const nwl = require('neuroweblab');
 nwl.init({
@@ -140,7 +141,6 @@ nwl.init({
   annotationsCollection: "annotations"
 });
 global.authTokenMiddleware = nwl.authTokenMiddleware;
-const {db} = app;
 
 /* setup GUI routes */
 require('./routes/routes')(app);
@@ -166,4 +166,4 @@ app.use(function(err, req, res) {
 });
 
 
-module.exports = {app, server};
+module.exports = {app, server, wsServer};

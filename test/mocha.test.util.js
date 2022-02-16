@@ -2,24 +2,28 @@ const fs = require('fs');
 const path = require('path');
 const {PNG} = require('pngjs');
 const pixelmatch = require('pixelmatch');
-const monk = require('monk');
-const chai = require('chai');
+const { createHttpTerminator } = require('http-terminator');
 
-let db, server;
+let db, server, ws, httpTerminator;
 const serverURL = "http://127.0.0.1:3000";
 
 const initResources = () => {
-  db = monk(process.env.MONGODB_TEST);
-  const {server: appServer} = require('../app/app');
+  const {server: appServer, app, wsServer} = require('../app/app');
   server = appServer;
+  db = app.db.mongoDB();
+  ws = wsServer;
+  httpTerminator = createHttpTerminator({server});
 };
 
-const closeResources = () => {
+const closeResources = async () => {
   if (db) {
     db.close();
   }
-  if (server) {
-    server.close();
+  if (ws) {
+    ws.close();
+  }
+  if (httpTerminator) {
+    await httpTerminator.terminate();
   }
 };
 

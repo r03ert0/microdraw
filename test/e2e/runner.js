@@ -7,5 +7,5 @@ before(async () => {
 });
 
 after(async () => {
-  U.closeResources();
+  await U.closeResources();
 });
