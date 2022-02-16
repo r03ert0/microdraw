@@ -28,3 +28,4 @@ cfg.json
 key.pem
 blacklist.json
 whitelist.json
+.eslintcache

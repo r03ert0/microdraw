@@ -9,12 +9,14 @@
     "test": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node test.js",
     "mocha": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha",
     "mocha-brk": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --inspect-brk --timeout=10000000",
-    "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; LOCALSIGNIN=true node node_modules/mocha/bin/mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --exit --timeout=100000"
+    "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; LOCALSIGNIN=true node node_modules/mocha/bin/mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --exit --timeout=100000",
+    "prepare": "husky install"
   },
   "dependencies": {
     "bcrypt": "^3.0.8",
     "body-parser": "^1.18.3",
     "connect-mongo": "^3.2.0",
+    "cross-env": "^7.0.3",
     "dateformat": "^3.0.2",
     "debug": "^4.1.1",
     "dompurify": "^2.2.6",
@@ -44,7 +46,11 @@
     "nock": "^10.0.6",
     "pixelmatch": "^5.2.1",
     "pngjs": "^6.0.0",
-    "sinon": "^7.3.1"
+    "sinon": "^7.3.1",
+    "husky": "^7.0.0"
+  },
+  "lint-staged": {
+    "*.js": "eslint --cache --fix"
   },
   "author": "Roberto Toro <rto@braincatalogue.org> (https://neuroanatomy.github.io)",
   "license": "GPL-3.0",
