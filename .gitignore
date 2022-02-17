@@ -18,7 +18,8 @@ vervet
 vervet.zip
 test/*.png
 .DS_Store
-.vscode
+.vscode/*
+!.vscode/settings.json
 access.log
 app/controller/api/tmp
 test/e2e/screenshots/*.png

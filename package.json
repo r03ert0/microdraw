@@ -6,10 +6,10 @@
     "start": "node ./bin/www",
     "debug": "node --inspect-brk ./bin/www",
     "lint": "eslint",
-    "test": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node test.js",
-    "mocha": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha",
-    "mocha-brk": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; node node_modules/mocha/bin/mocha --inspect-brk --timeout=10000000",
-    "test-e2e": "export MONGODB_TEST='127.0.0.1:27017/circleci_test'; LOCALSIGNIN=true node node_modules/mocha/bin/mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --exit --timeout=100000",
+    "test": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' node test.js",
+    "mocha": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' mocha test/mocha.test.js",
+    "mocha-brk": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' mocha test/mocha.test.js --inspect-brk --timeout=10000000",
+    "test-e2e": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' LOCALSIGNIN=true mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --exit --timeout=100000",
     "prepare": "husky install"
   },
   "dependencies": {
