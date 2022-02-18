@@ -1,3 +1,4 @@
 #!/usr/bin/env node
 
-var {app} = require('../app/app');
+const app = require('../app/app');
+app.start();

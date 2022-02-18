@@ -2,7 +2,8 @@ module.exports = {
   "env": {
     "browser": true,
     "es2017": true,
-    "node": true
+    "node": true,
+    "mocha": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
@@ -155,7 +156,7 @@ module.exports = {
     "no-octal-escape": "error",
     "no-param-reassign": "off",
     "no-path-concat": "error",
-    "no-plusplus": "error",
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
     "no-process-env": "off",
     "no-process-exit": "error",
     "no-proto": "error",
