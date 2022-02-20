@@ -136,6 +136,10 @@ const queryProject = function (shortname) {
   return db.get('projects').findOne({ shortname, backup: { $exists: 0 } });
 };
 
+const removeLocalUser = function (username) {
+  return db.get('users').remove({ username });
+};
+
 const removeUser = function (nickname) {
   return db.get('users').remove({ nickname });
 };
@@ -254,6 +258,7 @@ module.exports = {
   waitUntilHTMLRendered,
   insertUser,
   removeUser,
+  removeLocalUser,
   insertProject,
   removeProject,
   queryProject,
@@ -262,8 +267,6 @@ module.exports = {
   closeResources,
   getServer,
   parseCookies,
-  db,
-  server,
   serverURL,
   testingCredentials,
   privateProjectTest,

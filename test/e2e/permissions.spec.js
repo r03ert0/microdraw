@@ -19,14 +19,8 @@ describe('TESTING PERMISSIONS', function () {
   before(async () => {
     agent = chai.request.agent(U.getServer());
     await U.insertProject(U.privateProjectTest);
-    try {
-      await agent.post('/localSignup')
-        .send(U.testingCredentials)
-        // eslint-disable-next-line no-warning-comments
-        .timeout(1000); // FIXME: (in nwl)works but hangs indefinitely
-    } catch(_e) {
-      //
-    }
+    await agent.post('/localSignup')
+      .send(U.testingCredentials);
     let res = await agent.post('/localLogin').redirects(0)
       .send(U.testingCredentials);
     expect(res).to.have.cookie('connect.sid');
@@ -40,7 +34,7 @@ describe('TESTING PERMISSIONS', function () {
 
   after(async function () {
     await U.removeProject(U.privateProjectTest.shortname);
-    await U.removeUser(U.testingCredentials.username);
+    await U.removeLocalUser(U.testingCredentials.username);
   });
 
   const get = function(url, logged) {
