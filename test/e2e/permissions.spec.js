@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 'use strict';
 
 const chai = require('chai');
@@ -8,58 +9,55 @@ const U = require('../../test/mocha.test.util');
 const _ = require('lodash');
 const puppeteer = require('puppeteer');
 
+// eslint-disable-next-line max-statements
 describe('TESTING PERMISSIONS', function () {
   let agent;
   let cookies = [];
   let token = '';
-  
+
+  // eslint-disable-next-line max-statements
   before(async () => {
     agent = chai.request.agent(U.getServer());
     await U.insertProject(U.privateProjectTest);
-    try {
-      await agent.post('/localSignup')
-        .send(U.testingCredentials)
-        .timeout(1000); // FIXME: (in nwl)works but hangs indefinitely
-    } catch(_e) {
-      //
-    }
+    await agent.post('/localSignup')
+      .send(U.testingCredentials);
     let res = await agent.post('/localLogin').redirects(0)
       .send(U.testingCredentials);
     expect(res).to.have.cookie('connect.sid');
     cookies = U.parseCookies(res.headers['set-cookie'][0]);
-    
+
     res = await agent.get('/token');
     assert.exists(res.body.token);
     assert.isNotEmpty(res.body.token);
-    token = res.body.token;
+    ({token} = res.body);
   });
-  
+
   after(async function () {
     await U.removeProject(U.privateProjectTest.shortname);
-    await U.removeUser(U.testingCredentials.username);
+    await U.removeLocalUser(U.testingCredentials.username);
   });
-  
+
   const get = function(url, logged) {
     if (logged) {
       return agent.get(url).query({ token });
     }
-  
+
     return chai.request(U.serverURL).get(url);
   };
-  
+
   const post = function(url, logged) {
     if (logged) {
       return agent.post(`${url}?token=${token}`);
     }
-  
+
     return chai.request(U.serverURL).post(url);
   };
-  
+
   const del = function(url, logged) {
     if (logged) {
       return agent.del(url).query({ token });
     }
-  
+
     return chai.request(U.serverURL).del(url);
   };
 
@@ -99,6 +97,7 @@ describe('TESTING PERMISSIONS', function () {
     });
   });
 
+  // eslint-disable-next-line max-statements
   describe('Test specific edit / add / remove permissions of logged users', function() {
 
     const projects = {};
@@ -165,6 +164,7 @@ describe('TESTING PERMISSIONS', function () {
       assert.equal(res.statusCode, 200);
     });
 
+    // eslint-disable-next-line max-statements
     it('Checks that collaborators cannot add project collaborators if set to none or view', async function() {
       let project = _.cloneDeep(projects.collaboratorsnonefilesedit);
       let initialProjectState = _.cloneDeep(project);
@@ -241,6 +241,7 @@ describe('TESTING PERMISSIONS', function () {
       assert.equal(fromDb.collaborators.list.length, initialProjectState.collaborators.list.length);
     });
 
+    // eslint-disable-next-line max-statements
     it('Checks that collaborators can add project collaborators if set to add or remove', async function() {
       let project = projects.collaboratorsaddfilesedit;
       let initialProjectState = _.cloneDeep(project);
@@ -324,6 +325,7 @@ describe('TESTING PERMISSIONS', function () {
       assert.equal(fromDb.collaborators.list.length, initialProjectState.collaborators.list.length);
     });
 
+    // eslint-disable-next-line max-statements
     it('Checks that collaborators can add project annotations if set to add or remove', async function() {
       let project = projects.fileseditannotationsadd;
       let initialProjectState = _.cloneDeep(project);
@@ -403,6 +405,7 @@ describe('TESTING PERMISSIONS', function () {
       assert.oneOf(res.statusCode, forbiddenStatusCodes);
     });
 
+    // eslint-disable-next-line max-statements
     it('Checks that collaborators can add project files if set to add or remove', async function() {
       let project = _.cloneDeep(projects.filesadd);
       let initialProjectState = _.cloneDeep(project);
@@ -471,17 +474,17 @@ describe('TESTING PERMISSIONS', function () {
 
     describe('Test view permissions of logged users', function() {
       let browser, page;
-  
+
       before(async function() {
         browser = await puppeteer.launch({ headless: true, ignoreHTTPSErrors: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
         page = await browser.newPage();
         await page.setCookie(...cookies);
       });
-  
+
       after(function() {
         browser.close();
       });
-  
+
       it('Check that collaborators cannot see other collaborators if not permitted', async function () {
         const project = _.cloneDeep(projects.collaboratorsnonefilesedit);
         const response = await page.goto(U.serverURL + '/project/' + project.shortname + '/settings');
@@ -490,13 +493,13 @@ describe('TESTING PERMISSIONS', function () {
         const contributorsTableLength = (await page.$$('#access tbody tr')).length;
         assert.equal(contributorsTableLength, 1); // 'anyone' only
       }).timeout(U.longTimeout);
-  
+
       it('Check that collaborators cannot see other collaborators if not permitted using JSON API', async function () {
         const project = _.cloneDeep(projects.collaboratorsnonefilesedit);
         const res = await get('/project/json/' + project.shortname, true);
         assert.equal(res.body.collaborators.list.length, 1);
       });
-  
+
       it('Check that collaborators cannot see other annotations if not permitted', async function () {
         const project = _.cloneDeep(projects.fileseditannotationsnone);
         const response = await page.goto(U.serverURL + '/project/' + project.shortname + '/settings');
@@ -505,8 +508,8 @@ describe('TESTING PERMISSIONS', function () {
         const annotationsTableLength = (await page.$$('#annotations tbody tr')).length;
         assert.equal(annotationsTableLength, 1); // placeholder
       }).timeout(U.longTimeout);
-  
-    });    
+
+    });
 
   });
 

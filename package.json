@@ -9,7 +9,7 @@
     "test": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' node test.js",
     "mocha": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' mocha test/mocha.test.js",
     "mocha-brk": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' mocha test/mocha.test.js --inspect-brk --timeout=10000000",
-    "test-e2e": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' LOCALSIGNIN=true mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --exit --timeout=100000",
+    "test-e2e": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' LOCALSIGNIN=true mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --timeout=100000",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -26,11 +26,10 @@
     "monk": "^7.1.1",
     "multer": "^1.4.1",
     "mustache-express": "latest",
-    "neuroweblab": "github:neuroanatomy/neuroweblab",
+    "neuroweblab": "github:neuroanatomy/neuroweblab#43eab1a99c9fffe4ff258e31733c600fe447959f",
     "passport": "^0.4.0",
     "passport-github": "latest",
     "passport-local": "^1.0.0",
-    "puppeteer": "^5.4.1",
     "request": "^2.88.0",
     "serve-favicon": "latest"
   },
@@ -41,12 +40,14 @@
     "eslint": "^8.9.0",
     "http-terminator": "^3.0.4",
     "husky": "^7.0.0",
+    "jpeg-js": "^0.4.3",
     "mocha": "^6.1.4",
     "mock-fs": "^4.5.0",
     "morgan": "^1.9.1",
     "nock": "^10.0.6",
     "pixelmatch": "^5.2.1",
     "pngjs": "^6.0.0",
+    "puppeteer": "^13.3.2",
     "sinon": "^7.3.1"
   },
   "lint-staged": {
