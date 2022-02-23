@@ -69,7 +69,7 @@ var settings = async function(req, res) {
 
   req.session.returnTo = req.originalUrl;
 
-  const json = await req.appConfig.db.queryProject({shortname: requestedProject});
+  let json = await req.appConfig.db.queryProject({shortname: requestedProject});
   if(typeof json === 'undefined') {
     json = {
       name: "",
@@ -268,13 +268,17 @@ const postProject = async function (req, res) {
   const newProject = typeof req.body.data === "string" ? JSON.parse(req.body.data): req.body.data;
   const oldProject = await req.appConfig.db.queryProject({shortname: newProject.shortname});
 
-  if (!AccessControlService.hasFilesAccess(AccessLevel.EDIT, oldProject, loggedUser)) {
-    res.status(403).json({ error: 'error', message: 'User does not have edit rights' });
-
-    return;
+  let ignoredChanges = [];
+  if (oldProject != null) {
+    if (!AccessControlService.hasFilesAccess(AccessLevel.EDIT, oldProject, loggedUser)) {
+      res.status(403).json({ error: 'error', message: 'User does not have edit rights' });
+  
+      return;
+    }
+    ignoredChanges = AccessControlService.preventUnauthorizedUpdates(newProject, oldProject, loggedUser);
   }
 
-  const ignoredChanges = AccessControlService.preventUnauthorizedUpdates(newProject, oldProject, loggedUser);
+
   let successMessage = "Project settings updated.";
   if(ignoredChanges.length > 0) {
     successMessage += ` Some changes (on ${ignoredChanges.join(', ')}) were ignored due to a lack of permissions.`;
