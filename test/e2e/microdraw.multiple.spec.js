@@ -54,6 +54,7 @@ describe('Editing tools: draw polygons and curves', () => {
     await page2.mouse.click(400, 200);
     await page2.mouse.click(400, 100);
     await shadowclick(UI.SAVE, page2);
+    await U.waitUntilHTMLRendered(page2);
 
     const filename = "multiple.04.page2-square.png";
     await page2.screenshot({path: U.newPath + filename});
@@ -61,6 +62,7 @@ describe('Editing tools: draw polygons and curves', () => {
     assert(diff<U.pct5, `${diff} pixels were different`);
   }).timeout(0);
 
+  // eslint-disable-next-line max-statements
   it('draws and saves a triangle in page 1', async () => {
     await shadowclick(UI.DRAWPOLYGON, page1);
     await page1.mouse.click(300, 100);
@@ -68,6 +70,7 @@ describe('Editing tools: draw polygons and curves', () => {
     await page1.mouse.click(350, 200);
     await page1.mouse.click(300, 100);
     await shadowclick(UI.SAVE, page1);
+    await U.waitUntilHTMLRendered(page1);
 
     const filename = "multiple.03.page1-triangle.png";
     await page1.screenshot({path: U.newPath + filename});
@@ -96,6 +99,7 @@ describe('Editing tools: draw polygons and curves', () => {
     await shadowclick(UI.DELETE, page1);
 
     await shadowclick(UI.SAVE, page1);
+    await U.waitUntilHTMLRendered(page1);
 
     const filename = "multiple.06.page1-cleanup.png";
     await page1.screenshot({path: U.newPath + filename});

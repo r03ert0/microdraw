@@ -40,13 +40,14 @@ const _dialog = async ({el, message, doFadeOut=true, delay=2000, background="#33
         fadeOut(el);
       }
       resolve();
-    }, delay);  
+    }, delay);
   });
 };
 
-var ToolSave = { save: (function() {
+window.ToolSave = { save: (function() {
 
-  const _processOneSection = function (sl) {
+  // eslint-disable-next-line max-statements
+  const _processOneSection = async function (sl) {
     if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
 
       return;
@@ -67,33 +68,27 @@ var ToolSave = { save: (function() {
 
     value.Hash = h;
 
-    const pr = new Promise(async (resolve, reject) => {
-      let res, req;
-      try {
-        req = await fetch('/api', {
-          method: "POST",
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            action: 'save',
-            source: Microdraw.source,
-            slice: sl,
-            project: Microdraw.project,
-            Hash: h,
-            annotation: JSON.stringify(value)
-          })
-        });
-        res = await req.json();
-
-        // update hash
-        section.Hash = h;
-
-        resolve(sl);
-      } catch(err) {
-        reject(err);
-      }
+    const res = await fetch('/api', {
+      method: "POST",
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        action: 'save',
+        source: Microdraw.source,
+        slice: sl,
+        project: Microdraw.project,
+        Hash: h,
+        annotation: JSON.stringify(value)
+      })
     });
 
-    return pr;
+    if (!res.ok) {
+      throw await res.json();
+    }
+
+    // update hash
+    section.Hash = h;
+
+    return sl;
   };
 
   const _savingFeedback = async function (savedSections) {
@@ -108,8 +103,8 @@ var ToolSave = { save: (function() {
       await _dialog({el, message, doFadeOut: false});
     }
   };
-  
-  const _successFeedback = function (savedSections) {
+
+  const _successFeedback = function () {
     const el = Microdraw.dom.querySelector('#saveDialog');
     _dialog({el, message: "Successfully saved", delay: 1000, background: "#2a3"});
   };

@@ -49,31 +49,35 @@ describe('View pages and data', () => {
 
   it('can go to the next page', async () => {
     await shadowclick(UI.NEXT);
+    await page.waitForFunction('Microdraw.isAnimating === false');
+    await U.waitUntilHTMLRendered(page);
     const filename = "view.03.cat-next.png";
     await page.screenshot({path: U.newPath + filename});
-    await page.waitForFunction('Microdraw.isAnimating === false');
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
     assert(diff<U.pct5, `${diff} pixels were different`);
   }).timeout(0);
 
   it('can go back to the previous page', async () => {
     await shadowclick(UI.PREVIOUS);
+    await page.waitForFunction('Microdraw.isAnimating === false');
+    await U.waitUntilHTMLRendered(page);
     const filename = "view.04.cat-prev.png";
     await page.screenshot({path: U.newPath + filename});
-    await page.waitForFunction('Microdraw.isAnimating === false');
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
     assert(diff<U.pct5, `${diff} pixels were different`);
   }).timeout(0);
 
   it('can zoom in', async () => {
     await shadowclick(UI.ZOOMIN);
+    await page.waitForFunction('Microdraw.isAnimating === false');
+    await U.waitUntilHTMLRendered(page);
     const filename = "view.05.cat-zoom-in.png";
     await page.screenshot({path: U.newPath + filename});
-    await page.waitForFunction('Microdraw.isAnimating === false');
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
     assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
+  // eslint-disable-next-line max-statements
   it('can translate', async () => {
     await shadowclick(UI.NAVIGATE);
 
@@ -82,6 +86,7 @@ describe('View pages and data', () => {
     await page.mouse.move(U.width*2/3, U.height/2, {steps:50});
     await page.mouse.up();
     await page.waitForFunction('Microdraw.isAnimating === false');
+    await U.waitUntilHTMLRendered(page);
     const filename = "view.06.cat-zoom-in-translate.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
@@ -90,6 +95,7 @@ describe('View pages and data', () => {
 
   it('can zoom out', async () => {
     await shadowclick(UI.ZOOMOUT);
+    await U.waitUntilHTMLRendered(page);
     const filename = "view.07.cat-zoom-out.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);

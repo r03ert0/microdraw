@@ -53,12 +53,14 @@ describe('Editing tools: order', () => {
     await shadowclick(UI.SELECT);
     await page.mouse.click(500, 100);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "order.02.triangles.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
     assert(diff<1000, `${diff} pixels were different`);
   }).timeout(0);
 
+  // eslint-disable-next-line max-statements
   it('invert the order by sending front', async () => {
     for(let i=2; i>=0; i--) {
       /* eslint-disable no-await-in-loop */
@@ -71,12 +73,14 @@ describe('Editing tools: order', () => {
     await shadowclick(UI.SELECT);
     await page.mouse.click(500, 100);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "order.03.invert.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
     assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
+  // eslint-disable-next-line max-statements
   it('invert the order by sending back', async () => {
     for (let i = 2; i >= 0; i--) {
       /* eslint-disable no-await-in-loop */
@@ -89,6 +93,7 @@ describe('Editing tools: order', () => {
     await shadowclick(UI.SELECT);
     await page.mouse.click(500, 100);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "order.04.invert-again.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
