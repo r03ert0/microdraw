@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+/* exported Ontology */
 const Ontology = [
   {
     name:"Telencephalon",

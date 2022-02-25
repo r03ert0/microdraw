@@ -37,6 +37,7 @@ describe('Editing tools: Translate, rotate, flip', () => {
     assert(diff<1000, `${diff} pixels were different`);
   }).timeout(0);
 
+  // eslint-disable-next-line max-statements
   it('draws a square', async () => {
     // select the polygon tool
     await shadowclick(UI.DRAWPOLYGON);
@@ -47,12 +48,14 @@ describe('Editing tools: Translate, rotate, flip', () => {
     await page.mouse.click(400, 500);
     await page.mouse.click(400, 400);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "transform.02.cat-square.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
     assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
+  // eslint-disable-next-line max-statements
   it('translate', async () => {
     await shadowclick(UI.SELECT);
     await page.mouse.click(405, 405);
@@ -62,6 +65,7 @@ describe('Editing tools: Translate, rotate, flip', () => {
     await page.mouse.move(255, 255, {steps: 10});
     await page.mouse.up();
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "transform.03.cat-translate.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
@@ -80,6 +84,7 @@ describe('Editing tools: Translate, rotate, flip', () => {
     await page.mouse.move(450, 300, {steps: 10});
     await page.mouse.up();
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "transform.04.cat-rotate.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
@@ -89,6 +94,7 @@ describe('Editing tools: Translate, rotate, flip', () => {
   it('flip', async () => {
     await shadowclick(UI.FLIPREGION);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "transform.05.cat-flip.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);

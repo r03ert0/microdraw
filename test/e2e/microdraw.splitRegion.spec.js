@@ -35,6 +35,7 @@ describe('Editing tools: split regions', () => {
     assert(diff<U.pct5, `${diff} pixels were different`);
   }).timeout(0);
 
+  // eslint-disable-next-line max-statements
   it('draws a square', async () => {
     await shadowclick(UI.DRAWPOLYGON);
     await page.mouse.click(400, 400);
@@ -43,6 +44,7 @@ describe('Editing tools: split regions', () => {
     await page.mouse.click(400, 500);
     await page.mouse.click(400, 400);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "split.02.cat-square-E.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
@@ -56,6 +58,7 @@ describe('Editing tools: split regions', () => {
     await page.mouse.click(450, 550);
     await page.mouse.click(450, 450);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "split.03.cat-square-F.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
@@ -68,6 +71,7 @@ describe('Editing tools: split regions', () => {
     // click on square E (square F is already selected)
     await page.mouse.click(405, 405);
 
+    await U.waitUntilHTMLRendered(page);
     const filename = "split.04.cat-split.png";
     await page.screenshot({path: U.newPath + filename});
     const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);

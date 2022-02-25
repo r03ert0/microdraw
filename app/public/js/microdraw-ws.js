@@ -10,40 +10,39 @@ if(Microdraw.secure) {
 } else {
   wshostname = "ws://" + Microdraw.wshostname;
 }
-var ws = new window.WebSocket(wshostname);
-
-/**
-  * @param {object} data Data received
-  * @returns {void}
-  */
-const receiveChatMessage = (data) => {
-  const {dom} = Microdraw;
-  let theUsername;
-  if (data.username !== "Anonymous") {
-    theUsername = data.username;
-  } else {
-    if (typeof data.randomUuid === 'number') {
-      theUsername = _decodeRandomUuidToNickname(data.randomUuid);
-    } else {
-      theUsername = data.uid;
-    }
-  }
-  const msg = "<b>" + theUsername + ":</b> " + data.msg + "<br />";
-  dom.querySelector("#logChat .text").innerHTML += msg;
-  dom.querySelector("#logChat .text").scrollTop = dom.querySelector("#logChat .text").scrollHeight;
-};
+const ws = new window.WebSocket(wshostname);
 
 const randomUuid = Math.floor(Math.random() * 65535);
 
-const _decodeRandomUuidToNickname = n => {
+const _decodeRandomUuidToNickname = (n) => {
   if (typeof n !== 'number') {
     throw new Error('argument to _decodeRandomUuidToNickname must be a number.');
   }
   if (Number.isNaN(n)) {
     throw new Error('argument to _decodeRandomUuidToNickname cannot be NaN');
   }
-  const { HippyHippo } = window.HippyHippo
-  return HippyHippo.getNickName(n)
+  const { HippyHippo } = window.HippyHippo;
+
+  return HippyHippo.getNickName(n);
+};
+
+/**
+  * @param {object} data Data received
+  * @returns {void}
+  */
+const receiveChatMessage = (data) => {
+  const { dom } = Microdraw;
+  let theUsername;
+  if (data.username !== "Anonymous") {
+    theUsername = data.username;
+  } else if (typeof data.randomUuid === 'number') {
+    theUsername = _decodeRandomUuidToNickname(data.randomUuid);
+  } else {
+    theUsername = data.uid;
+  }
+  const msg = "<b>" + theUsername + ":</b> " + data.msg + "<br />";
+  dom.querySelector("#logChat .text").innerHTML += msg;
+  dom.querySelector("#logChat .text").scrollTop = dom.querySelector("#logChat .text").scrollHeight;
 };
 
 const _getUserName = () => {
@@ -71,7 +70,7 @@ const _makeMessageObject = () => {
 
 const _displayOwnMessage = (msg) => {
   const {dom} = Microdraw;
-  const _username = _getUserName()
+  const _username = _getUserName();
   const username = _username === 'Anonymous'
     ? _decodeRandomUuidToNickname(randomUuid)
     : _username;
