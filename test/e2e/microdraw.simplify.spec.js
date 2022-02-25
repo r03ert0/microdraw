@@ -51,6 +51,7 @@ describe('Editing tools: simplify', () => {
       // eslint-disable-next-line no-await-in-loop
       await page.mouse.click(x, y);
     }
+    await U.waitUntilHTMLRendered(page);
 
     const filename = "simplify.02.cat-star.png";
     await page.screenshot({path: U.newPath + filename});
@@ -60,6 +61,7 @@ describe('Editing tools: simplify', () => {
 
   it('simplify once', async () => {
     await shadowclick(UI.SIMPLIFY);
+    await U.waitUntilHTMLRendered(page);
 
     const filename = "simplify.03.cat-simplified.png";
     await page.screenshot({path: U.newPath + filename});
@@ -69,6 +71,7 @@ describe('Editing tools: simplify', () => {
 
   it('simplify again', async () => {
     await shadowclick(UI.SIMPLIFY);
+    await U.waitUntilHTMLRendered(page);
 
     const filename = "simplify.04.cat-simplified.png";
     await page.screenshot({path: U.newPath + filename});
