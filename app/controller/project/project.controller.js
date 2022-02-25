@@ -30,6 +30,7 @@ const project = async function (req, res) {
     if (json) {
       if (!AccessControlService.canViewFiles(json, loggedUser)) {
         res.status(403).send('Not authorized to view project');
+
         return;
       }
       const context = {
@@ -55,9 +56,6 @@ const project = async function (req, res) {
  */
 var settings = async function(req, res) {
   console.log("Settings");
-  var login = (req.isAuthenticated()) ?
-    ("<a href='/user/" + req.user.username + "'>" + req.user.username + "</a> (<a href='/logout'>Log Out</a>)")
-    : ("<a href='/auth/github'>Log in with GitHub</a>");
   const requestedProject = req.params.projectName;
 
   var loggedUser = "anyone";
@@ -100,6 +98,7 @@ var settings = async function(req, res) {
 
   if (!AccessControlService.canViewFiles(json, loggedUser)) {
     res.status(403).send('Not authorized to view project');
+
     return;
   }
 
@@ -134,7 +133,7 @@ var settings = async function(req, res) {
     projectShortname: json.shortname,
     owner: json.owner,
     projectInfo: JSON.stringify(json),
-    login: login
+    loggedUser: JSON.stringify(req.user || null)
   };
   res.render('projectSettings', context);
 };
@@ -149,9 +148,6 @@ var settings = async function(req, res) {
 const projectNew = function (req, res) {
   console.log("New Project");
 
-  const login = (req.user) ?
-    ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
-    ('<a href=\'/auth/github\'>Log in with GitHub</a>');
   let loggedUser = "anyone";
   if(req.isAuthenticated()) {
     loggedUser = req.user.username;
@@ -167,12 +163,12 @@ const projectNew = function (req, res) {
     res.render('askForLogin', {
       title: "MicroDraw: New Project",
       functionality: "create a new project",
-      login: login
+      loggedUser: JSON.stringify(req.user || null)
     });
   } else {
     res.render('projectNew', {
       title: "MicroDraw: New Project",
-      login: login
+      loggedUser: JSON.stringify(req.user || null)
     });
   }
 };
@@ -182,6 +178,7 @@ const apiProject = async function (req, res) {
   const json = await req.appConfig.db.queryProject({shortname: req.params.projectName, backup: {$exists: false}});
   if (_.isNil(json)) {
     res.status(404).json({error: 'Project not found'});
+
     return;
   }
 
@@ -194,11 +191,12 @@ const apiProject = async function (req, res) {
 
   if (!AccessControlService.canViewFiles(json, loggedUser)) {
     res.status(403).json({error: 'Not authorized to view project'});
+
     return;
   }
 
   if (!AccessControlService.canViewCollaborators(json, loggedUser)) {
-    json.collaborators.list = json.collaborators.list.filter(collaborator => collaborator.username === 'anyone');
+    json.collaborators.list = json.collaborators.list.filter((collaborator) => collaborator.username === 'anyone');
   }
 
   if (!AccessControlService.canViewAnnotations(json, loggedUser)) {
@@ -230,6 +228,7 @@ const apiProjectAll = function (req, res) {
 
   req.appConfig.db.queryAllProjects({backup: {$exists: false}}, {skip: page * nItemsPerPage, limit: nItemsPerPage, fields: {_id: 0}})
     .then((array) => {
+      console.log('array of projects', array);
       res.send(array.map((o) => o.shortname ));
     });
 };
@@ -272,7 +271,7 @@ const postProject = async function (req, res) {
   if (oldProject != null) {
     if (!AccessControlService.hasFilesAccess(AccessLevel.EDIT, oldProject, loggedUser)) {
       res.status(403).json({ error: 'error', message: 'User does not have edit rights' });
-  
+
       return;
     }
     ignoredChanges = AccessControlService.preventUnauthorizedUpdates(newProject, oldProject, loggedUser);

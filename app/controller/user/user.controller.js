@@ -22,9 +22,6 @@ const validator = function (req, res, next) {
 };
 
 const user = function (req, res) {
-  const login = (req.user) ?
-    ('<a href=\'/user/' + req.user.username + '\'>' + req.user.username + '</a> (<a href=\'/logout\'>Log Out</a>)') :
-    ('<a href=\'/auth/github\'>Log in with GitHub</a>');
   const username = req.params.userName;
 
   // Store return path in case of login
@@ -41,7 +38,7 @@ const user = function (req, res) {
           title: json.name,
           userInfo: JSON.stringify(json),
           tab: req.query.tab || 'data',
-          login
+          loggedUser: JSON.stringify(req.user || null)
         };
         res.render('user', context);
       } else {
