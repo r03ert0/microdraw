@@ -68,6 +68,7 @@ describe('Editing tools: undo and redo', () => {
       }
     }
     await page.mouse.up();
+    await U.waitUntilHTMLRendered(page);
 
     const filename = "undo.02.cat-triangle-square-circle.png";
     await page.screenshot({path: U.newPath + filename});
@@ -80,6 +81,7 @@ describe('Editing tools: undo and redo', () => {
       // eslint-disable-next-line no-await-in-loop
       await shadowclick(UI.UNDO);
     }
+    await U.waitUntilHTMLRendered(page);
 
     const filename = "undo.03.undo.png";
     await page.screenshot({path: U.newPath + filename});
@@ -92,6 +94,7 @@ describe('Editing tools: undo and redo', () => {
       // eslint-disable-next-line no-await-in-loop
       await shadowclick(UI.REDO);
     }
+    await U.waitUntilHTMLRendered(page);
 
     const filename = "undo.04.redo.png";
     await page.screenshot({path: U.newPath + filename});
@@ -121,6 +124,7 @@ describe('Editing tools: undo and redo', () => {
 
     // undo
     await shadowclick(UI.UNDO);
+    await U.waitUntilHTMLRendered(page);
 
     const filename = "undo.05.undo-different-page.png";
     await page.screenshot({path: U.newPath + filename});

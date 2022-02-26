@@ -2,9 +2,52 @@ name: CI
 on:
   push:
     branches:
-      - master
+      - "**"
   pull_request:
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      MONGODB_TEST: 127.0.0.1:27017/circleci_test
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - uses: supercharge/mongodb-github-action@1.3.0
+        with:
+          mongodb-version: 4.2
+      - run: npm install
+      - name: Instantiate github-keys.json
+        run: |
+          echo "{ \"clientID\": \"clientID\", \"clientSecret\": \"clientSecret\", \"callbackURL\": \"http://localhost:3000/auth/github/callback\"}" > app/auth/github-keys.json
+          mkdir test/e2e/auth
+          cp app/auth/github-keys.json $_
+      - name: Instantiate configuration file
+        run: cp cfg.json.example cfg.json
+      - name: Instantiate blacklist
+        run: echo {} > app/controller/microdrawWebsocketServer/blacklist.json
+      - name: Instantiate whitelist
+        run: echo "{}" > app/controller/microdrawWebsocketServer/whitelist.json
+      - name: Run the server during 5 seconds
+        run: timeout 5 npm start && exit 10 || [[ $? -eq 124 ]]
+      - name: Run api tests
+        run: npm run mocha
+      - name: Run browser tests
+        run: |
+          npm start &
+          sleep 5
+          npm test
+          pkill node
+          mongo circleci_test --eval "db.dropDatabase();"
+      - name: Run e2e tests
+        run: npm run test-e2e
+      - name: Archive screenshots
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: screenshots
+          path: test/e2e/screenshots/
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
