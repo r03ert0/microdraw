@@ -10,291 +10,114 @@
 
 <body>
 
-<div id="app" style="width:100%;height:100%;display:flex;flex-direction:column">
-
-    <!-- Header (fixed height) -->
-    <div id="header">
-        <!-- Top-right menu bar -->
-        <div id="menu">
-            <img id="addProject" class="button" title="add project" src='/img/plus.svg'/>
-            <a href="/doc"><img id="doc" class="button" title="documentation" src='/img/doc.svg'/></a>
-            <a href="https://github.com/neuroanatomy/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
-            <a href="https://github.com/neuroanatomy/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
-            <div id="MyLogin">
-                <span>{{{login}}}</span>
-            </div>
-        </div>
-
-        <!-- Small left-top logo -->
-        <div style="display:display;margin:10px">
-            <a href='/' style="text-decoration:none">
-                <img style='height:56px;vertical-align:middle' src='/img/microdraw-white.svg'/>
-            </a><span style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100;vertical-align:middle" id="fontLogo"> 
-                <a href='/' style="font-family: Roboto, sans-serif; font-size: 36px; font-weight:100; text-decoration:none">{{username}}</a>
-            </span>
-        </div>
-    </div>
-
-    <!-- Content (variable height) -->
-    <div id="content" style="flex:1 0 auto;justify-content:center">
-        <!-- to center -->
-        <!--<table style="margin:auto;width:1000px">-->
-        <div id="centeringDiv">
-            
-            <!-- User Image -->
-            <div id="userImage">
-                <img src='{{{avatar}}}' style="width:100%"/>
-            </div>
-            <!-- end of User Image -->
-            
-            <!-- #userDescription -->
-            <div id="userDescription">
-                <h1>{{username}}</h1>
-                <h2>{{name}}</h2>
-                <p>{{joined}}</p>
-                <p>[[userInfo.dataFiles.length]] Datasets</p>
-                <p>[[userInfo.atlasFiles.length]] Atlas Files</p>
-                <p>[[userInfo.projects.length]] Projects</p>
-            </div>
-            <!-- end of #userDescription -->
-
-            <!-- #userTable -->
-             <div id="userTable">
-                <!-- Tab heads -->
-                <div>
-                    <a class="tab" value='data'>Datasets</a>
-                    <a class="tab" value='atlas'>Atlas Files</a>
-                    <a class="tab" value='projects'>Projects</a>
-                </div>
-        
-                <!-- Tab contents -->
-                <div style="width:calc(100% - 40px);min-height:400px;background:#333;padding:20px">
-        
-                    <!-- Tab Content 1: Data Files -->
-                    <table id="dataFiles" class="tabContent" style="padding:10px;display:none">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Dimensions</th>
-                                <th>Included</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="val in userInfo.dataFiles">
-                                <td>[[val.name]]</td>
-                                <td>[[val.dimensions]]</td>
-                                <td>[[val.included]]</td>
-                            </tr>
-                        </tbody>
-                    </table>
-            
-                    <!-- Tab Content 2: Atlas Files -->
-                    <table id="atlasFiles" class="tabContent" style="padding:10px;display:none">
-                        <thead>
-                            <tr>
-                                <th>Parent Dataset</th>
-                                <th>Name</th>
-                                <th>Project</th>
-                                <th>Last modified</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="val in userInfo.atlasFiles">
-                                <td>[[val.parent]]</td>
-                                <td>[[val.name]]</td>
-                                <td>[[val.project]]</td>
-                                <td>[[val.lastModified]]</td>
-                            </tr>
-                        </tbody>
-                    </table>
-            
-                    <!-- Tab Content 3: Projects -->
-                    <table id="projects" class="tabContent" style="padding:10px;display:none">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Files</th>
-                                <th>Collaborators</th>
-                                <th>Owner</th>
-                                <th>Last modified</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="val in userInfo.projects">
-                                <td>
-                                    <div style="position:relative">
-                                        <a class="projectName" style="margin-left:15px" :href="[['/project/'+val.shortname]]">
-                                            [[val.name]]
-                                        </a>
-                                        <a
-                                            class="settings"
-                                            :href="[['/project/'+val.shortname+'/settings']]"
-                                            style="position:absolute;top:0;left:0"
-                                        >
-                                            <img style="width:11px; margin:3px 8px 0 0" src="/img/settings.svg"/>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>[[val.files.list.length]]</td>
-                                <td>[[val.collaborators.list.length]]</td>
-                                <td>[[val.owner]]</td>
-                                <td>[[val.created]]</td>
-                            </tr>
-                        </tbody>
-                    </table>
-            
-                </div>
-            </div>
-            <!-- end of #userTable -->
-        </div>
-    </div>
-    <!-- End Content -->
-    
-    <!-- Space (fixed height) -->
-    <div style="flex:0 0 50px">
-    </div>
-
-    <!-- Footer (fixed height) -->
-    <div style="flex:0 0 100px;background-color:#000">
-        <p style="width:100%;font-size:small;text-align:center"> 
-            <a target="_blank" href="https://neuroanatomy.github.io">
-                <img src="/img/naat-bw.svg" style="width:28px;height:28px;margin-right:4px;display:display;vertical-align:middle"/></a>
-            <a target="_blank" href="https://neuroanatomy.github.io" class="linkNoULine">
-                groupe de neuroanatomie appliquée et théorique
-            </a>
-        </p>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
-<!--<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>-->
+<div id="app"></div>
+<script type="text/html" id="template">
+<UserPage :user='userInfo'>
+    <template v-slot:side>
+        [[projects.length]] Projects
+    </template>
+    <template v-slot:content>
+        <Tabs>
+             <Tab title="Datasets">
+                <Table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Dimensions</th>
+                            <th>Included</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="file in files">
+                            <td>[[file.name]]</td>
+                            <td>[[file.dimensions]]</td>
+                            <td>[[file.included]]</td>
+                        </tr>
+                    </tbody>
+                </Table>
+             </Tab>
+             <Tab title="Atlas Files">
+                <Table>
+                    <thead>
+                        <tr>
+                            <th>Parent Dataset</th>
+                            <th>Name</th>
+                            <th>Project</th>
+                            <th>Last modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="at in atlas">
+                            <td>[[at.parent]]</td>
+                            <td>[[at.name]]</td>
+                            <td>[[at.project]]</td>
+                            <td>[[at.lastModified]]</td>
+                        </tr>
+                    </tbody>
+                </Table>
+             </Tab>
+            <Tab title="Projects">
+                <Table id="projects">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Files</th>
+                            <th>Collaborators</th>
+                            <th>Owner</th>
+                            <th>Last modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="project in projects">
+                        <td>
+                            <a :href="`/project/${project.shortname}/settings`" class="settings">
+                                <img style="width:11px; margin:3px 8px 0 0" src="/img/settings.svg"/>
+                            </a>
+                            <a :href="`/project/${project.shortname}`">
+                                [[project.project]]
+                            </a>
+                        </td>
+                        <td>[[project.numFiles]]</td>
+                        <td>[[project.numCollaborators]]</td>
+                        <td>
+                            <a :href="`/user/${project.owner}`">
+                                [[project.owner]]
+                            </a>
+                        </td>
+                        <td>[[project.modified]]</td>
+                    </tr>
+                    </tbody>
+                </Table>
+            </Tab>
+       </Tabs>
+    </template>
+</UserPage>
+</script>
+<style>
+#projects {
+    table-layout: auto;
+}
+#projects td {
+    padding: 0 4px;
+}
+#projects a {
+    text-decoration: none;
+}
+.settings {
+    opacity: 0.5;
+    transition: opacity 500ms;
+}
+.settings:hover {
+    opacity: 1;
+}
+</style>
 
 <script>
-var userInfo='{{{userInfo}}}';
-userInfo=JSON.parse(userInfo);
-userInfo.dataFiles = [];
-userInfo.atlasFiles = [];
-userInfo.projects = [];
+const userInfo={{{userInfo}}};
+const loggedUser={{{loggedUser}}};
 </script>
+<script src="/js/pages/user-page.js"></script>
 
-<script>
-var app = new Vue({
-  el: '#app',
-  delimiters: ['[[', ']]'],
-  data: {
-    userInfo: userInfo,
-    message: "hello"
-  }
-});
-
-var cursorFiles = 0;
-var cursorAtlas = 0;
-var cursorProjects = 0;
-
-// switch tabs
-for(let tab of document.querySelectorAll("a.tab")) {
-    tab.addEventListener('click', () => {
-        for(let tab2 of document.querySelectorAll("a.tab")) {
-            tab2.classList.remove('selected');
-        }
-        tab.classList.add("selected");
-        for(con of document.querySelectorAll(".tabContent")) {
-            con.style.display = 'none';
-        }
-        selectTab(tab.getAttribute('value'));
-    });
-}
-selectTab('{{tab}}');
-
-queryFiles();
-queryAtlas();
-queryProjects();
-
-document.querySelector("#addProject").addEventListener('click', () => {location="/project/new"});
-
-function selectTab(tab) {
-    for(tab2 of document.querySelectorAll(".tab")) {
-        tab2.classList.remove("selected");
-    }
-    switch(tab) {
-        case "data":
-            document.querySelectorAll(".tab")[0].classList.add("selected");
-            document.querySelector("#dataFiles").style.removeProperty('display');
-            break;
-        case "atlas":
-            document.querySelectorAll(".tab")[1].classList.add("selected");
-            document.querySelector("#atlasFiles").style.removeProperty('display');
-            break;
-        case "projects":
-            document.querySelectorAll(".tab")[2].classList.add("selected");
-            document.querySelector("#projects").style.removeProperty('display');
-            break;
-    }
-}
-function queryFiles() {
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            const res = JSON.parse(xhr.responseText);
-            //if(res.success) {
-            //    appendFiles(res.list);
-            //    cursorFiles += 100;
-            //    queryFiles();
-            //}
-            appendFiles(res.list);
-        } else {
-            console.log('The request failed!');
-        }
-    };
-    xhr.open('GET', `/user/json/{{username}}/files?start=${cursorFiles}&length=100`);
-    xhr.send();
-}
-function appendFiles(list) {
-    app.userInfo.dataFiles.push.apply(app.userInfo.dataFiles, list);
-}
-function queryAtlas(list) {
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            const res = JSON.parse(xhr.responseText);
-            //if(res.success) {
-            //    appendAtlas(res.list);
-            //    cursorAtlas += 100;
-            //    queryAtlas();
-            //}
-            appendAtlas(res.list);
-        } else {
-            console.log('The request failed!');
-        }
-    };
-    xhr.open('GET', `/user/json/{{username}}/atlas?start=${app.userInfo.atlasFiles.length}&length=100`);
-    xhr.send();
-}
-function appendAtlas(list) {
-    app.userInfo.atlasFiles.push.apply(app.userInfo.atlasFiles, list);
-}
-function queryProjects() {
-    var xhr = new XMLHttpRequest();
-    xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            const res = JSON.parse(xhr.responseText);
-            //if(res.success) {
-            //    appendProjects(res.list);
-            //    cursorProject += 100;
-            //    queryProjects();
-            //}
-            appendProjects(res.list);
-        } else {
-            console.log('The request failed!');
-        }
-    };
-    xhr.open('GET', `/user/json/{{username}}/projects?start=${app.userInfo.projects.length}&length=100`);
-    xhr.send();
-}
-function appendProjects(list) {
-    app.userInfo.projects.push.apply(app.userInfo.projects, list);
-}
-</script>
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
