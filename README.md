@@ -24,6 +24,7 @@ As of July 2018
 * install the project
   * cd into microdraw
   * `npm install`
+  * `npm run build-pages`
 * run the project
   * in one terminal window start `mongod` database and leave it run
   * in another terminal: cd into microdraw folder: `npm start`
