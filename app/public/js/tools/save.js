@@ -46,39 +46,13 @@ const _dialog = async ({el, message, doFadeOut=true, delay=2000, background="#33
 
 window.ToolSave = { save: (function() {
 
-  // eslint-disable-next-line max-statements
-  const _processOneSection = async function (sl) {
-    if ((Microdraw.config.multiImageSave === false) && (sl !== Microdraw.currentImage)) {
-
-      return;
-    }
-
-    // configure value to be saved
-    var section = Microdraw.ImageInfo[sl];
-    const value = Microdraw.sectionValueForHashing(section);
-    const h = Microdraw.hash(JSON.stringify(value)).toString(16);
-
-    // check if the section annotations have changed since loaded by computing a hash
-    // if the section hash is undefined, this section has not yet been loaded.
-    // Do not save anything for this section
-    if( typeof section.Hash === "undefined" || h === section.Hash ) {
-
-      return;
-    }
-
-    value.Hash = h;
+  const _processOneSection = async function (query) {
+    const sl = query.slice;
 
     const res = await fetch('/api', {
       method: "POST",
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        action: 'save',
-        source: Microdraw.source,
-        slice: sl,
-        project: Microdraw.project,
-        Hash: h,
-        annotation: JSON.stringify(value)
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(query)
     });
 
     if (!res.ok) {
@@ -86,7 +60,7 @@ window.ToolSave = { save: (function() {
     }
 
     // update hash
-    section.Hash = h;
+    Microdraw.ImageInfo[sl].Hash = query.Hash;
 
     return sl;
   };
@@ -128,13 +102,31 @@ window.ToolSave = { save: (function() {
     var promiseArray = [];
     var savedSections = [];
 
-    // eslint-disable-next-line max-statements
     Object.keys(Microdraw.ImageInfo).forEach((sl) => {
-      const pr = _processOneSection(sl);
-      if(pr) {
-        console.log("pushing POST promise");
-        promiseArray.push(pr);
-        savedSections.push(sl);
+      if ((Microdraw.config.multiImageSave) || (sl === Microdraw.currentImage)) {
+        // configure value to be saved
+        var section = Microdraw.ImageInfo[sl];
+        const value = Microdraw.sectionValueForHashing(section);
+        const h = Microdraw.hash(JSON.stringify(value)).toString(16);
+
+        // check if the section annotations have changed since loaded by computing a hash
+        // if the section hash is undefined, this section has not yet been loaded.
+        // Do not save anything for this section
+        if (typeof section.Hash !== "undefined" && h !== section.Hash) {
+          value.Hash = h;
+          const query = {
+            action: 'save',
+            source: Microdraw.source,
+            slice: sl,
+            project: Microdraw.project,
+            Hash: h,
+            annotation: JSON.stringify(value)
+          };
+
+          console.log("pushing POST promise");
+          promiseArray.push(_processOneSection(query));
+          savedSections.push(sl);
+        }
       }
     });
 
