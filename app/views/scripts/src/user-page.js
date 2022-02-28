@@ -23,7 +23,6 @@ const PageContents = {
       const res = await (await fetch(`/user/json/${userInfo.username}/projects?start=${this.projects.length}&length=100`)).json();
       if (res.successful & (res.list.length > 0)) {
         this.projects.push(...res.list);
-        console.log('proj', res.list);
       }
     };
 
@@ -31,7 +30,6 @@ const PageContents = {
       const res = await (await fetch(`/user/json/${userInfo.username}/atlas?start=${this.atlas.length}&length=100`)).json();
       if (res.successful & (res.list.length > 0)) {
         this.atlas.push(...res.list);
-        console.log('atlast', res.list);
       }
     };
 
@@ -39,7 +37,6 @@ const PageContents = {
       const res = await (await fetch(`/user/json/${userInfo.username}/files?start=${this.files.length}&length=100`)).json();
       if (res.success & (res.list.length > 0)) {
         this.files.push(...res.list);
-        console.log('files', res.list);
       }
     };
 

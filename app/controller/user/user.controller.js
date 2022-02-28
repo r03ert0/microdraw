@@ -2,6 +2,7 @@
 /* eslint-disable radix */
 // const async = require('async');
 const dateFormat = require('dateformat');
+const { AccessControlService } = require('neuroweblab');
 //const checkAccess = require('../checkAccess/checkAccess.js');
 //const dataSlices = require('../dataSlices/dataSlices.js');
 
@@ -173,14 +174,17 @@ const api_userProjects = function (req, res) {
   const {userName} = req.params;
   // const start = parseInt(req.query.start);
   // const length = parseInt(req.query.length);
+  const loggedUser = req.user ? req.user.username : 'anyone';
 
-  req.appConfig.db.queryUserProjects(userName)
-    .then((result) => {
-      res.send({
-        successful: true,
-        list: result
-      });
+  req.appConfig.db.queryUserProjects(userName).then((result) => {
+    const filteredList = result.filter((project) =>
+      AccessControlService.canViewFiles(project, loggedUser)
+    );
+    res.send({
+      successful: true,
+      list: filteredList
     });
+  });
 };
 
 module.exports = {
