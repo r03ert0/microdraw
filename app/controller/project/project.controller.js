@@ -117,13 +117,17 @@ var settings = async function(req, res) {
       arr1.push(req.appConfig.db.queryUser({username: json.collaborators.list[j].username}));
     }
 
-    const collaboratorsList = await Promise.all(arr1);
-    for(let j=0; j<collaboratorsList.length; j++) {
-      if(collaboratorsList[j]) { // name found
-        json.collaborators.list[j].name=collaboratorsList[j].name;
-      } else { // name not found: set to empty
-        json.collaborators.list[j].name = "";
+    try {
+      const collaboratorsList = await Promise.all(arr1);
+      for(let j=0; j<collaboratorsList.length; j++) {
+        if(collaboratorsList[j]) { // name found
+          json.collaborators.list[j].name=collaboratorsList[j].name;
+        } else { // name not found: set to empty
+          json.collaborators.list[j].name = "";
+        }
       }
+    } catch(e) {
+      console.error(e);
     }
   } else {
     json.collaborators.list = json.collaborators.list.filter((collaborator) => collaborator.username === 'anyone');

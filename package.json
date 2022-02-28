@@ -29,7 +29,7 @@
     "multer": "^1.4.1",
     "mustache-express": "latest",
     "neuroweblab": "github:neuroanatomy/neuroweblab",
-    "nwl-components": "^0.0.13",
+    "nwl-components": "^0.0.15",
     "passport": "^0.4.0",
     "passport-github": "latest",
     "passport-local": "^1.0.0",
