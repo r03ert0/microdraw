@@ -1852,9 +1852,10 @@ const Microdraw = (function () {
           RegionsToRemove: []
         };
         // if getTileUrl is specified, we might need to eval it to get the function
-        // if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
-        //   eval(`me.ImageInfo[name].source.getTileUrl = ${obj.tileSources[i].getTileUrl}`);
-        // }
+        if( obj.tileSources[i].getTileUrl && typeof obj.tileSources[i].getTileUrl === 'string' ) {
+          // eslint-disable-next-line no-eval
+          eval(`me.ImageInfo[name].source.getTileUrl = ${obj.tileSources[i].getTileUrl}`);
+        }
       }
 
       // set default values for new regions (general configuration)
