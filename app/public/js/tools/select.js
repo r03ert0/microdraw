@@ -16,9 +16,9 @@ var ToolSelect = {select: (function() {
       // event.stopHandlers = true;
       for( var reg of Microdraw.ImageInfo[Microdraw.currentImage].Regions ) {
         if( reg.path.selected ) {
-          reg.path.position.x += dpoint.x;
-          reg.path.position.y += dpoint.y;
-          Microdraw.commitMouseUndo();
+          // reg.path.position.x += dpoint.x;
+          // reg.path.position.y += dpoint.y;
+          // Microdraw.commitMouseUndo();
         }
       }
     },
