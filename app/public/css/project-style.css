@@ -11,6 +11,7 @@
 }
 #right {
     background-color: black;
+    user-select: none;
 }
 
 select {
