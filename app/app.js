@@ -114,7 +114,7 @@ const start = async function () {
 
   // uncomment after placing your favicon in /public
   //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
   }
   app.use(bodyParser.json({ limit: '50mb', extended: true }));
