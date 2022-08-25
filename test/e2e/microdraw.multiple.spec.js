@@ -1,3 +1,5 @@
+/* global Microdraw */
+
 'use strict';
 const UI = require('../UI');
 const U = require('../mocha.test.util');
@@ -20,91 +22,183 @@ const shadowclick = async function (sel, testPage) {
 };
 
 let browser;
-let page1, page2;
+let page;
 
-describe('Editing tools: draw polygons and curves', () => {
+describe('Editing tools: draw in multiple pages', () => {
   before(async () => {
     browser = await puppeteer.launch({headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
   });
-  it('opens a data page', async () => {
-    page1 = await browser.newPage();
-    page2 = await browser.newPage();
-    await page1.setViewport({width: U.width, height: U.height});
-    await page2.setViewport({width: U.width, height: U.height});
-    const diff1 = await U.comparePageScreenshots(
-      page1,
+  it('opens data page', async () => {
+    page = await browser.newPage();
+    await page.setViewport({width: U.width, height: U.height});
+    // page.on('console', (message) =>
+    //   console.log(`${message.type().substr(0, 3)
+    //     .toUpperCase()} ${message.text()}`));
+
+    await page.goto(
       'http://localhost:3000/data?source=/test_data/cat.json&slice=0',
-      'multiple.01.page1.png'
+      { waitUntil: 'networkidle0' }
     );
-    const diff2 = await U.comparePageScreenshots(
-      page2,
+
+    // const diff1 = await U.comparePageScreenshots(
+    //   page,
+    //   'http://localhost:3000/data?source=/test_data/cat.json&slice=0',
+    //   'multiple.01.page.png'
+    // );
+    // const diff2 = await U.comparePageScreenshots(
+    //   page2,
+    //   'http://localhost:3000/data?source=/test_data/cat.json&slice=0',
+    //   'multiple.02.page2.png'
+    // );
+    // assert(diff1<U.pct5, `${diff1} pixels were different in page 1`);
+    // assert(diff2<U.pct5, `${diff2} pixels were different in page 2`);
+  }).timeout(0);
+
+  // eslint-disable-next-line max-statements
+  it('draws and saves a square in 1st page', async () => {
+    await shadowclick(UI.DRAWPOLYGON, page);
+    await page.mouse.click(400, 100);
+    await page.mouse.click(500, 100);
+    await page.mouse.click(500, 200);
+    await page.mouse.click(400, 200);
+    await page.mouse.click(400, 100);
+    await shadowclick(UI.SAVE, page);
+    await U.delay(1000);
+
+    const res = await page.evaluate(() => ({
+      sliceIndex: Number(Microdraw.dom.querySelector("#slice").dataset.val),
+      regionsExists: typeof (Microdraw.ImageInfo[0].Regions) !== 'undefined',
+      regionsLength: Microdraw.ImageInfo[0].Regions.length,
+      pathSegments: Microdraw.ImageInfo[0].Regions[0].path.segments.length
+    }));
+    // console.log(res);
+    assert(res.sliceIndex === 0, 'Slice index is not 0');
+    assert(res.regionsExists === true, 'No Regions object');
+    assert(res.regionsLength === 1, `Regions.length is ${res.regionsLength} instead of 1`);
+    assert(res.pathSegments === 4, `Path has ${res.pathSegments} segments instead of 4`);
+
+    // const filename = "multiple.04.page2-square.png";
+    // await page2.screenshot({path: U.newPath + filename});
+    // const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
+    // assert(diff<U.pct5, `${diff} pixels were different`);
+  }).timeout(0);
+
+  // eslint-disable-next-line max-statements
+  it('moves to the 2nd page and draws and saves a triangle', async () => {
+    await shadowclick(UI.NEXT, page);
+    await U.waitUntilHTMLRendered(page);
+    await shadowclick(UI.DRAWPOLYGON, page);
+    await page.mouse.click(300, 100);
+    await page.mouse.click(400, 100);
+    await page.mouse.click(350, 200);
+    await page.mouse.click(300, 100);
+    await shadowclick(UI.SAVE, page);
+    await U.delay(1000);
+
+    const res = await page.evaluate(() => ({
+      sliceIndex: Number(Microdraw.dom.querySelector("#slice").dataset.val),
+      regionsExists: typeof (Microdraw.ImageInfo[1].Regions) !== 'undefined',
+      regionsLength: Microdraw.ImageInfo[1].Regions.length,
+      pathSegments: Microdraw.ImageInfo[1].Regions[0].path.segments.length
+    }));
+    // console.log(res);
+    assert(res.sliceIndex === 1, 'Slice index is not 1');
+    assert(res.regionsExists === true, 'No Regions object');
+    assert(res.regionsLength === 1, `Regions.length is ${res.regionsLength} instead of 1`);
+    assert(res.pathSegments === 3, `Path has ${res.pathSegments} segments instead of 3`);
+
+    // const filename = "multiple.03.page-triangle.png";
+    // await page.screenshot({path: U.newPath + filename});
+    // const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
+    // assert(diff<U.pct5, `${diff} pixels were different`);
+  }).timeout(0);
+
+  it('square is still present after reloading the 1st page', async () => {
+    await page.goto(
       'http://localhost:3000/data?source=/test_data/cat.json&slice=0',
-      'multiple.02.page2.png'
+      { waitUntil: 'networkidle0' }
     );
-    assert(diff1<U.pct5, `${diff1} pixels were different in page 1`);
-    assert(diff2<U.pct5, `${diff2} pixels were different in page 2`);
+
+    const res = await page.evaluate(() => ({
+      sliceIndex: Number(Microdraw.dom.querySelector("#slice").dataset.val),
+      regionsExists: typeof (Microdraw.ImageInfo[0].Regions) !== 'undefined',
+      regionsLength: Microdraw.ImageInfo[0].Regions.length,
+      pathSegments: Microdraw.ImageInfo[0].Regions[0].path.segments.length
+    }));
+    // console.log(res);
+    assert(res.sliceIndex === 0, 'Slice index is not 0');
+    assert(res.regionsExists === true, 'No Regions object');
+    assert(res.regionsLength === 1, `Regions.length is ${res.regionsLength} instead of 1`);
+    assert(res.pathSegments === 4, `Path has ${res.pathSegments} segments instead of 4`);
+  }).timeout(0);
+
+  it('triangle is still present after reloading 2nd page', async () => {
+    await page.reload();
+    await U.waitUntilHTMLRendered(page);
+    await shadowclick(UI.NEXT, page);
+    await U.waitUntilHTMLRendered(page);
+
+    const res = await page.evaluate(() => ({
+      sliceIndex: Number(Microdraw.dom.querySelector("#slice").dataset.val),
+      regionsExists: typeof (Microdraw.ImageInfo[1].Regions) !== 'undefined',
+      regionsLength: Microdraw.ImageInfo[1].Regions.length,
+      pathSegments: Microdraw.ImageInfo[1].Regions[0].path.segments.length
+    }));
+    // console.log(res);
+    assert(res.sliceIndex === 1, 'Slice index is not 1');
+    assert(res.regionsExists === true, 'No Regions object');
+    assert(res.regionsLength === 1, `Regions.length is ${res.regionsLength} instead of 1`);
+    assert(res.pathSegments === 3, `Path has ${res.pathSegments} segments instead of 3`);
   }).timeout(0);
 
   // eslint-disable-next-line max-statements
-  it('draws and saves a square in page 2', async () => {
-    await shadowclick(UI.DRAWPOLYGON, page2);
-    await page2.mouse.click(400, 100);
-    await page2.mouse.click(500, 100);
-    await page2.mouse.click(500, 200);
-    await page2.mouse.click(400, 200);
-    await page2.mouse.click(400, 100);
-    await shadowclick(UI.SAVE, page2);
-    await U.waitUntilHTMLRendered(page2);
+  it('clean up the 2 pages', async () => {
+    await page.goto(
+      'http://localhost:3000/data?source=/test_data/cat.json&slice=0',
+      { waitUntil: 'networkidle0' }
+    );
 
-    const filename = "multiple.04.page2-square.png";
-    await page2.screenshot({path: U.newPath + filename});
-    const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
-    assert(diff<U.pct5, `${diff} pixels were different`);
-  }).timeout(0);
+    // cleanup 1st page
+    await U.waitUntilHTMLRendered(page);
+    await shadowclick(UI.SELECT, page);
+    await page.mouse.click(450, 150);
+    await shadowclick(UI.DELETE, page);
+    await shadowclick(UI.SAVE, page);
+    await U.delay(1000);
 
-  // eslint-disable-next-line max-statements
-  it('draws and saves a triangle in page 1', async () => {
-    await shadowclick(UI.DRAWPOLYGON, page1);
-    await page1.mouse.click(300, 100);
-    await page1.mouse.click(400, 100);
-    await page1.mouse.click(350, 200);
-    await page1.mouse.click(300, 100);
-    await shadowclick(UI.SAVE, page1);
-    await U.waitUntilHTMLRendered(page1);
+    // cleanup 2nd page
+    await shadowclick(UI.NEXT, page);
+    await shadowclick(UI.SELECT, page);
+    await page.mouse.click(350, 150);
+    await shadowclick(UI.DELETE, page);
+    await shadowclick(UI.SAVE, page);
+    await U.delay(1000);
+    await page.reload();
+    await U.waitUntilHTMLRendered(page);
 
-    const filename = "multiple.03.page1-triangle.png";
-    await page1.screenshot({path: U.newPath + filename});
-    const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
-    assert(diff<U.pct5, `${diff} pixels were different`);
-  }).timeout(0);
+    // check 1st page is clean
+    await shadowclick(UI.PREVIOUS, page);
+    const res1 = await page.evaluate(() => ({
+      sliceIndex: Number(Microdraw.dom.querySelector("#slice").dataset.val),
+      regionsExists: typeof (Microdraw.ImageInfo[0].Regions) !== 'undefined',
+      regionsLength: Microdraw.ImageInfo[0].Regions.length
+    }));
+    // console.log(res1);
+    assert(res1.sliceIndex === 0, 'Slice index is not 0');
+    assert(res1.regionsExists === true, 'No Regions object in page 2');
+    assert(res1.regionsLength === 0, `Regions.length is ${res1.regionsLength} instead of 0 in page 2`);
 
-  it('reload page 1', async () => {
-    await page1.reload();
-    await U.waitUntilHTMLRendered(page1);
-
-    const filename = "multiple.05.page1-reload.png";
-    await page1.screenshot({path: U.newPath + filename});
-    const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
-    assert(diff<U.pct5, `${diff} pixels were different`);
-  }).timeout(0);
-
-  // eslint-disable-next-line max-statements
-  it('clean up', async () => {
-    await shadowclick(UI.SELECT, page1);
-    await page1.mouse.click(350, 150);
-    await shadowclick(UI.DELETE, page1);
-
-    await shadowclick(UI.SELECT, page1);
-    await page1.mouse.click(450, 150);
-    await shadowclick(UI.DELETE, page1);
-
-    await shadowclick(UI.SAVE, page1);
-    await U.waitUntilHTMLRendered(page1);
-
-    const filename = "multiple.06.page1-cleanup.png";
-    await page1.screenshot({path: U.newPath + filename});
-    const diff = await U.compareImages(U.newPath + filename, U.refPath + filename);
-    assert(diff<U.pct5, `${diff} pixels were different`);
+    // check 2nd page is clean
+    await shadowclick(UI.NEXT, page);
+    const res2 = await page.evaluate(() => ({
+      sliceIndex: Number(Microdraw.dom.querySelector("#slice").dataset.val),
+      regionsExists: typeof (Microdraw.ImageInfo[1].Regions) !== 'undefined',
+      regionsLength: Microdraw.ImageInfo[1].Regions.length
+    }));
+    // console.log(res2);
+    assert(res2.sliceIndex === 1, 'Slice index is not 1');
+    assert(res2.regionsExists === true, 'No Regions object in page 2');
+    assert(res2.regionsLength === 0, `Regions.length is ${res2.regionsLength} instead of 0 in page 2`);
   }).timeout(0);
 
   after(async () => {
