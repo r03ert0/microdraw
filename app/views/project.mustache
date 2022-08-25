@@ -173,7 +173,7 @@ for(k=0;k<app.projectInfo.annotations.list.length;k++) {
     if (app.projectInfo.annotations.list[k].type === "text" |
         app.projectInfo.annotations.list[k].type === "hidden text" |
         app.projectInfo.annotations.list[k].type === "multiple choices") {
-        $("#projectFiles thead tr").append("<th>" + app.projectInfo.annotations.list[k].name + "</th>");
+        document.querySelector("#projectFiles thead tr").innerHTML += "<th>" + app.projectInfo.annotations.list[k].name + "</th>";
         annotations.text.push(app.projectInfo.annotations.list[k]);
     }
 }
