@@ -163,9 +163,9 @@ const start = async function () {
   // catch 404 and forward to error handler
   app.use(function (req, res, next) {
     console.log('ERROR: File not found', req.url);
-    var err = new Error('Not Found', req);
-    err.status = 404;
-    next(err);
+    // var err = new Error('Not Found'); //, req);
+    // err.status = 404;
+    // next(err);
   });
 
   // error handler
