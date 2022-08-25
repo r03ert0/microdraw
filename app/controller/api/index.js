@@ -219,14 +219,12 @@ const saveFromAPI = async function (req, res) {
   if (typeof project === 'undefined') {
     res.status(401).json({msg: "Invalid project"});
   } else if(!jsonIsValid(json)) {
-  res.status(401).json({msg: "Invalid annotation file"});
-  }
-
-  else {
+    res.status(401).json({msg: "Invalid annotation file"});
+  } else {
     const { action } = req.query;
     const annotations = action === 'append'
       ? await req.app.db.findAnnotations({ fileID, user: username, project })
-      : [];
+      : { Regions: [] };
 
     /**
     * use object destruction to avoid mutation of annotations object
