@@ -218,13 +218,9 @@ const saveFromAPI = async function (req, res) {
   const json = JSON.parse(rawString);
   if (typeof project === 'undefined') {
     res.status(401).json({msg: "Invalid project"});
+  } else if(!jsonIsValid(json)) {
+  res.status(401).json({msg: "Invalid annotation file"});
   }
-
-  // EMERGENCY FIX!
-  // else if(!jsonIsValid(json)) {
-  // res.status(401).json({msg: "Invalid annotation file"});
-  // }
-  // /EMERGENCY FIX!
 
   else {
     const { action } = req.query;
@@ -233,30 +229,20 @@ const saveFromAPI = async function (req, res) {
       : [];
 
     /**
-         * use object destruction to avoid mutation of annotations object
-         */
+    * use object destruction to avoid mutation of annotations object
+    */
 
-    // EMERGENCY FIX!
-    // const { Regions, ...rest } = annotations;
-    // EMERGENCY FIX!
+    const { Regions, ...rest } = annotations;
 
     updateAnnotation(req, {
       fileID,
       user: username,
       project,
       Hash,
-
-// EMERGENCY FIX!
-//       annotationString: JSON.stringify({
-//         ...rest,
-//         Regions: Regions.concat(json.map((v) => v.annotation))
-//       })
       annotationString: JSON.stringify({
-        Regions: annotations.concat(json.map((v) => v.annotation)),
-        RegionsToRemove: []
+        ...rest,
+        Regions: Regions.concat(json.map((v) => v.annotation))
       })
-// /EMERGENCY FIX!
-
     })
       .then(() => res.status(200).send({msg: "Annotation successfully saved"}))
       .catch((e) => res.status(500).send({ err: e.message}));
