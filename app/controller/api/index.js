@@ -252,7 +252,7 @@ const saveFromAPI = async function (req, res) {
 //         Regions: Regions.concat(json.map((v) => v.annotation))
 //       })
       annotationString: JSON.stringify({
-        Regions: annotations,
+        Regions: annotations.concat(json.map((v) => v.annotation)),
         RegionsToRemove: []
       })
 // /EMERGENCY FIX!
