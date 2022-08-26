@@ -192,7 +192,11 @@ const jsonIsValid = function (obj) {
     return false;
   }
 
-  if(!obj.every((item) => item.annotation && item.annotation.path)) {
+  if(!obj.every((item) =>
+    item.annotation
+    && item.annotation.path
+    && item.annotation.name
+    && item.annotation.uid)) {
     return false;
   }
 
@@ -220,8 +224,19 @@ const saveFromAPI = async function (req, res) {
   const rawString = TMP_DIR
     ? await fs.promises.readFile(req.files[0].path).toString()
     : req.files[0].buffer.toString();
+
   const json = JSON.parse(rawString);
 
+  // add uid to path
+  json.map((v) => {
+    const {path, name} = v.annotation;
+    const uid = Math.random().toString(16)
+      .slice(2);
+
+    return {path, name, uid};
+  });
+
+  // validate and submit
   if (typeof project === 'undefined') {
     res.status(401).json({msg: "Invalid project"});
   } else if(!jsonIsValid(json)) {
