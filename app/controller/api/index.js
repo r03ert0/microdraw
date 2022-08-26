@@ -235,7 +235,7 @@ const saveFromAPI = async function (req, res) {
 
   // add uid to path
   json.forEach((v) => {
-    v.uid = Math.random().toString(16)
+    v.annotation.uid = Math.random().toString(16)
       .slice(2);
   });
 
