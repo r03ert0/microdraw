@@ -94,7 +94,7 @@ describe('Editing tools: subtract regions', () => {
     // assert(diff<U.pct5, `${diff} pixels were different - more than 5%`);
   }).timeout(0);
 
-  it('subtract square D from square C', async () => {
+  it('subtract 2nd square from 1st square', async () => {
     await shadowclick(UI.SUBTRACTREGION);
 
     // click on square C (square D is already selected)
