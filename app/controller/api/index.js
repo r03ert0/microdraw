@@ -234,12 +234,9 @@ const saveFromAPI = async function (req, res) {
   const json = JSON.parse(rawString);
 
   // add uid to path
-  json.map((v) => {
-    const {path, name} = v.annotation;
-    const uid = Math.random().toString(16)
+  json.forEach((v) => {
+    v.uid = Math.random().toString(16)
       .slice(2);
-
-    return {path, name, uid};
   });
 
   // validate and submit
