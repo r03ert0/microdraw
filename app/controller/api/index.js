@@ -182,12 +182,17 @@ const saveFromGUI = async function (req, res) {
  * @param {object} obj An annotation object to validate.
  * @returns {boolean} True if the object is valid
  */
+// eslint-disable-next-line max-statements
 const jsonIsValid = function (obj) {
   if(typeof obj === 'undefined') {
     return false;
-  } else if(obj.constructor !== Array) {
+  }
+
+  if(obj.constructor !== Array) {
     return false;
-  } else if(!obj.every((item) => item.annotation && item.annotation.path)) {
+  }
+
+  if(!obj.every((item) => item.annotation && item.annotation.path)) {
     return false;
   }
 
@@ -216,15 +221,21 @@ const saveFromAPI = async function (req, res) {
     ? await fs.promises.readFile(req.files[0].path).toString()
     : req.files[0].buffer.toString();
   const json = JSON.parse(rawString);
+
   if (typeof project === 'undefined') {
     res.status(401).json({msg: "Invalid project"});
   } else if(!jsonIsValid(json)) {
     res.status(401).json({msg: "Invalid annotation file"});
   } else {
     const { action } = req.query;
-    const annotations = action === 'append'
-      ? await req.app.db.findAnnotations({ fileID, user: username, project })
-      : { Regions: [] };
+
+    let annotations = { Regions: [] };
+    if (action === 'append') {
+      const oldAnnotations = await req.app.db.findAnnotations({ fileID, user: username, project });
+      annotations = {
+        Regions: oldAnnotations
+      };
+    }
 
     /**
     * use object destruction to avoid mutation of annotations object
