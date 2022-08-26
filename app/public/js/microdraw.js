@@ -13,7 +13,7 @@ const Microdraw = (function () {
     debug: 1,
     hostname: window.location.origin,
     wshostname: `${window.location.hostname}:8080`,
-    secure: true,
+    secure: window.location.protocol === 'https:',
 
     ImageInfo: {},               // regions for each sections, can be accessed by the section name. (e.g. me.ImageInfo[me.imageOrder[viewer.current_page()]])
     // regions contain a paper.js path, a unique ID and a name
