@@ -25,6 +25,10 @@ As of July 2018
   * cd into microdraw
   * `npm install`
   * `npm run build-pages`
+  * drop the `.example` in `cfg.json.example`
+  * drop the `.example` in `app/auth/github-keys.json.example`
+  * drop the `.example` in `app/controller/microdrawWebsocketServer/whitelist.json.example`
+  * drop the `.example` in `app/controller/microdrawWebsocketServer/blacklist.json.example`
 * run the project
   * in one terminal window start `mongod` database and leave it run
   * in another terminal: cd into microdraw folder: `npm start`

@@ -48,6 +48,7 @@
     "http-terminator": "^3.0.4",
     "husky": "^7.0.0",
     "jpeg-js": "^0.4.3",
+    "lint-staged": "^13.0.3",
     "mocha": "^6.1.4",
     "mock-fs": "^4.5.0",
     "morgan": "^1.9.1",
