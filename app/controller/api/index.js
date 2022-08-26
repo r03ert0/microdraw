@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 const express = require('express');
 const router = new express.Router();
 const multer = require('multer');
@@ -185,22 +186,27 @@ const saveFromGUI = async function (req, res) {
 // eslint-disable-next-line max-statements
 const jsonIsValid = function (obj) {
   if(typeof obj === 'undefined') {
-    return false;
+    return {valid:false, msg: "json object undefined"};
   }
 
   if(obj.constructor !== Array) {
-    return false;
+    return {valid: false, msg: "json object is not an array"};
   }
 
-  if(!obj.every((item) =>
-    item.annotation
-    && item.annotation.path
-    && item.annotation.name
-    && item.annotation.uid)) {
-    return false;
+  if(!obj.every((item) => item.annotation)) {
+    return {valid: false, msg: "items do not have an `annotation` property"};
+  }
+  if(!obj.every((item) => item.annotation.path)) {
+    return {valid: false, msg: "items do not have a `path` property"};
+  }
+  if(!obj.every((item) => item.annotation.name)) {
+    return {valid: false, msg: "items do not have a `name` property"};
+  }
+  if(!obj.every((item) => item.annotation.uid)) {
+    return {valid: false, msg: "items do not have a `uid` property"};
   }
 
-  return true;
+  return {valid: true};
 };
 
 /**
@@ -239,8 +245,10 @@ const saveFromAPI = async function (req, res) {
   // validate and submit
   if (typeof project === 'undefined') {
     res.status(401).json({msg: "Invalid project"});
-  } else if(!jsonIsValid(json)) {
-    res.status(401).json({msg: "Invalid annotation file"});
+  } else if(!jsonIsValid(json).valid) {
+    res.status(401).json({
+      msg: `Invalid annotation file: ${jsonIsValid(json).msg}`
+    });
   } else {
     const { action } = req.query;
 
