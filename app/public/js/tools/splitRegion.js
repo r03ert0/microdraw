@@ -2,7 +2,7 @@
 /* global Microdraw */
 /* global paper */
 
-var ToolSplitRegion = {splitRegion: (function() {
+const ToolSplitRegion = {splitRegion: (function() {
   const tool = {
 
     _findHitItem: function (point) {
@@ -51,7 +51,7 @@ var ToolSplitRegion = {splitRegion: (function() {
 
     _addRegionsFromNewPath(newPath, prevColor) {
       newPath.remove();
-      Microdraw.region.path = newPath._children[0];
+      [Microdraw.region.path] = newPath._children;
       for( let i = 1; i < newPath._children.length; i += 1 ) {
         const newReg = Microdraw.newRegion({
           name: Microdraw.region.name,
@@ -107,6 +107,7 @@ var ToolSplitRegion = {splitRegion: (function() {
          * @function mouseUp
          * @returns {void}
          */
+    // eslint-disable-next-line no-empty-function
     mouseUp: function mouseUp() {
     },
 
@@ -115,6 +116,7 @@ var ToolSplitRegion = {splitRegion: (function() {
          * @param {string} prevTool The previous tool to which the selection goes back
          * @returns {void}
          */
+    // eslint-disable-next-line no-empty-function
     click: function click(prevTool) {
     }
   };
