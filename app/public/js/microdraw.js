@@ -1286,7 +1286,7 @@ const Microdraw = (function () {
       // if image has no hash, save one
       me.ImageInfo[slice].Hash = regions.Hash ? regions.Hash : me.sectionHash(me.ImageInfo[slice]);
 
-      return regions;
+      return {regions, slice};
     },
 
     _addRegionsToCurrentImage: function(regions) {
@@ -1359,7 +1359,11 @@ const Microdraw = (function () {
         // eslint-disable-next-line no-lonely-if
         if( me.config.useDatabase ) {
           const data = await me.microdrawDBLoad();
-          regions = me._addRegions(data);
+          let slice;
+          ({regions, slice} = me._addRegions(data));
+          if (slice !== Microdraw.currentImage) {
+            return;
+          }
         }
       }
 
