@@ -1,6 +1,4 @@
 /* global Microdraw */
-/*global $*/
-
 const fadeOut = function (el) {
   el.style.opacity = 1;
 
@@ -160,53 +158,3 @@ window.ToolSave = { save: (function() {
 
   return tool;
 }())};
-
-/**
- * @function microdrawDBLoad
- * @desc Load SVG overlay from microdrawDB
- * @returns {Promise} A promise to return an array of paths of the current section.
-
- */
-Microdraw.microdrawDBLoad = function() {
-  return new Promise((resolve, reject) => {
-    if( Microdraw.debug ) {
-      console.log("> save.js microdrawDBLoad promise");
-    }
-    const query = {
-      action : "load_last",
-      source : Microdraw.source,
-      slice: Microdraw.currentImage
-    };
-    if(typeof Microdraw.project !== 'undefined') {
-      query.project = Microdraw.project;
-    }
-    $.getJSON('/api', query)
-      .success(function (data) {
-        Microdraw.annotationLoadingFlag = false;
-
-        // Because of asynchrony, the section that just loaded may not be the one that the user
-        // intended to get. If the section that was just loaded does not correspond to the current section,
-        // do not display this one and load the current section.
-        if( Microdraw.section !== Microdraw.currentImage ) {
-          console.log("> save.js microdrawDBLoad: Loaded section does not correspond with the current section.");
-          Microdraw.microdrawDBLoad()
-            .then(resolve)
-            .catch(reject);
-
-        } else if( $.isEmptyObject(data) ) {
-          Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
-          if( Microdraw.debug ) {
-            console.log("< save.js microdrawDBLoad: returned data is an empty object");
-          }
-          resolve([]);
-        } else {
-          resolve(data);
-        }
-      })
-      .error(function(jqXHR, textStatus, err) {
-        console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + err);
-        Microdraw.annotationLoadingFlag = false;
-        reject(err);
-      });
-  });
-};

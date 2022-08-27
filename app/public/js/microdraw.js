@@ -1068,24 +1068,36 @@ const Microdraw = (function () {
           .success(function (data) {
             Microdraw.annotationLoadingFlag = false;
 
-            // Because of asynchrony, the section that just loaded may not be the one that the user
-            // intended to get. If the section that was just loaded does not correspond to the current section,
-            // do not display this one and load the current section.
-            if( Microdraw.section !== Microdraw.currentImage ) {
-              console.log("> save.js microdrawDBLoad: Loaded section does not correspond with the current section.");
-              Microdraw.microdrawDBLoad()
-                .then(resolve)
-                .catch(reject);
-
-            } else if( $.isEmptyObject(data) ) {
-              Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
-              if( Microdraw.debug ) {
-                console.log("< save.js microdrawDBLoad: returned data is an empty object");
+            data.forEach((d) => {
+              const slice = d.fileID.match(/slice=(\d+)/);
+              if (slice[1] !== Microdraw.currentImage) {
+                console.log("> microdrawDBLoad: Received data does not correspond with the current section.");
+                reject(new Error("Received data does not correspond with the current section"));
               }
-              resolve([]);
-            } else {
-              resolve(data);
-            }
+            });
+
+            // // Because of asynchrony, the section that just loaded may not be the one that the user
+            // // intended to get. If the section that was just loaded does not correspond to the current section,
+            // // do not display this one and load the current section.
+            // if( Microdraw.section !== Microdraw.currentImage ) {
+            //   console.log("> microdrawDBLoad: Loaded section does not correspond with the current section.");
+            //   Microdraw.microdrawDBLoad()
+            //     .then(resolve)
+            //     .catch(reject);
+
+            // } else
+
+            resolve(data);
+
+            // if( $.isEmptyObject(data) ) {
+            //   Microdraw.ImageInfo[Microdraw.currentImage].Hash = Microdraw.hash(JSON.stringify(Microdraw.ImageInfo[Microdraw.currentImage].Regions)).toString(16);
+            //   if( Microdraw.debug ) {
+            //     console.log("< save.js microdrawDBLoad: returned data is an empty object");
+            //   }
+            //   resolve([]);
+            // } else {
+            //   resolve(data);
+            // }
           })
           .error(function(jqXHR, textStatus, err) {
             console.log("< microdrawDBLoad resolve ERROR: " + textStatus + " " + err);
@@ -1250,6 +1262,33 @@ const Microdraw = (function () {
       return regions;
     },
 
+    _addRegions: function (data) {
+      let slice;
+      const regions = me._convertDBAnnotationsToRegions(data);
+
+      if (data.length) {
+        const match = data[0].fileID.match(/slice=(\d+)/);
+
+        if (!match) {
+          throw new Error("Annotation fileID does not have a slice number indicated");
+        }
+
+        ([, slice] = match);
+
+        for(const region of regions) {
+          // regions are added to the ImageInfo[slice];
+          me.newRegion(region, slice);
+        }
+      } else {
+        slice = Microdraw.currentImage;
+      }
+
+      // if image has no hash, save one
+      me.ImageInfo[slice].Hash = regions.Hash ? regions.Hash : me.sectionHash(me.ImageInfo[slice]);
+
+      return regions;
+    },
+
     _addRegionsToCurrentImage: function(regions) {
       for(const region of regions) {
         // regions are added to the ImageInfo[currentImage];
@@ -1320,8 +1359,7 @@ const Microdraw = (function () {
         // eslint-disable-next-line no-lonely-if
         if( me.config.useDatabase ) {
           const data = await me.microdrawDBLoad();
-          regions = me._convertDBAnnotationsToRegions(data);
-          me._addRegionsToCurrentImage(regions);
+          regions = me._addRegions(data);
         }
       }
 
