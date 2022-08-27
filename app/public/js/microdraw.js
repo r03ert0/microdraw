@@ -1068,13 +1068,13 @@ const Microdraw = (function () {
           .success(function (data) {
             Microdraw.annotationLoadingFlag = false;
 
-            data.forEach((d) => {
-              const slice = d.fileID.match(/slice=(\d+)/);
-              if (slice[1] !== Microdraw.currentImage) {
-                console.log("> microdrawDBLoad: Received data does not correspond with the current section.");
-                reject(new Error("Received data does not correspond with the current section"));
-              }
-            });
+            // data.forEach((d) => {
+            //   const slice = d.fileID.match(/slice=(\d+)/);
+            //   if (slice[1] !== Microdraw.currentImage) {
+            //     console.log("> microdrawDBLoad: Received data does not correspond with the current section.");
+            //     reject(new Error("Received data does not correspond with the current section"));
+            //   }
+            // });
 
             // // Because of asynchrony, the section that just loaded may not be the one that the user
             // // intended to get. If the section that was just loaded does not correspond to the current section,
