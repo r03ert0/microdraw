@@ -1,11 +1,4 @@
-FROM node:12-alpine
-
-# alpine images do not have certtificates bundled
-RUN apk --no-cache add ca-certificates
-
-# build bcrypt on alpine
-# see https://github.com/kelektiv/node.bcrypt.js/wiki/Installation-Instructions#alpine-linux-based-images
-RUN apk --no-cache add --virtual builds-deps build-base python
+FROM node:16-alpine
 
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV:-production}
