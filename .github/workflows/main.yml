@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NETOWRK_NAME: microdraw-docker-test
+      NETWORK_NAME: microdraw-docker-test
       MICRODRAW_IMAGE_NAME: "microdraw:test-label"
     steps:
       - uses: actions/checkout@v2
@@ -66,16 +66,17 @@ jobs:
         run: docker build -t ${{ env.MICRODRAW_IMAGE_NAME }} .
       - name: Run docker image
         run: |
-          docker network create ${{ env.NETOWRK_NAME }}
+          docker network create ${{ env.NETWORK_NAME }}
           docker run \
             --rm \
             --name mongo \
+            --network ${{ env.NETWORK_NAME }} \
             -dit \
             mongo
           docker run \
             --rm \
             --name microdraw \
-            --network {{ env.MICRODRAW_IMAGE_NAME }} \
+            --network ${{ env.MICRODRAW_IMAGE_NAME }} \
             --env MONGODB=mongo:27017 \
             -dit \
             --env MONGODB=mongo:27017 \
@@ -93,7 +94,7 @@ jobs:
         run: |
           docker stop microdraw
           docker stop mongo
-          docker network rm ${{ env.NETOWRK_NAME }}
+          docker network rm ${{ env.NETWORK_NAME }}
   
   deploy:
     needs: test
