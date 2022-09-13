@@ -10,6 +10,7 @@
     "mocha": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' mocha test/mocha.test.js",
     "mocha-brk": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' mocha test/mocha.test.js --inspect-brk --timeout=10000000",
     "test-e2e": "cross-env MONGODB_TEST='127.0.0.1:27017/circleci_test' LOCALSIGNIN=true mocha ./test/e2e/runner.js ./test/e2e/*.spec.js --timeout=100000",
+    "prepare": "husky install",
     "build-pages": "webpack --mode production --config webpack.pages.config.js && cp app/views/scripts/dist/*-page.js app/public/js/pages/",
     "dev-pages": "webpack --mode development --config webpack.pages.config.js && cp app/views/scripts/dist/*-page.js app/public/js/pages/"
   },
