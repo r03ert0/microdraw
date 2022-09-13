@@ -76,7 +76,7 @@ jobs:
           docker run \
             --rm \
             --name microdraw \
-            --network ${{ env.MICRODRAW_IMAGE_NAME }} \
+            --network ${{ env.NETWORK_NAME }} \
             --env MONGODB=mongo:27017 \
             -dit \
             --env MONGODB=mongo:27017 \
