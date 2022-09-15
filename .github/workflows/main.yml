@@ -50,6 +50,52 @@ jobs:
         with:
           name: screenshots
           path: test/e2e/screenshots/
+  
+  test-docker-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETWORK_NAME: microdraw-docker-test
+      MICRODRAW_IMAGE_NAME: "microdraw:test-label"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: Build docker image
+        run: docker build -t ${{ env.MICRODRAW_IMAGE_NAME }} .
+      - name: Run docker image
+        run: |
+          docker network create ${{ env.NETWORK_NAME }}
+          docker run \
+            --rm \
+            --name mongo \
+            --network ${{ env.NETWORK_NAME }} \
+            -dit \
+            mongo
+          docker run \
+            --rm \
+            --name microdraw \
+            --network ${{ env.NETWORK_NAME }} \
+            --env MONGODB=mongo:27017 \
+            -dit \
+            --env MONGODB=mongo:27017 \
+            -v ${PWD}/app/auth/github-keys.json.example:/microdraw/app/auth/github-keys.json \
+            -v ${PWD}/app/controller/microdrawWebsocketServer/blacklist.json.example:/microdraw/app/controller/microdrawWebsocketServer/blacklist.json \
+            -v ${PWD}/app/controller/microdrawWebsocketServer/whitelist.json.example:/microdraw/app/controller/microdrawWebsocketServer/whitelist.json \
+            -v ${PWD}/cfg.json.example:/microdraw/cfg.json \
+            -p 3000:3000 \
+            ${{ env.MICRODRAW_IMAGE_NAME }}
+      - name: Ping server
+        run: |
+          sleep 5
+          curl -vf http://localhost:3000
+      - name: Clean up
+        run: |
+          docker stop microdraw
+          docker stop mongo
+          docker network rm ${{ env.NETWORK_NAME }}
+  
   deploy:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
