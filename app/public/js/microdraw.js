@@ -1628,6 +1628,10 @@ const Microdraw = (function () {
 
       return new Promise((resolve, reject) => {
         const directFetch = new Promise((rs, rj) => {
+          // determine if request will be blocked by CORS policy
+          if ((new URL(me.params.source)).origin !== me.params.source.origin) {
+            rj(new Error('request origin do not match page origin'));
+          }
           // decide between json (local) and jsonp (cross-origin)
           let ext = me.params.source.split(".");
           ext = ext[ext.length - 1];
