@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 //! openseadragon 2.4.2
 //! Built on 2020-03-05
 //! Git commit: v2.4.2-0-c450749
