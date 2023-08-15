@@ -62,6 +62,7 @@ router.get('/', async function (req, res) {
   console.log("api get query", query);
 
   const annotations = await req.app.db.findAnnotations(query, backup);
+  console.log(`found ${annotations.length} annotations`);
 
   res.status(200).send(annotations);
 });

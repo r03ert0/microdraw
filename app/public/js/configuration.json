@@ -14,6 +14,7 @@
       { "name": "Front", "id": "front", "desc": "Move selection to the front", "exportedVar": ["ToolFront"], "scriptPath": "/js/tools/front.js", "iconPath": "/img/front.svg" },
       { "name": "Draw", "id": "draw", "desc": "", "exportedVar": ["ToolDraw"], "scriptPath": "/js/tools/draw.js", "iconPath": "/img/draw.svg" },
       { "name": "Color", "id": "color", "desc": "", "exportedVar": ["ToolColor"], "scriptPath": "/js/tools/color.js" },
+      { "name": "Layers", "id": "layers", "desc": "", "exportedVar": ["ToolLayers"], "scriptPath": "/js/tools/layers.js", "iconPath": "/img/layers.svg" },
       { "name": "DrawPolygon", "id": "drawPolygon", "desc": "", "exportedVar": ["ToolDrawPolygon"], "scriptPath": "/js/tools/drawPolygon.js", "iconPath": "/img/drawPolygon.svg" },
       { "name": "DrawLine", "id": "drawLine", "desc": "", "exportedVar": ["ToolDrawLine"], "scriptPath": "/js/tools/drawLine.js", "iconPath": "/img/drawLine.svg" },
       { "name": "Simplify", "id": "simplify", "desc": "", "exportedVar": ["ToolSimplify"], "scriptPath": "/js/tools/simplify.js", "iconPath": "/img/simplify.svg" },

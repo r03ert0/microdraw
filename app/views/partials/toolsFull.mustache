@@ -25,7 +25,7 @@
               </div>
               <div style="flex:1 0 28px;display:flex">
                   <div style="flex:1;position:relative">
-                      <div id="slice" class="mui-slider" data-onstop=true data-max="100" data-val="0" style="position:absolute;height:100%;margin-left:10px;width:calc(100% - 20px)">
+                      <div id="slice" class="mui-slider" data-onstop=false data-max="100" data-val="0" style="position:absolute;height:100%;margin-left:10px;width:calc(100% - 20px)">
                           <div class="mui-track" style="position:absolute;left:0;top:50%;width:100%;border-top:1px solid #fff;padding:0;display:inline-block"></div>
                           <div class="mui-thumb" style="position:absolute;left:0;top:50%;transform:translate(-10px,-10px);border-radius:10px;padding:0;width:20px;height:20px;background:#fff;display:inline-block"></div>
                       </div>
@@ -70,6 +70,7 @@
                   </div>
                   <div style="display:flex">
                       <div style="flex:1"><div id="color"    title="Color"    class="mui push" style="height:24px;background:#f00"></div></div>
+                      <div style="flex:1"><div id="layers"   title="Layers"   class="mui push"><img class="icon" alt="layers"   src="/img/layers.svg" /></div></div>
                       <div style="flex:1"><div id="back"     title="Back"     class="mui push"><img class="icon" alt="back"     src="/img/back.svg" /></div></div>
                       <div style="flex:1"><div id="backward" title="Backward" class="mui push"><img class="icon" alt="backward" src="/img/backward.svg" /></div></div>
                       <div style="flex:1"><div id="foreward" title="Foreward" class="mui push"><img class="icon" alt="foreward" src="/img/foreward.svg" /></div></div>
@@ -143,3 +144,26 @@
 </div>
 <!-- End Labels -->
 
+<!-- Layers -->
+<div id="layers-panel">
+    <div id="header">
+        <img
+        id="layers-close" class="button" alt="close" src="/img/times-circle.svg"
+        onclick="Microdraw.tools.layers._detachLayersContainer()"
+        style="float:right;pointer-events:auto;"/><br />
+        <b>Layers</b>
+    </div>
+
+    <div id="layers-list">
+    </div>
+
+    <div id="add-layer-panel">
+        <b>Name</b> <input type="text" placeholder="Name of the layer" style="width:100%" ></input>
+        <b>Source</b> <input type="text" placeholder="Source of the layer" style="width:100%" ></input>
+        <button onclick="Microdraw.tools.layers.addLayerUI(event)">Add</button>
+        <button onclick="Microdraw.tools.layers.cancelAddLayerUI(event)">Cancel</button>
+    </div>
+    <button id="add-layer-button" onclick="Microdraw.tools.layers.addRow(event)">Add layer</button>
+</div>
+
+<!-- End Layers -->

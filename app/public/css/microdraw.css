@@ -425,15 +425,79 @@ body[data-toolbarDisplay=right] #tools-minimized div {
   flex-wrap:wrap;
   text-align:left;
 }
-
 #labelset ul {
   padding-left:1rem;
   list-style-type:none;
 }
-
-
 #labelset li {
   margin-bottom: 1rem;
+}
+/*-----------------*/
+
+/*-----------------*/
+/*  Layers display */
+#layers-panel {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 600px;
+    height: 300px;
+    max-height: 300px;
+    transform: translate( -50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    z-index: 100;
+    font-size: 0.8rem;
+}
+#layers-panel > #header {
+    height: 36px;
+    background-color: #666;
+    padding: 0 5px 0 10px;
+    margin: -10px -10px 5px -10px;
+    pointer-events: none;
+}
+#layers-list {
+    height: 220px;
+    max-height: 220px;
+    overflow: auto;
+    margin: 0 0 10px 0;
+}
+#layers-list.small {
+    height: 120px;
+    max-height: 120px;
+}
+#layers-list > div.layer {
+    display: block;
+    position: relative;
+    border: thin solid #999;
+    padding: 5px;
+    margin: 5px;
+}
+ul.layer-item {
+    list-style-type: none;
+    margin: 5px;
+    padding: 5px;
+    line-height: 1.5;
+}
+ul.layer-item > li > button {
+    position: absolute;
+    right:5px;
+    bottom:5px;
+}
+b.layer-item {
+    display: inline-block;
+    width: 100px;
+    margin-left: 10px;
+}
+.layer-value {
+    width: 40px;
+    text-align: right;
+}
+#add-layer-panel {
+    display: none;
+    background-color: #333;
+    padding: 10px;
 }
 /*-----------------*/
 
