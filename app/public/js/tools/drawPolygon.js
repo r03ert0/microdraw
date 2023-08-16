@@ -1,5 +1,7 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable max-statements */
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 var ToolDrawPolygon = {drawPolygon: (function() {
 
@@ -7,12 +9,11 @@ var ToolDrawPolygon = {drawPolygon: (function() {
   let drawingPolygonFlag = false;
 
   /**
-   * @function finishDrawingPolygon
    * @description cleanup finishing drawing polygon
    * @param {bool} closed True if the polygon has to be closed
    * @returns {void}
    */
-  function finishDrawingPolygon(closed) {
+  const finishDrawingPolygon = (closed) => {
 
     // finished the drawing of the polygon
     if( closed ) {
@@ -23,7 +24,7 @@ var ToolDrawPolygon = {drawPolygon: (function() {
     }
     Microdraw.region.path.fullySelected = true;
     drawingPolygonFlag = false;
-  }
+  };
 
   var tool = {
 
@@ -68,7 +69,10 @@ var ToolDrawPolygon = {drawPolygon: (function() {
 
       } else {
         // test if user is closing the polygon
-        const hitResult = paper.project.hitTest(point, {tolerance:Microdraw.tolerance, segments:true});
+        const hitResult = paper.project.hitTest(point, {
+          tolerance : Microdraw.tolerance/paper.view.zoom,
+          segments:true
+        });
         if( hitResult
                     && hitResult.item === Microdraw.region.path
                     && hitResult.segment.point === Microdraw.region.path.segments[0].point ) {

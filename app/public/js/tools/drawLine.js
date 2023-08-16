@@ -1,5 +1,7 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable max-statements */
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 var ToolDrawLine = {
   drawLine: (function () {
@@ -45,7 +47,7 @@ var ToolDrawLine = {
         }
 
         // do not keep paths with too little segments
-        if ((Microdraw.region.path.segments || []).length < Microdraw.tolerance) {
+        if ((Microdraw.region.path.segments || []).length < Microdraw.tolerance/paper.view.zoom) {
           Microdraw.removeRegion(Microdraw.region);
           paper.view.draw();
 

@@ -1,6 +1,6 @@
 # MicroDraw
 
-[![CircleCI](https://circleci.com/gh/r03ert0/microdraw/tree/master.svg?style=shield)](https://circleci.com/gh/r03ert0/microdraw/tree/master) [![Join the chat at https://gitter.im/r03ert0/microdraw](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/r03ert0/microdraw?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![CI](https://github.com/neuroanatomy/microdraw/actions/workflows/main.yml/badge.svg)](https://github.com/neuroanatomy/microdraw/actions/workflows/main.yml) [![CircleCI](https://circleci.com/gh/r03ert0/microdraw/tree/master.svg?style=shield)](https://circleci.com/gh/r03ert0/microdraw/tree/master) [![Join the chat at https://gitter.im/r03ert0/microdraw](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/r03ert0/microdraw?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ![microdraw-vervet](https://user-images.githubusercontent.com/2310732/31443628-40b315ec-ae9a-11e7-9c2e-d133b5921687.png)
 
@@ -10,31 +10,38 @@ high resolution data, such as that produced by high-throughput histology.
 Data visualisation uses OpenSeadragon, and data annotation uses Paper.js.
 
 ## Developer install instructions
-as of 2018-07-09
+
+As of July 2018
 
 ### Basic Steps
 
-#### without docker
-* install nodejs
-* install mongo
+#### Without docker
+* Install nodejs
+* Install mongo
 
-* checkout the repository `git clone https://github.com/r03ert0/microdraw.git`
+* Checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
 * `cd microdraw`
 * install the project
   * cd into microdraw
   * `npm install`
+  * `npm run build-pages`
+  * drop the `.example` in `cfg.json.example`
+  * drop the `.example` in `app/auth/github-keys.json.example`
+  * drop the `.example` in `app/controller/microdrawWebsocketServer/whitelist.json.example`
+  * drop the `.example` in `app/controller/microdrawWebsocketServer/blacklist.json.example`
 * run the project
   * in one terminal window start `mongod` database and leave it run
   * in another terminal: cd into microdraw folder: `npm start`
 * open http://localhost:3000 to see MicroDraws landing page and click any of the data links provided
 * test data can be viewed at http://localhost:3000/data?source=/test_data/cat.json
 
-#### with docker
-* checkout the repository `git clone https://github.com/r03ert0/microdraw.git`
-* `cd microdraw/bin`
+#### With docker
+* checkout the repository `git clone https://github.com/neuroanatomy/microdraw.git`
+* `cd microdraw`
+* `docker-compose build`
 * `docker-compose up`
-* open http://localhost:3000 to see MicroDraws landing page and click any of the data links provided
-* test data can be viewed at http://localhost:3000/data?source=/test_data/cat.json
+* open http://localhost:3001 to see MicroDraw's landing page and click any of the data links provided
+* test data can be viewed at http://localhost:3001/data?source=/test_data/cat.json
 
 ### Users management
 Microdraw utilises [passportjs](http://www.passportjs.org/) to manage user login. By default, Microdraw is configured to use `Github` and `local` strageties. 

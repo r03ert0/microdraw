@@ -1,56 +1,60 @@
+/* eslint-disable global-require */
+/* eslint-disable max-statements */
 
 const mustacheExpress = require('mustache-express');
 const path = require('path');
-const {authTokenMiddleware, getTokenEndPoint} = require('../auth/token');
+const nwl = require('neuroweblab');
+const {authTokenMiddleware} = nwl;
+const {getHttpImg} = require('../serveHttpImages/serveHttpImages');
 
 module.exports = (app) => {
-    console.log(`configuring routes`);
+  console.log(`configuring routes`);
 
-    // view engine setup
-    app.engine('mustache', mustacheExpress());
-    app.set('views', path.join(__dirname, '../views'));
-    app.set('view engine', 'mustache');
+  // view engine setup
+  app.engine('mustache', mustacheExpress());
+  app.set('views', path.join(__dirname, '../views'));
+  app.set('view engine', 'mustache');
 
-    // set pass app config to req
-    const configSetup = (req, res, next) => {
-        req.appConfig = {
-            loginMethods : app.get('loginMethods') || [],
-            db : app.db
-        };
-        next();
+  // set pass app config to req
+  const configSetup = (req, res, next) => {
+    req.appConfig = {
+      loginMethods : app.get('loginMethods') || [],
+      db : app.db
     };
+    next();
+  };
 
-    app.use(configSetup);
+  app.use(configSetup);
 
-    app.get('/', function (req, res) { // /auth/github
+  app.get('/', function (req, res) { // /auth/github
 
-      // store return path in case of login
-      req.session.returnTo = req.originalUrl;
-      res.render('index', {
-          title: 'MicroDraw',
-          loginMethods : app.get('loginMethods') || [],
-          user: req.user ? req.user : null
-      });
+    // store return path in case of login
+    req.session.returnTo = req.originalUrl;
+    res.render('index', {
+      title: 'MicroDraw',
+      loginMethods : app.get('loginMethods') || [],
+      user: req.user ? req.user : null
     });
+  });
 
-    app.use('/data', (req, res, next) => {
-      next();
-    }, require('../controller/data/'));
+  app.use('/data', (req, res, next) => {
+    next();
+  }, require('../controller/data/'));
 
-    app.use('/user', require('../controller/user/'));
+  app.use('/user', require('../controller/user/'));
 
-    app.use('/project', require('../controller/project/'));
+  app.use('/project', require('../controller/project/'));
 
-    app.use('/search', require('../controller/search/'));
+  app.use('/search', require('../controller/search/'));
 
-    app.get('/token', getTokenEndPoint);
+  app.get('/image', getHttpImg);
 
-    app.get('/microdraw', (req, res, next) => {
-      res.render('partials/microdraw');
-    });
+  app.get('/microdraw', (req, res /*, next*/) => {
+    res.render('partials/microdraw');
+  });
 
-    app.use('/api', authTokenMiddleware, require('../controller/api/'));
+  app.use('/api', authTokenMiddleware, require('../controller/api/'));
 
-    /* patches for bypassing CORS header restrictions */
-    require('./routesExtensions')(app);
+  /* patches for bypassing CORS header restrictions */
+  require('./routesExtensions')(app);
 };

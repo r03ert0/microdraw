@@ -1,8 +1,9 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 const ToolPrevious = { previous : (function () {
-  var tool = {
+  const tool = {
 
     /**
      * @function click

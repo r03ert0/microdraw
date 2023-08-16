@@ -1,8 +1,23 @@
-/*global Microdraw*/
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
 
 var ToolColor = { color : (function() {
   const {dom} = Microdraw;
   var tool = {
+    _findSelectedRegion: function () {
+      const {currentImage, region} = Microdraw;
+      const {Regions: regions} = Microdraw.ImageInfo[currentImage];
+      let regionIndex = null;
+      for(let i=0; i<regions.length; i+=1) {
+        if(regions[i].uid === region.uid) {
+          regionIndex = i;
+          break;
+        }
+      }
+
+      return regionIndex;
+    },
+
     _detachLabelsetContainer: () => {
       const obj = dom.querySelector("#labelset");
       obj.style.display = "none";
@@ -24,6 +39,16 @@ var ToolColor = { color : (function() {
       la.querySelector(".label-name").textContent = l.name;
       la.onclick = () => {
         Microdraw.currentLabelIndex = i;
+
+        const regionIndex = tool._findSelectedRegion();
+        if(typeof regionIndex !== "undefined") {
+          console.log(regionIndex);
+          const {region} = Microdraw;
+          if (typeof region !== "undefined") {
+            Microdraw.changeRegionName(region, l.name);
+          }
+        }
+
         Microdraw.updateLabelDisplay();
         tool._detachLabelsetContainer();
       };
@@ -32,7 +57,6 @@ var ToolColor = { color : (function() {
     },
 
     /**
-     * @function color
      * @desc Select a color to draw with
      * @param {string} prevTool The previous tool to which the selection goes back
      * @returns {void}

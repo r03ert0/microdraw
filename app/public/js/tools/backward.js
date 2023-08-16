@@ -1,21 +1,22 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 var ToolBackward = {backward: (function() {
   var tool = {
 
     /**
      * Regions are stored in two different places: Inside Microdraw.ImageInfo[].Regions, and
-     * inside paper.projects[], which is the structure paperjs uses for display. This function
+     * inside paper.project, which is the structure paperjs uses for display. This function
      * checks that the order of the regions is the same (it should always be).
      * @returns {boolean} true if the check is ok
      */
     _isPaperRegionsOrderOk: function () {
       const {currentImage} = Microdraw;
-      const {Regions: regions, projectID} = Microdraw.ImageInfo[currentImage];
+      const {Regions: regions} = Microdraw.ImageInfo[currentImage];
       let isOk = true;
       for(let i=0; i<regions.length; i += 1) {
-        if(regions[i].path !== paper.projects[projectID].activeLayer.children[i]) {
+        if(regions[i].path !== paper.project.activeLayer.children[i]) {
           isOk = false;
           break;
         }
@@ -51,12 +52,12 @@ var ToolBackward = {backward: (function() {
 
     _moveRegionToNewIndex({origIndex, newIndex}) {
       const {currentImage, region} = Microdraw;
-      const {Regions: regions, projectID} = Microdraw.ImageInfo[currentImage];
+      const {Regions: regions} = Microdraw.ImageInfo[currentImage];
 
       regions.splice(origIndex, 1);
       regions.splice(newIndex, 0, region);
       region.path.remove();
-      paper.projects[projectID].activeLayer.insertChild(newIndex, region.path);
+      paper.project.activeLayer.insertChild(newIndex, region.path);
     },
 
     _sendSelectedRegionBackward: function () {
@@ -75,11 +76,10 @@ var ToolBackward = {backward: (function() {
     },
 
     /**
-       * @function click
-       * @desc Move selection one step backward.
-       * @param {string} prevTool The previous tool to which the selection goes back
-       * @returns {void}
-       */
+     * @desc Move selection one step backward.
+     * @param {string} prevTool The previous tool to which the selection goes back
+     * @returns {void}
+     */
     click : function click(prevTool) {
       if(!tool._isPaperRegionsOrderOk()) {
         console.log("ERROR: region order is incorrect");

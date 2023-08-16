@@ -1,5 +1,6 @@
-/*global Microdraw*/
-/*global paper*/
+/* eslint-disable no-unused-vars */
+/* global Microdraw */
+/* global paper */
 
 var ToolNavigate = { navigate : (function() {
   var tool = {

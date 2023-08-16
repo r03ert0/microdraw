@@ -14,6 +14,7 @@
       { "name": "Front", "id": "front", "desc": "Move selection to the front", "exportedVar": ["ToolFront"], "scriptPath": "/js/tools/front.js", "iconPath": "/img/front.svg" },
       { "name": "Draw", "id": "draw", "desc": "", "exportedVar": ["ToolDraw"], "scriptPath": "/js/tools/draw.js", "iconPath": "/img/draw.svg" },
       { "name": "Color", "id": "color", "desc": "", "exportedVar": ["ToolColor"], "scriptPath": "/js/tools/color.js" },
+      { "name": "Layers", "id": "layers", "desc": "", "exportedVar": ["ToolLayers"], "scriptPath": "/js/tools/layers.js", "iconPath": "/img/layers.svg" },
       { "name": "DrawPolygon", "id": "drawPolygon", "desc": "", "exportedVar": ["ToolDrawPolygon"], "scriptPath": "/js/tools/drawPolygon.js", "iconPath": "/img/drawPolygon.svg" },
       { "name": "DrawLine", "id": "drawLine", "desc": "", "exportedVar": ["ToolDrawLine"], "scriptPath": "/js/tools/drawLine.js", "iconPath": "/img/drawLine.svg" },
       { "name": "Simplify", "id": "simplify", "desc": "", "exportedVar": ["ToolSimplify"], "scriptPath": "/js/tools/simplify.js", "iconPath": "/img/simplify.svg" },
@@ -32,6 +33,7 @@
       { "name": "Screenshot", "id": "screenshot", "desc": "", "exportedVar": ["ToolScreenshot"], "scriptPath": "/js/tools/screenshot.js", "iconPath": "/img/screenshot.svg" },
       { "name": "Delete (\u232b)", "id": "delete", "desc": "", "exportedVar": ["ToolDelete"], "scriptPath": "/js/tools/delete.js", "iconPath": "/img/delete.svg" },
       { "name": "FindContours", "id": "findContours", "desc": "Find contours using a threshold", "exportedVar": ["ToolFindContours"], "scriptPath": "/js/tools/findContours.js", "iconPath": "/img/findContours.svg" },
+      { "name": "TextAnnotation", "id": "textAnnotation", "desc": "Enter a text annotation", "exportedVar": ["ToolTextAnnotation"], "scriptPath": "/js/tools/textAnnotation.js", "iconPath": "/img/textAnnotation.svg" },
       { "name": "Undo (\u2318Z)", "id": "undo", "desc": "undo last action(s)", "exportedVar": ["ToolUndo"], "scriptPath": "/js/tools/undo.js", "iconPath": "/img/undo.svg" },
       { "name": "Redo (\u21e7\u2318Z)", "id": "redo", "desc": "redo last action(s)", "exportedVar": ["ToolRedo"], "scriptPath": "/js/tools/redo.js", "iconPath": "/img/redo.svg" }
     ]

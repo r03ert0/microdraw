@@ -1,17 +1,17 @@
-FROM node:8-alpine
-
-# alpine images do not have certtificates bundled
-RUN apk --no-cache add ca-certificates
-
-# build bcrypt on alpine
-# see https://github.com/kelektiv/node.bcrypt.js/wiki/Installation-Instructions#alpine-linux-based-images
-RUN apk --no-cache add --virtual builds-deps build-base python
+FROM node:16-alpine
 
 ARG NODE_ENV
 ENV NODE_ENV=${NODE_ENV:-production}
 
-COPY . /microdraw
+# only copy the package*.json, so that the dep can be installed and cached
+# theoretically, these layers will only be rebuilt if dependencies change
+RUN mkdir /microdraw
+COPY ./package.json /microdraw/
+COPY ./package-lock.json /microdraw/
+
 WORKDIR /microdraw
-RUN npm install
+RUN npm pkg set scripts.prepare="echo 'Overriden'" && npm i
+
+COPY . /microdraw
 
 ENTRYPOINT ["npm", "start"]

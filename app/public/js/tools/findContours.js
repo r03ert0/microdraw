@@ -1,10 +1,8 @@
-/*global Microdraw*/
-/*global paper*/
 /* eslint-disable max-lines */
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-plusplus */
-// eslint-disable-next-line no-unused-vars
-/*global Microdraw*/
-/*global paper*/
+/* global Microdraw */
+/* global paper */
 
 var ToolFindContours = {findContours: (function() {
   const {dom} = Microdraw;

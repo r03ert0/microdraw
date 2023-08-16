@@ -28,9 +28,9 @@
         <div id="menu">
             <img id="addProject" class="button" title="add project" src='/img/plus.svg'/>
             <img id="settings" class="button" title="Settings" src='/img/settings.svg'/>
-            <img id="doc" class="button" title="documentation" src='/img/doc.svg'/>
-            <a href="https://github.com/r03ert0/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
-            <a href="https://github.com/r03ert0/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
+            <a href="/doc"><img id="doc" class="button" title="documentation" src='/img/doc.svg'/></a>
+            <a href="https://github.com/neuroanatomy/microdraw/issues" target="_blank"><img id="bug" class="button" title="report a bug" src='/img/bug.svg'/></a>
+            <a href="https://github.com/neuroanatomy/microdraw" target="_blank"><img id="github" class="button" title="join our github project" style='width:15px;height:15px' src='/img/github.svg'/></a>
             <div id="MyLogin">
                 <span>{{{login}}}</span>
             </div>
@@ -138,7 +138,7 @@ async function attach () {
 attach();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
 <!--<script src="http://localhost/libs/vue/2.4.2/vue.min.js"></script>-->
 
 <script>
@@ -173,7 +173,7 @@ for(k=0;k<app.projectInfo.annotations.list.length;k++) {
     if (app.projectInfo.annotations.list[k].type === "text" |
         app.projectInfo.annotations.list[k].type === "hidden text" |
         app.projectInfo.annotations.list[k].type === "multiple choices") {
-        $("#projectFiles thead tr").append("<th>" + app.projectInfo.annotations.list[k].name + "</th>");
+        document.querySelector("#projectFiles thead tr").innerHTML += "<th>" + app.projectInfo.annotations.list[k].name + "</th>";
         annotations.text.push(app.projectInfo.annotations.list[k]);
     }
 }
@@ -608,7 +608,7 @@ function selectRow(tr) {
 
 </script>
 
-<script>
+{{! <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
     (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -616,6 +616,18 @@ function selectRow(tr) {
 
     ga('create', 'UA-50078058-2', 'auto');
     ga('send', 'pageview');
-</script>
+</script> }}
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<!-- created new on the NAAT google account -->
+{{! <script async src="https://www.googletagmanager.com/gtag/js?id=G-YGK7EPHMSP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-YGK7EPHMSP');
+</script> }}
+
 </body>
 </html>
