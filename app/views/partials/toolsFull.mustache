@@ -66,6 +66,7 @@
                       <div style="flex:1"><div id="splitRegion"    title="SplitRegion"    class="mui sub"><img class="icon" alt="splitRegion"    src="/img/splitRegion.svg" /></div></div>
                       <div style="flex:1"><div id="rotate"         title="Rotate"         class="mui sub"><img class="icon" alt="rotate"         src="/img/rotate.svg" /></div></div>
                       <div style="flex:1"><div id="flipRegion" title="FlipRegion" class="mui sub"><img class="icon" alt="flipRegion" src="/img/flipRegion.svg" /></div></div>
+                      <div style="flex:1"><div id="textAnnotation" title="TextAnnotation" class="mui sub"><img class="icon" alt="textAnnotation" src="/img/textAnnotation.svg" /></div></div>
                     </div>
                   </div>
                   <div style="display:flex">
@@ -77,11 +78,11 @@
                       <div style="flex:1"><div id="front"    title="Front"    class="mui push"><img class="icon" alt="front"    src="/img/front.svg" /></div></div>
                   </div>
                   <div style="display:flex">
-                      <div style="flex:1"><div id="simplify"  title="Simplify"  class="mui push"><img class="icon" alt="simplify"   src="/img/simplify.svg" /></div></div>
-                      <div style="flex:1"><div id="toPolygon" title="ToPolygon" class="mui push"><img class="icon" alt="toPolygon"  src="/img/toPolygon.svg" /></div></div>
-                      <div style="flex:1"><div id="toBezier"  title="ToBezier"  class="mui push"><img class="icon" alt="toBezier"   src="/img/toBezier.svg" /></div></div>
-                      <div style="flex:1"><div id="copy"      title="Copy"      class="mui push"><img class="icon" alt="copy"       src="/img/copy.svg" /></div></div>
-                      <div style="flex:1"><div id="paste"     title="Paste"     class="mui push"><img class="icon" alt="paste"      src="/img/paste.svg" /></div></div>
+                      <div style="flex:1"><div id="simplify"       title="Simplify"       class="mui push"><img class="icon" alt="simplify"       src="/img/simplify.svg" /></div></div>
+                      <div style="flex:1"><div id="toPolygon"      title="ToPolygon"      class="mui push"><img class="icon" alt="toPolygon"      src="/img/toPolygon.svg" /></div></div>
+                      <div style="flex:1"><div id="toBezier"       title="ToBezier"       class="mui push"><img class="icon" alt="toBezier"       src="/img/toBezier.svg" /></div></div>
+                      <div style="flex:1"><div id="copy"           title="Copy"           class="mui push"><img class="icon" alt="copy"           src="/img/copy.svg" /></div></div>
+                      <div style="flex:1"><div id="paste"          title="Paste"          class="mui push"><img class="icon" alt="paste"          src="/img/paste.svg" /></div></div>
                   </div>
                   <div style="display:flex">
                       <div style="flex:1"><div id="save"         title="Save"         class="mui push"><img class="icon" alt="save"         src="/img/save.svg" /></div></div>
@@ -165,5 +166,27 @@
     </div>
     <button id="add-layer-button" onclick="Microdraw.tools.layers.addRow(event)">Add layer</button>
 </div>
-
 <!-- End Layers -->
+
+<!-- Text Annotation -->
+<div id="text-annotation-panel">
+    <div id="header">
+        <img
+        id="text-annotation-close" class="button" alt="close" src="/img/times-circle.svg"
+        onclick="Microdraw.tools.textAnnotation.cancelTextAnnotation()"
+        style="float:right;pointer-events:auto;"/><br />
+        <b>Text Annotation</b>
+    </div>
+
+    <div id="add-text-annotation">
+        <b>Text</b> <input type="text" placeholder="Enter annotation text" ></input> <br />
+        <b>Color</b> <input type="color" ></input> <br />
+        <b>Font size</b> <input type="number" value="18"></input> <br />
+        <br />
+        <div>
+            <button onclick="Microdraw.tools.textAnnotation.addTextAnnotation(event)">Add</button>
+            <button onclick="Microdraw.tools.textAnnotation.updateTextAnnotation(event)">Update</button>
+            <button onclick="Microdraw.tools.textAnnotation.cancelTextAnnotation(event)">Cancel</button>
+        </div>
+    </div>
+</div>

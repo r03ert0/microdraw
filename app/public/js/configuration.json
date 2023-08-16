@@ -33,6 +33,7 @@
       { "name": "Screenshot", "id": "screenshot", "desc": "", "exportedVar": ["ToolScreenshot"], "scriptPath": "/js/tools/screenshot.js", "iconPath": "/img/screenshot.svg" },
       { "name": "Delete (\u232b)", "id": "delete", "desc": "", "exportedVar": ["ToolDelete"], "scriptPath": "/js/tools/delete.js", "iconPath": "/img/delete.svg" },
       { "name": "FindContours", "id": "findContours", "desc": "Find contours using a threshold", "exportedVar": ["ToolFindContours"], "scriptPath": "/js/tools/findContours.js", "iconPath": "/img/findContours.svg" },
+      { "name": "TextAnnotation", "id": "textAnnotation", "desc": "Enter a text annotation", "exportedVar": ["ToolTextAnnotation"], "scriptPath": "/js/tools/textAnnotation.js", "iconPath": "/img/textAnnotation.svg" },
       { "name": "Undo (\u2318Z)", "id": "undo", "desc": "undo last action(s)", "exportedVar": ["ToolUndo"], "scriptPath": "/js/tools/undo.js", "iconPath": "/img/undo.svg" },
       { "name": "Redo (\u21e7\u2318Z)", "id": "redo", "desc": "redo last action(s)", "exportedVar": ["ToolRedo"], "scriptPath": "/js/tools/redo.js", "iconPath": "/img/redo.svg" }
     ]

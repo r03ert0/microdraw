@@ -33,6 +33,8 @@ var ToolSelect = {select: (function() {
       } else if( hitResult.type === 'segment' ) {
         Microdraw.handle = hitResult.segment.point;
         Microdraw.handle.point = point;
+      } else if( hitResult.type === 'fill' ) {
+        Microdraw.tools.textAnnotation.updateTextAnnotationPanel(hitResult.item);
       }
     },
 

@@ -424,11 +424,13 @@ const Microdraw = (function () {
 
       if( arg.path ) {
         reg.path = arg.path;
-        reg.path.strokeWidth = arg.path.strokeWidth ? arg.path.strokeWidth : me.config.defaultStrokeWidth;
-        reg.path.strokeColor = arg.path.strokeColor ? arg.path.strokeColor : me.config.defaultStrokeColor;
-        reg.path.strokeScaling = false;
         reg.path.fillColor = arg.path.fillColor ? arg.path.fillColor :'rgba(' + color.red + ',' + color.green + ',' + color.blue + ',' + me.config.defaultFillAlpha + ')';
         reg.path.selected = false;
+        if (arg.name !== "textAnnotation") {
+          reg.path.strokeWidth = arg.path.strokeWidth ? arg.path.strokeWidth : me.config.defaultStrokeWidth;
+          reg.path.strokeColor = arg.path.strokeColor ? arg.path.strokeColor : me.config.defaultStrokeColor;
+          reg.path.strokeScaling = false;
+        }
       }
 
       if( typeof imageNumber === "undefined" ) {
@@ -1250,6 +1252,12 @@ const Microdraw = (function () {
         }
         case 'CompoundPath': {
           path = new paper.CompoundPath();
+          path.importJSON(json);
+          path.remove();
+          break;
+        }
+        case 'PointText': {
+          path = new paper.PointText();
           path.importJSON(json);
           path.remove();
           break;
