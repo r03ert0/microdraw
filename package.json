@@ -15,12 +15,12 @@
     "dev-pages": "webpack --mode development --config webpack.pages.config.js && cp app/views/scripts/dist/*-page.js app/public/js/pages/"
   },
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.20.1",
     "cross-env": "^7.0.3",
     "dateformat": "^3.0.2",
     "debug": "^4.1.1",
     "dompurify": "^2.2.6",
-    "express": "^4.16.3",
+    "express": "^4.18.2",
     "jsdom": "^16.4.0",
     "monk": "^7.1.1",
     "morgan": "^1.9.1",
