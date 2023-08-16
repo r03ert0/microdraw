@@ -501,6 +501,49 @@ b.layer-item {
 }
 /*-----------------*/
 
+/*------------------*/
+/*  Text Annotation */
+#text-annotation-panel {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 200px;
+    max-height: 300px;
+    transform: translate( -50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    z-index: 100;
+    font-size: 0.8rem;
+}
+#text-annotation-panel > #header {
+    height: 36px;
+    background-color: #666;
+    padding: 0 5px 0 10px;
+    margin: -10px -10px 5px -10px;
+    pointer-events: none;
+}
+#add-text-annotation > b {
+    display: inline-block;
+    width: 60px;
+    margin-left: 10px;
+}
+#add-text-annotation > input[type="text"] {
+    width: calc(100% - 80px);
+}
+#add-text-annotation > input[type="color"], input[type="number"] {
+    width: 60px;
+}
+#add-text-annotation > div {
+    display: block;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+}
+
+/*------------------*/
+
 #paperjs-container {
     width:100%;
     height:100%;
