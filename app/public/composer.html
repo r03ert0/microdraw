@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>MicroDraw Overlays</title>
+    <style>
+        #ctrl {
+            position: absolute;
+            display: block;
+            top: 0;
+            left: 0;
+            width: 500px;
+            height: 300px;
+            background: #aaa;
+            border: thin solid black;
+            z-index: 1000;
+        }
+        #invisible {
+            position:fixed;
+            display:block;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+        }
+        .resizable {
+            resize: both; /* Enables resizing */
+            overflow: auto;
+        }
+        .draggable {
+            position: absolute;
+            cursor: grab;
+        }
+
+        .dragging {
+            cursor: grabbing;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="invisible"></div>
+    <div id="ctrl" class="resizable draggable">
+        <table style="width:100%">
+            <!-- <draggable v-model="layers" :options="dragOptions"> -->
+            <tr v-for="(layer, index) in layers" :key="index">
+                <td style="width:70px"><input v-model="layer.name" style="width:70px"/></td>
+                <td><input v-model="layer.url" style="width:95%"/></td>
+                <td style="width:40px"><input v-model="layer.opacity" type="number" style="width:40px"/></td>
+                <td style="width:100px"><input v-model="layer.opacity" type="range" min="0" max="100" @input="changeOpacity(index, $event)"/></td>
+                <td style="width:20px"><button @click="deleteRow(index)">-</button></td>
+            </tr>
+            <!-- </draggable> -->
+        </table>
+        <button @click="addRow">+</button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.24.3/vuedraggable.umd.min.js"></script> -->
+    <script>
+
+    const addMicrodrawLayer = (url, id, opacity, zIndex) => {
+        console.log({url, id, opacity, zIndex});
+        const iframe = document.createElement('iframe');
+        iframe.id = id;
+        iframe.src = url;
+        iframe.style.position = 'absolute';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.opacity = opacity/100; // 50% transparency
+        iframe.style.zIndex = zIndex; // Make sure it's on top of other elements
+        document.body.appendChild(iframe);
+
+        // inject svg filter effects into #p2 (for coloring)
+        if (id === "p2") {
+            iframe.style.mixBlendMode = "screen";
+        }
+
+        return iframe;
+    };
+
+    /*
+    Add layers correctly:
+    options = {tileSource: Microdraw.ImageInfo[10].source, opacity:0.5, degrees:45}
+    Microdraw.viewer.addTiledImage(options)
+    Microdraw.viewer.world.getItemAt(1).setRotation(30)
+    Microdraw.viewer.world.getItemAt(1).setPosition({x:0.02, y:0.1})
+    */
+
+    const passEvents = (event) => {
+        if (event.target.id !== "invisible") { return; }
+        event.preventDefault();
+        var evt = new Event(event.type);
+        for (const key of [
+            'button', 'buttons', 'width', 'height', 'deltaY', 'position', 'clientX', 'clientY', 'pageX', 'pageY',
+            'pointerId', 'pointerType', 'isPrimary']) {
+            evt[key] = event[key];
+        }
+
+        const contentWindow = document.querySelector("#p1").contentWindow;
+        const shadowRoot = contentWindow.document.querySelector("#content").shadowRoot;
+        const target =  shadowRoot.querySelector("#openseadragon1 > div > div.openseadragon-canvas");
+        target.dispatchEvent(evt, {bubbles: true, cancelable: true});
+    };
+
+    const addLayer = (options) => {
+        const contentWindow = document.querySelector("#p1").contentWindow;
+        if (contentWindow.Microdraw === undefined) {
+            setTimeout(() => {addLayer(options);}, 1000);
+            return;
+        }
+        if (contentWindow.Microdraw.viewer === undefined) {
+            setTimeout(() => {addLayer(options);}, 1000);
+            return;
+        }
+        setTimeout(()=> {contentWindow.Microdraw.viewer.addTiledImage(options);}, 2000);
+    };
+
+    const app = new Vue({
+        el: '#ctrl',
+        components: { draggable: window['vuedraggable'] },
+        data () {
+            return {
+                layers: [
+                    {   name: "Layer 1",
+                        url: "https://bigbrain-ftp.loris.ca/bigbrain-ftp/BigBrainRelease.2015/MicroDraw/Macaque_CellBody_071/41759_N_071.json",
+                        opacity: 100 },
+                    {   name: "Layer 2",
+                        url: "https://bigbrain-ftp.loris.ca/bigbrain-ftp/BigBrainRelease.2015/MicroDraw/Macaque_Annotations_071/labels_071_spectral.mnc.dzi",
+                        opacity: 50 }
+                ],
+                dragOptions: { handle: '.drag-handle' }
+            };
+        },
+        methods: {
+            addRow() {
+                this.layers.push({name: "New", opacity: 0});
+            },
+            deleteRow(index) {
+                this.layers.splice(index, 1);
+            },
+            changeOpacity(index, event) {
+                event.preventDefault();
+                const contentWindow = document.querySelector("#p1").contentWindow;
+                contentWindow.Microdraw.viewer.world.getItemAt(index).setOpacity(this.layers[index].opacity / 100);
+            }
+        },
+        mounted() {
+            // Load data from local storage when the component is mounted
+            // const savedData = localStorage.getItem('layers');
+            // if (savedData) {
+            //     this.layers = JSON.parse(savedData);
+            // }
+            const url = `http://localhost:3000/data?source=${this.layers[0].url}&slice=0`; //&displayTools=false`;
+            const iframe = addMicrodrawLayer(
+                url, "p1", this.layers[0].opacity, 101
+            );
+
+            iframe.onload = () => {
+                for (const [index, layer] of this.layers.entries()) {
+                    if (index > 0 ) {
+                        const options = {
+                            tileSource: layer.url,
+                            opacity: layer.opacity/100,
+                            degrees: 30,
+                            compositeOperation: "source-over"
+                        };
+                        addLayer(options);
+                    }
+                }
+            };
+
+            for (const eventType of [
+                'pointerover', 'pointerout', 'pointerdown', 'pointerup',
+                'pointermove','pointercancel',
+                'wheel']) {
+                window.addEventListener(eventType, passEvents, {passive: false});
+            }
+        },
+        watch: {
+            // Watch for changes to 'layers' data and save to local storage
+            layers: {
+                handler(newLayers) {
+                    localStorage.setItem('layers', JSON.stringify(newLayers));
+                },
+                deep: true,
+            }
+        }
+    });
+
+    // Call the function to inject web page2 after the web page1 content is loaded
+    window.addEventListener('load', () => {
+        console.log("window loaded");
+        for (const eventType of [
+                'pointerover', 'pointerout', 'pointerdown', 'pointerup',
+                'pointermove','pointercancel',
+                'wheel']) {
+                window.addEventListener(eventType, passEvents, {passive: false});
+            }
+    });
+
+    var draggableDiv = document.getElementById('ctrl');
+
+    var isDragging = false;
+    var offsetX = 0;
+    var offsetY = 0;
+
+    draggableDiv.addEventListener('mousedown', function(e) {
+        if (e.target.id !== "ctrl") { return; }
+        isDragging = true;
+        offsetX = e.clientX - draggableDiv.getBoundingClientRect().left;
+        offsetY = e.clientY - draggableDiv.getBoundingClientRect().top;
+        draggableDiv.classList.add('dragging');
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        draggableDiv.style.left = (e.clientX - offsetX) + 'px';
+        draggableDiv.style.top = (e.clientY - offsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        isDragging = false;
+        draggableDiv.classList.remove('dragging');
+    });
+
+  </script>
+</body>
+</html>
